@@ -55,11 +55,15 @@ repositories {
 	// dropped into the lib/ directory.
 	// See https://docs.gradle.org/current/userguide/declaring_repositories.html for more info.
 	// Ex: mavenCentral()
+	mavenCentral()
 }
 
 dependencies {
 	// Any external dependencies added here will automatically be copied to the lib/ directory when
 	// this extension is built.	
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.15.2'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.15.2'
 }
 
 // Exclude additional files from the built extension

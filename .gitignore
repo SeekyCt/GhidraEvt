@@ -1,2 +1,6 @@
 build
 .gradle
+dist
+lib/*.jar
+os/**/evt-rs
+os/**/*.exe
