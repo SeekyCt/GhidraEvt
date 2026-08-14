@@ -33,7 +33,9 @@ public class IpcServer implements Runnable {
 
     @Override
     public void run() {
-        try (ServerSocket server = new ServerSocket(0, 1, InetAddress.getLoopbackAddress()))
+        // int portRequest = 0;
+        int portRequest = 7777;
+        try (ServerSocket server = new ServerSocket(portRequest, 1, InetAddress.getLoopbackAddress()))
         {
             port = server.getLocalPort();
             Msg.info(this, "Started server on " + server.getInetAddress().getHostAddress() + ":" + server.getLocalPort());
