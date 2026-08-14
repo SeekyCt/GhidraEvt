@@ -4,3 +4,5 @@ dist
 lib/*.jar
 os/**/evt-rs
 os/**/*.exe
+.vscode
+!.vscode/launch.json

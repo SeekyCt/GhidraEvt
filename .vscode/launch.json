@@ -5,6 +5,7 @@
       "type": "java",
       "name": "Ghidra",
       "request": "launch",
+      "preLaunchTask": "gradle: build",
       "mainClass": "ghidra.Ghidra",
       "args": "ghidra.GhidraRun",
       "classPaths": [
