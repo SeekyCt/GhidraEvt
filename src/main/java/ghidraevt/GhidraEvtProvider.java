@@ -76,7 +76,7 @@ public class GhidraEvtProvider extends ComponentProvider {
         return panel;
     }
 
-    private String tryDisasm()
+    private String tryDisasm(long address)
     {
         try {
             String path = Application.getOSFile("evt-rs").getAbsolutePath();
@@ -85,7 +85,8 @@ public class GhidraEvtProvider extends ComponentProvider {
                 path,
                 "network",
                 InetAddress.getLoopbackAddress().getHostAddress().toString(),
-                Integer.toString(this.ipcServer.getPort())
+                Integer.toString(this.ipcServer.getPort()),
+                Long.toHexString(address)
             ).start();
 
             String errors = new String(
@@ -115,9 +116,11 @@ public class GhidraEvtProvider extends ComponentProvider {
 	{
 		this.currentProgram = program;
 		this.currentLocation = location;
+        this.ipcServer.setCurrentProgram(program);
 
+        // TODO: own thread
         Msg.info(this, "-> tryDisasm");
-        String text = tryDisasm();
+        String text = tryDisasm(location.getAddress().getOffset());
         textArea.setText(text);
 	}
 }

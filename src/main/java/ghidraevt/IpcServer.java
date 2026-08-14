@@ -12,23 +12,36 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CountDownLatch;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.fasterxml.jackson.core.JsonParser.Feature;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import ghidra.program.model.address.Address;
+import ghidra.program.model.listing.Program;
+import ghidra.program.model.mem.MemoryAccessException;
+import ghidra.program.model.mem.MemoryBlock;
+import ghidra.program.model.mem.MemoryBlockException;
 import ghidra.util.Msg;
 
 public class IpcServer implements Runnable {
     private volatile int port;
     private CountDownLatch portReady = new CountDownLatch(1);
     private ObjectMapper mapper = new ObjectMapper();
+    private volatile Program currentProgram;
 
     private static class Request {
-        public long length;
+        public long address;
+        public int length;
     }
 
     public IpcServer() {
         mapper.configure(Feature.AUTO_CLOSE_SOURCE, false);
+    }
+
+    public void setCurrentProgram(Program currentProgram) {
+        this.currentProgram = currentProgram;
     }
 
     @Override
@@ -51,23 +64,22 @@ public class IpcServer implements Runnable {
                     int i = 0;
                     while (reader.hasNextValue()) {
                         Request request = reader.nextValue();
-                        Msg.info(this, "Got request " + " " + request.length);
+                        Msg.info(this, "Got request " + Long.toHexString(request.address) + " " + request.length);
+
+                        Address address = currentProgram.getAddressFactory().getDefaultAddressSpace().getAddress(request.address);
+                        MemoryBlock block = currentProgram.getMemory().getBlock(address);
+                        byte[] data = new byte[request.length];
+                        int finalLength = block.getBytes(address, data);
+                        data = ArrayUtils.subarray(data, 0, finalLength);
 
                         Msg.info(this, "Write");
-                        if (i++ % 4 == 3)
-                            output.write(new byte[] {1});
-                        else
-                            output.write(new byte[] {0});
+                        output.write(data);
                         Msg.info(this, "Wrote");
                     }
                     Msg.info(this, "Finished client");
-
-                    // Request request = mapper.readValue(input, Request.class);
-                    // Msg.info(this, "Got request " + " " + request.length);
-
-                    // Msg.info(this, "Write");
-                    // output.write(new byte[] {0, 0, 0, 1});
-                    // Msg.info(this, "Wrote");
+                }
+                catch (MemoryAccessException e) {
+                    Msg.warn(this, e);
                 }
                 catch (IOException e) {
                     Msg.warn(this, e);
