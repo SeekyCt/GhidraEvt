@@ -134,7 +134,12 @@ public class GhidraEvtProvider extends ComponentProvider {
             return err;
         }
         catch (IOException e) {
+            Msg.error(this, "Disassembler failed", e);
             return "Disassembler failed: " + e.getMessage();
+        }
+        catch (Exception e) {
+            Msg.error(this, "Unhandled disassembler exception", e);
+            return "Unhandled disassembler exception: " + e.getMessage();
         }
 
         GhidraPrinter printer = new GhidraPrinter(showLineNumbers.enabled(), showAddresses.enabled());

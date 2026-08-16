@@ -23,7 +23,7 @@ public class MemoryInputStream extends InputStream {
             ret = block.getByte(addr) & 0xff;
         }
         catch (MemoryAccessException e) {
-            throw new IOException();
+            throw new IOException("Failed to read memory at " + addr);
         }
 
         addr = addr.add(1);
