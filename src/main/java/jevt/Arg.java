@@ -5,7 +5,12 @@ public sealed interface Arg permits
     Arg.GSWF, Arg.LSWF, Arg.GF, Arg.LF, Arg.GW, Arg.LW, Arg.INT,
     Arg.NONE {
 
-    record ADDR(long value) implements Arg {}
+    record ADDR(long value) implements Arg {
+        @Override
+        public final String toString() {
+            return "ADDR[value=" + Long.toHexString(value) + "]";
+        }
+    }
     record FLOAT(float value) implements Arg {}
     record UF(int id) implements Arg {}
     record UW(int id) implements Arg {}
