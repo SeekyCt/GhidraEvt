@@ -35,7 +35,6 @@ import ghidra.util.Msg;
 import jevt.BadEvtException;
 import jevt.Game;
 import jevt.Instr;
-import jevt.Printer;
 import resources.Icons;
 import ghidra.framework.Application;
 
@@ -46,8 +45,9 @@ public class GhidraEvtProvider extends ComponentProvider {
 
     // TODO: save settings
 
-    private boolean strictMode = false; // TODO: type-based mode
-    private DockingAction toggleStrict;
+    private DockingToggle strictMode; // TODO: type-based mode
+    private DockingToggle showAddresses;
+    private DockingToggle showLineNumbers;
 
     public GhidraEvtProvider(Plugin plugin, String owner) {
         super(plugin.getTool(), "Evt Disassembler", owner);
@@ -66,38 +66,45 @@ public class GhidraEvtProvider extends ComponentProvider {
         setVisible(true);
         setIcon(Icons.INFO_ICON);
     }
-    
-    void updateStrictModeAction() {
-        String desc;
-        Icon icon;
-        if (strictMode) {
-            icon = Icons.ERROR_ICON;
-            desc = "Toggle Strict Mode (enabled)";
-        }
-        else {
-            icon = Icons.ADD_ICON;
-            desc = "Toggle Strict Mode (disabled)";
-        }
-
-        toggleStrict.setDescription(desc);
-        toggleStrict.setToolBarData(new ToolBarData(icon, null));
-
-        updateDisasm();
-    }
 
     private void createActions() {
-        toggleStrict = new DockingAction("Toggle Strict Mode", getOwner()) {
+        Runnable disasmCallback = new Runnable() {
             @Override
-            public void actionPerformed(ActionContext context) {
-                GhidraEvtProvider.this.strictMode = !GhidraEvtProvider.this.strictMode;
-                updateStrictModeAction();
+            public void run() {
+                updateDisasm();
             }
         };
 
-        updateStrictModeAction();
-        toggleStrict.setEnabled(true);
-        toggleStrict.markHelpUnnecessary();
-        dockingTool.addLocalAction(this, toggleStrict);
+        strictMode = new DockingToggle(
+            "Strict Mode",
+            getOwner(),
+            false,
+            disasmCallback
+        );
+        strictMode.setEnabled(true);
+        strictMode.markHelpUnnecessary();
+
+        showAddresses = new DockingToggle(
+            "Show Addresses",
+            getOwner(),
+            false,
+            disasmCallback
+        );
+        showAddresses.setEnabled(true);
+        showAddresses.markHelpUnnecessary();
+
+        showLineNumbers = new DockingToggle(
+            "Show Line Numbers",
+            getOwner(),
+            false, 
+            disasmCallback
+        );
+        showLineNumbers.setEnabled(true);
+        showLineNumbers.markHelpUnnecessary();
+
+        dockingTool.addLocalAction(this, showLineNumbers);
+        dockingTool.addLocalAction(this, showAddresses);
+        dockingTool.addLocalAction(this, strictMode);
     }
 
     @Override
@@ -107,7 +114,7 @@ public class GhidraEvtProvider extends ComponentProvider {
 
     private String tryDisasm(ProgramLocation location) {
         if (location == null)
-            return "No code selected.";
+            return "No script selected.";
 
         Address address = location.getAddress();
         MemoryInputStream stream = new MemoryInputStream(
@@ -117,7 +124,7 @@ public class GhidraEvtProvider extends ComponentProvider {
 
         List<Instr> script;
         try {
-            script = Instr.disassemble(Game.SPM, stream, this.strictMode);
+            script = Instr.disassemble(Game.SPM, stream, strictMode.enabled());
         }
         catch (BadEvtException e) {
             String err = "Script appears invalid: " + e.getMessage();
@@ -130,18 +137,18 @@ public class GhidraEvtProvider extends ComponentProvider {
             return "Disassembler failed: " + e.getMessage();
         }
 
-        Printer printer = new Printer();
-        return printer.print_evt(script);
+        GhidraPrinter printer = new GhidraPrinter(showLineNumbers.enabled(), showAddresses.enabled());
+        return printer.print_evt(address, script);
     }
 
     private void updateDisasm()
     {
-        textArea.setText(tryDisasm(this.currentLocation));
+        textArea.setText(tryDisasm(currentLocation));
     }
 
     public void locationChanged(ProgramLocation location)
     {
-        this.currentLocation = location;
+        currentLocation = location;
 
         updateDisasm();
     }
