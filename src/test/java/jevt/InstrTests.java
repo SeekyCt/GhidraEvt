@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 public class InstrTests {
     Instr readInstr(byte[] data) throws IOException, BadEvtException {
         DataInputStream stream = new DataInputStream(new ByteArrayInputStream(data));
-        return Instr.decode(Game.SPM, stream);
+        return Instr.decode(Game.SPM, stream, false);
     } 
     
     byte[] writeInstr(Instr instr) throws IOException {
@@ -29,7 +29,7 @@ public class InstrTests {
     
     List<Instr> readDisassemble(byte[] data) throws IOException, BadEvtException {
         InputStream stream = new ByteArrayInputStream(data);
-        return Instr.disassemble(Game.SPM, stream);
+        return Instr.disassemble(Game.SPM, stream, false);
     }
 
     byte[] writeAssemble(List<Instr> script) throws IOException {
@@ -114,4 +114,6 @@ public class InstrTests {
             })
         );
     }
+
+    // TODO: test strict mode
 }

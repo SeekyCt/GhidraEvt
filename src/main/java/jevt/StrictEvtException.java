@@ -1,15 +1,15 @@
 package jevt;
 
-public class BadEvtException extends Exception {
+public class StrictEvtException extends BadEvtException {
     // int offset;
 
-    public BadEvtException(/*int offset, */ String message)
+    public StrictEvtException(/*int offset, */ String message)
     {
         super(message);
         // this.offset = offset;
     }
 
     public boolean strictOnly() {
-        return false;
+        return true;
     }
 }

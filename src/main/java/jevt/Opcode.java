@@ -136,7 +136,10 @@ public enum Opcode {
         };
     }
 
-    public static Opcode decode(Game game, int id) throws BadEvtException {
+    public static Opcode decode(Game game, int id, boolean strict) throws BadEvtException {
+        if (strict && id == NEXT.ordinal())
+            throw new StrictEvtException("Opcode NEXT may not appear in scripts");
+
         id = switch (game) {
             case Game.SPM -> id;
             case Game.TTYD ->  {

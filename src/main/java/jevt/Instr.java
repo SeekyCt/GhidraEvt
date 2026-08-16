@@ -25,17 +25,21 @@ public class Instr {
         return this.args;
     }
 
-    public static Instr decode(Game game, DataInputStream stream) throws IOException, BadEvtException {
+    public static Instr decode(Game game, DataInputStream stream, boolean strict) throws IOException, BadEvtException {
         short nargs = stream.readShort();
-        short opcodeId = stream.readShort();
+        if (strict && nargs > 0xff) // TODO: check per-instruction too like search.py
+            throw new StrictEvtException("Invalid argument count " + nargs);
 
-        Opcode opcode = Opcode.decode(game, opcodeId);
+        // TODO: when strict check indentation validity, paired start-ends, etc
+
+        short opcodeId = stream.readShort();
+        Opcode opcode = Opcode.decode(game, opcodeId, strict);
 
         List<Arg> args = new ArrayList<>(nargs);
         for (int i = 0; i < nargs; i++)
         {
             int argVal = stream.readInt();
-            Arg arg = Arg.decode(game, argVal);
+            Arg arg = Arg.decode(game, argVal, strict);
             args.add(arg);
         }
 
@@ -54,15 +58,26 @@ public class Instr {
         }
     }
 
-    public static List<Instr> disassemble(Game game, InputStream stream) throws IOException, BadEvtException {
+    public static List<Instr> disassemble(Game game, InputStream stream, boolean strict) throws IOException, BadEvtException {
         List<Instr> ret = new ArrayList<>();
         DataInputStream dataStream = new DataInputStream(stream);
 
         Opcode opcode = Opcode.NEXT;
         while (opcode != Opcode.END_SCRIPT) {
-            Instr instr = Instr.decode(game, dataStream);
+            Instr instr = Instr.decode(game, dataStream, strict);
             opcode = instr.opcode;
             ret.add(instr);
+        }
+
+        if (strict) {
+            if (ret.size() < 2)
+                throw new StrictEvtException("Script is too short");
+
+            // TODO: check for code after return
+
+            // TODO: this was in search.py, but seems like it could be flawed?
+            if (ret.get(ret.size()-2).opcode() != Opcode.END_EVT)
+                throw new StrictEvtException("Script didn't end with a return");
         }
 
         return ret;

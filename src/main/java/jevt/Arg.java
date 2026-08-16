@@ -91,7 +91,9 @@ public sealed interface Arg permits
     }
 
 
-    public static Arg decode(Game game, int val) {
+    public static Arg decode(Game game, int val, boolean strict) throws BadEvtException {
+        // TODO: validate variable ids in strict mode
+
         if (val == NONE_BASE(game)) {
             return new Arg.NONE();
         } else if (val <= ADDR_MAX) {
