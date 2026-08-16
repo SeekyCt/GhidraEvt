@@ -90,6 +90,9 @@ public sealed interface Arg permits
         return (int) (val * FLOAT_SCALE) + FLOAT_BASE(game);
     }
 
+    public static int bytesSize() {
+        return 4;
+    }
 
     public static Arg decode(Game game, int val, boolean strict) throws BadEvtException {
         // TODO: validate variable ids in strict mode

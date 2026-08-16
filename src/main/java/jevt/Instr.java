@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.OptionalInt;
 
 public class Instr {
     private Opcode opcode;
@@ -23,6 +24,13 @@ public class Instr {
 
     public List<Arg> args() {
         return this.args;
+    }
+
+    public static int NARGS_BYTES_SIZE = 2;
+    public static int OPCODE_BYTES_SIZE = 2;
+
+    public int bytesSize() {
+        return NARGS_BYTES_SIZE + OPCODE_BYTES_SIZE + (Arg.bytesSize() * args.size());
     }
 
     public static Instr decode(Game game, DataInputStream stream, boolean strict) throws IOException, BadEvtException {
