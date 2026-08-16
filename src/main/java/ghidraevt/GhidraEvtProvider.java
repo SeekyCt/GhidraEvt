@@ -44,17 +44,12 @@ public class GhidraEvtProvider extends ComponentProvider {
 	private JTextArea textArea;
 	private Program currentProgram;
 	private ProgramLocation currentLocation;
-    // private IpcServer ipcServer;
-    // private Thread ipcThread;
 
     public GhidraEvtProvider(Plugin plugin, String owner) {
         super(plugin.getTool(), "Evt Disassembler", owner);
 
         buildPanel();
         // createActions();
-        // ipcServer = new IpcServer();
-        // ipcThread = new Thread(ipcServer, "GhidraEvtProvider-IPC");
-        // ipcThread.start();
     }
 
     // Customize GUI
@@ -87,42 +82,6 @@ public class GhidraEvtProvider extends ComponentProvider {
         return panel;
     }
 
-    // private String tryDisasm(long address)
-    // {
-    //     try {
-    //         String path = Application.getOSFile("evt-rs").getAbsolutePath();
-
-    //         Process disasm = new ProcessBuilder(
-    //             path,
-    //             "network",
-    //             InetAddress.getLoopbackAddress().getHostAddress().toString(),
-    //             Integer.toString(this.ipcServer.getPort()),
-    //             Long.toHexString(address)
-    //         ).start();
-
-    //         String errors = new String(
-    //             disasm.getErrorStream().readAllBytes(),
-    //             StandardCharsets.UTF_8
-    //         );
-    //         if (errors.length() > 0)
-    //             Msg.warn(this, "evt-rs printed to stderr: " + errors);
-
-    //         return new String(
-    //             disasm.getInputStream().readAllBytes(),
-    //             StandardCharsets.UTF_8
-    //         );
-    //     }
-    //     catch (InterruptedException e) {
-    //         return "Disassembler connection failed: " + e.getMessage();
-    //     }
-    //     catch (FileNotFoundException e) {
-    //         return "Disassembler failed: " + e.getMessage();
-    //     }
-    //     catch (IOException e) {
-    //         return "Disassembler failed: " + e.getMessage();
-    //     }
-    // }
-
     private String tryDisasm(long address) {
         Address asAddress = currentProgram.getAddressFactory().getDefaultAddressSpace().getAddress(address);
         MemoryBlock block = currentProgram.getMemory().getBlock(asAddress);
@@ -152,9 +111,7 @@ public class GhidraEvtProvider extends ComponentProvider {
 	{
 		this.currentProgram = program;
 		this.currentLocation = location;
-        // this.ipcServer.setCurrentProgram(program);
 
-        // TODO: own thread
         Msg.info(this, "-> tryDisasm");
         String text = tryDisasm(location.getAddress().getOffset());
         textArea.setText(text);
