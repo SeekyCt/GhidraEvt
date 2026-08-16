@@ -44,13 +44,13 @@ public class GhidraEvtProvider extends ComponentProvider {
     private JTextArea textArea;
     private ProgramLocation currentLocation;
 
-    private boolean strictMode;
+    // TODO: save settings
+
+    private boolean strictMode = false; // TODO: type-based mode
     private DockingAction toggleStrict;
 
     public GhidraEvtProvider(Plugin plugin, String owner) {
         super(plugin.getTool(), "Evt Disassembler", owner);
-
-        strictMode = false;
 
         buildPanel();
         createActions();
@@ -76,7 +76,7 @@ public class GhidraEvtProvider extends ComponentProvider {
         }
         else {
             icon = Icons.ADD_ICON;
-            desc = "Toggle Strict Mode (disabled";
+            desc = "Toggle Strict Mode (disabled)";
         }
 
         toggleStrict.setDescription(desc);
@@ -94,7 +94,6 @@ public class GhidraEvtProvider extends ComponentProvider {
             }
         };
 
-        // TODO: type-based mode
         updateStrictModeAction();
         toggleStrict.setEnabled(true);
         toggleStrict.markHelpUnnecessary();
