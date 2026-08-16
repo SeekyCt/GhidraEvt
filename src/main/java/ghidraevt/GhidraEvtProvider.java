@@ -82,19 +82,12 @@ public class GhidraEvtProvider extends ComponentProvider {
         return panel;
     }
 
-    private String tryDisasm(long address) {
-        Address asAddress = currentProgram.getAddressFactory().getDefaultAddressSpace().getAddress(address);
-        MemoryBlock block = currentProgram.getMemory().getBlock(asAddress);
-        byte[] data = new byte[0x1000];
-        try {
-            int finalLength = block.getBytes(asAddress, data);
-            data = ArrayUtils.subarray(data, 0, finalLength);
-        }
-        catch (MemoryAccessException e) {
-            return "Memory read failed: " + e.getMessage();
-        }
+    private String tryDisasm(Address address) {
+        MemoryInputStream stream = new MemoryInputStream(
+            currentProgram.getMemory().getBlock(address),
+            address
+        );
 
-        InputStream stream = new ByteArrayInputStream(data);
         List<Instr> script;
         try {
             script = Instr.disassemble(Game.SPM, stream);
@@ -113,7 +106,7 @@ public class GhidraEvtProvider extends ComponentProvider {
 		this.currentLocation = location;
 
         Msg.info(this, "-> tryDisasm");
-        String text = tryDisasm(location.getAddress().getOffset());
+        String text = tryDisasm(location.getAddress());
         textArea.setText(text);
 	}
 }
