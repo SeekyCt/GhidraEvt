@@ -34,7 +34,7 @@ public class Instr {
     }
 
     public static Instr decode(Game game, DataInputStream stream, boolean strict) throws IOException, BadEvtException {
-        short nargs = stream.readShort();
+        int nargs = stream.readShort() & 0xffff;
         if (strict && nargs > 0xff) // TODO: check per-instruction too like search.py
             throw new StrictEvtException("Invalid argument count " + nargs);
 
