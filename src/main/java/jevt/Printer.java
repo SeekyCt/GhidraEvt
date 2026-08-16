@@ -18,7 +18,7 @@ public class Printer {
             ret.append(opcode.name());
 
             for (Arg arg : instr.args()) {
-                ret.append(arg.toString());
+                ret.append(" " + arg.toString());
             }
 
             ret.append("\n");
