@@ -25,9 +25,12 @@ import ghidra.app.plugin.PluginCategoryNames;
 import ghidra.app.plugin.ProgramPlugin;
 import ghidra.framework.plugintool.*;
 import ghidra.framework.plugintool.util.PluginStatus;
+import ghidra.program.flatapi.FlatProgramAPI;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.listing.FunctionManager;
 import ghidra.program.model.listing.Program;
+import ghidra.program.model.symbol.Symbol;
+import ghidra.program.model.symbol.SymbolIterator;
 import ghidra.program.model.mem.MemoryAccessException;
 import ghidra.program.model.mem.MemoryBlock;
 import ghidra.program.util.ProgramLocation;
@@ -48,6 +51,7 @@ public class GhidraEvtProvider extends ComponentProvider {
     private DockingToggle strictMode; // TODO: type-based mode
     private DockingToggle showAddresses;
     private DockingToggle showLineNumbers;
+    private DockingToggle snapToSymbol;
 
     public GhidraEvtProvider(Plugin plugin, String owner) {
         super(plugin.getTool(), "Evt Disassembler", owner);
@@ -102,9 +106,19 @@ public class GhidraEvtProvider extends ComponentProvider {
         showLineNumbers.setEnabled(true);
         showLineNumbers.markHelpUnnecessary();
 
+        snapToSymbol = new DockingToggle(
+            "Snap to Symbol",
+            getOwner(),
+            true, 
+            disasmCallback
+        );
+        snapToSymbol.setEnabled(true);
+        snapToSymbol.markHelpUnnecessary();
+
         dockingTool.addLocalAction(this, showLineNumbers);
         dockingTool.addLocalAction(this, showAddresses);
         dockingTool.addLocalAction(this, strictMode);
+        dockingTool.addLocalAction(this, snapToSymbol);
     }
 
     @Override
@@ -116,9 +130,18 @@ public class GhidraEvtProvider extends ComponentProvider {
         if (location == null)
             return "No script selected.";
 
+        Program program = location.getProgram();
         Address address = location.getAddress();
+
+        if (snapToSymbol.enabled())
+        {
+            SymbolIterator iter = program.getSymbolTable().getSymbolIterator(address, false);
+            if (iter.hasNext())
+                address = iter.next().getAddress();
+        }
+
         MemoryInputStream stream = new MemoryInputStream(
-            location.getProgram().getMemory().getBlock(address),
+            program.getMemory().getBlock(address),
             address
         );
 
