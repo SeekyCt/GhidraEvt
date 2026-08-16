@@ -16,7 +16,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 public class InstrTests {
-    Instr readInstr(byte[] data) throws IOException {
+    Instr readInstr(byte[] data) throws IOException, BadEvtException {
         DataInputStream stream = new DataInputStream(new ByteArrayInputStream(data));
         return Instr.decode(Game.SPM, stream);
     } 
@@ -27,7 +27,7 @@ public class InstrTests {
         return stream.toByteArray();
     } 
     
-    List<Instr> readDisassemble(byte[] data) throws IOException {
+    List<Instr> readDisassemble(byte[] data) throws IOException, BadEvtException {
         InputStream stream = new ByteArrayInputStream(data);
         return Instr.disassemble(Game.SPM, stream);
     }
@@ -46,7 +46,7 @@ public class InstrTests {
     }
 
     @Test
-    void test_reader() throws IOException {
+    void test_reader() throws IOException, BadEvtException {
         assertEquals(
             new Instr(Opcode.END_SCRIPT, new ArrayList<>()),
             readInstr(bytes(new int[] {
@@ -84,7 +84,7 @@ public class InstrTests {
     }
 
     @Test
-    void test_disassemble() throws IOException {
+    void test_disassemble() throws IOException, BadEvtException {
         assertEquals(
             readDisassemble(bytes(new int[] {
                 0x00, 0x02, 0x00, 0x32,

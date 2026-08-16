@@ -136,7 +136,7 @@ public enum Opcode {
         };
     }
 
-    public static Opcode decode(Game game, int id) {
+    public static Opcode decode(Game game, int id) throws BadEvtException {
         id = switch (game) {
             case Game.SPM -> id;
             case Game.TTYD ->  {
@@ -146,7 +146,12 @@ public enum Opcode {
                     yield id + 1;
             }
         };
-        return Opcode.values()[id];
+        try {
+            return Opcode.values()[id];
+        }
+        catch (ArrayIndexOutOfBoundsException e) {
+            throw new BadEvtException("Invalid opcode " + id);
+        }
     }
 
     public int indent() {

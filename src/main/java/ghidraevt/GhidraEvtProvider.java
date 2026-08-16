@@ -32,6 +32,7 @@ import ghidra.program.model.mem.MemoryAccessException;
 import ghidra.program.model.mem.MemoryBlock;
 import ghidra.program.util.ProgramLocation;
 import ghidra.util.Msg;
+import jevt.BadEvtException;
 import jevt.Game;
 import jevt.Instr;
 import jevt.Printer;
@@ -91,6 +92,9 @@ public class GhidraEvtProvider extends ComponentProvider {
         List<Instr> script;
         try {
             script = Instr.disassemble(Game.SPM, stream);
+        }
+        catch (BadEvtException e) {
+            return "Script appears invalid: " + e.getMessage();
         }
         catch (IOException e) {
             return "Disassembler failed: " + e.getMessage();

@@ -25,7 +25,7 @@ public class Instr {
         return this.args;
     }
 
-    public static Instr decode(Game game, DataInputStream stream) throws IOException {
+    public static Instr decode(Game game, DataInputStream stream) throws IOException, BadEvtException {
         short nargs = stream.readShort();
         short opcodeId = stream.readShort();
 
@@ -54,7 +54,7 @@ public class Instr {
         }
     }
 
-    public static List<Instr> disassemble(Game game, InputStream stream) throws IOException {
+    public static List<Instr> disassemble(Game game, InputStream stream) throws IOException, BadEvtException {
         List<Instr> ret = new ArrayList<>();
         DataInputStream dataStream = new DataInputStream(stream);
 
