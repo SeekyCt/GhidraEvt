@@ -34,151 +34,151 @@ import ghidra.util.task.TaskMonitor;
  * Provide class-level documentation that describes what this file system does.
  */
 @FileSystemInfo(type = "fstypegoeshere", // ([a-z0-9]+ only)
-		description = "File system description goes here", factory = GhidraEvtFileSystem.MyFileSystemFactory.class)
+        description = "File system description goes here", factory = GhidraEvtFileSystem.MyFileSystemFactory.class)
 public class GhidraEvtFileSystem implements GFileSystem {
 
-	private final FSRLRoot fsFSRL;
-	private FileSystemIndexHelper<MyMetadata> fsih;
-	private FileSystemRefManager refManager = new FileSystemRefManager(this);
+    private final FSRLRoot fsFSRL;
+    private FileSystemIndexHelper<MyMetadata> fsih;
+    private FileSystemRefManager refManager = new FileSystemRefManager(this);
 
-	private ByteProvider provider;
+    private ByteProvider provider;
 
-	/**
-	 * File system constructor.
-	 * 
-	 * @param fsFSRL The root {@link FSRL} of the file system.
-	 * @param provider The file system provider.
-	 */
-	public GhidraEvtFileSystem(FSRLRoot fsFSRL, ByteProvider provider) {
-		this.fsFSRL = fsFSRL;
-		this.provider = provider;
-		this.fsih = new FileSystemIndexHelper<>(this, fsFSRL);
-	}
+    /**
+     * File system constructor.
+     * 
+     * @param fsFSRL The root {@link FSRL} of the file system.
+     * @param provider The file system provider.
+     */
+    public GhidraEvtFileSystem(FSRLRoot fsFSRL, ByteProvider provider) {
+        this.fsFSRL = fsFSRL;
+        this.provider = provider;
+        this.fsih = new FileSystemIndexHelper<>(this, fsFSRL);
+    }
 
-	/**
-	 * Mounts (opens) the file system.
-	 * 
-	 * @param monitor A cancellable task monitor.
-	 */
-	public void mount(TaskMonitor monitor) {
-		monitor.setMessage("Opening " + GhidraEvtFileSystem.class.getSimpleName() + "...");
+    /**
+     * Mounts (opens) the file system.
+     * 
+     * @param monitor A cancellable task monitor.
+     */
+    public void mount(TaskMonitor monitor) {
+        monitor.setMessage("Opening " + GhidraEvtFileSystem.class.getSimpleName() + "...");
 
-		// Customize how things in the file system are stored.  The following should be 
-		// treated as pseudo-code.
-		for (MyMetadata metadata : new MyMetadata[10]) {
-			if (monitor.isCancelled()) {
-				break;
-			}
-			fsih.storeFile(metadata.path, fsih.getFileCount(), false, metadata.size, metadata);
-		}
-	}
+        // Customize how things in the file system are stored.  The following should be 
+        // treated as pseudo-code.
+        for (MyMetadata metadata : new MyMetadata[10]) {
+            if (monitor.isCancelled()) {
+                break;
+            }
+            fsih.storeFile(metadata.path, fsih.getFileCount(), false, metadata.size, metadata);
+        }
+    }
 
-	@Override
-	public void close() throws IOException {
-		refManager.onClose();
-		if (provider != null) {
-			provider.close();
-			provider = null;
-		}
-		fsih.clear();
-	}
+    @Override
+    public void close() throws IOException {
+        refManager.onClose();
+        if (provider != null) {
+            provider.close();
+            provider = null;
+        }
+        fsih.clear();
+    }
 
-	@Override
-	public String getName() {
-		return fsFSRL.getContainer().getName();
-	}
+    @Override
+    public String getName() {
+        return fsFSRL.getContainer().getName();
+    }
 
-	@Override
-	public FSRLRoot getFSRL() {
-		return fsFSRL;
-	}
+    @Override
+    public FSRLRoot getFSRL() {
+        return fsFSRL;
+    }
 
-	@Override
-	public boolean isClosed() {
-		return provider == null;
-	}
+    @Override
+    public boolean isClosed() {
+        return provider == null;
+    }
 
-	@Override
-	public int getFileCount() {
-		return fsih.getFileCount();
-	}
+    @Override
+    public int getFileCount() {
+        return fsih.getFileCount();
+    }
 
-	@Override
-	public FileSystemRefManager getRefManager() {
-		return refManager;
-	}
+    @Override
+    public FileSystemRefManager getRefManager() {
+        return refManager;
+    }
 
-	@Override
-	public GFile lookup(String path) throws IOException {
-		return fsih.lookup(path);
-	}
+    @Override
+    public GFile lookup(String path) throws IOException {
+        return fsih.lookup(path);
+    }
 
-	@Override
-	public GFile lookup(String path, Comparator<String> nameComp) throws IOException {
-		return fsih.lookup(null, path, nameComp);
-	}
+    @Override
+    public GFile lookup(String path, Comparator<String> nameComp) throws IOException {
+        return fsih.lookup(null, path, nameComp);
+    }
 
-	@Override
-	public ByteProvider getByteProvider(GFile file, TaskMonitor monitor)
-			throws IOException, CancelledException {
+    @Override
+    public ByteProvider getByteProvider(GFile file, TaskMonitor monitor)
+            throws IOException, CancelledException {
 
-		// Get an ByteProvider for a file.  The following is an example of how the metadata
-		// might be used to get an sub-ByteProvider from a stored provider offset.
-		MyMetadata metadata = fsih.getMetadata(file);
-		return (metadata != null)
-				? new ByteProviderWrapper(provider, metadata.offset, metadata.size, file.getFSRL())
-				: null;
-	}
+        // Get an ByteProvider for a file.  The following is an example of how the metadata
+        // might be used to get an sub-ByteProvider from a stored provider offset.
+        MyMetadata metadata = fsih.getMetadata(file);
+        return (metadata != null)
+                ? new ByteProviderWrapper(provider, metadata.offset, metadata.size, file.getFSRL())
+                : null;
+    }
 
-	@Override
-	public List<GFile> getListing(GFile directory) throws IOException {
-		return fsih.getListing(directory);
-	}
+    @Override
+    public List<GFile> getListing(GFile directory) throws IOException {
+        return fsih.getListing(directory);
+    }
 
-	@Override
-	public FileAttributes getFileAttributes(GFile file, TaskMonitor monitor) {
-		MyMetadata metadata = fsih.getMetadata(file);
-		FileAttributes result = new FileAttributes();
-		if (metadata != null) {
-			result.add(FileAttributeType.NAME_ATTR, metadata.name);
-			result.add(FileAttributeType.SIZE_ATTR, metadata.size);
-		}
-		return result;
-	}
+    @Override
+    public FileAttributes getFileAttributes(GFile file, TaskMonitor monitor) {
+        MyMetadata metadata = fsih.getMetadata(file);
+        FileAttributes result = new FileAttributes();
+        if (metadata != null) {
+            result.add(FileAttributeType.NAME_ATTR, metadata.name);
+            result.add(FileAttributeType.SIZE_ATTR, metadata.size);
+        }
+        return result;
+    }
 
-	// Customize for the real file system.
-	public static class MyFileSystemFactory
-			implements GFileSystemFactoryByteProvider<GhidraEvtFileSystem>,
-			GFileSystemProbeByteProvider {
+    // Customize for the real file system.
+    public static class MyFileSystemFactory
+            implements GFileSystemFactoryByteProvider<GhidraEvtFileSystem>,
+            GFileSystemProbeByteProvider {
 
-		@Override
-		public GhidraEvtFileSystem create(FSRLRoot targetFSRL,
-				ByteProvider byteProvider, FileSystemService fsService, TaskMonitor monitor)
-				throws IOException, CancelledException {
+        @Override
+        public GhidraEvtFileSystem create(FSRLRoot targetFSRL,
+                ByteProvider byteProvider, FileSystemService fsService, TaskMonitor monitor)
+                throws IOException, CancelledException {
 
-			GhidraEvtFileSystem fs = new GhidraEvtFileSystem(targetFSRL, byteProvider);
-			fs.mount(monitor);
-			return fs;
-		}
+            GhidraEvtFileSystem fs = new GhidraEvtFileSystem(targetFSRL, byteProvider);
+            fs.mount(monitor);
+            return fs;
+        }
 
-		@Override
-		public boolean probe(ByteProvider byteProvider, FileSystemService fsService,
-				TaskMonitor monitor) throws IOException, CancelledException {
+        @Override
+        public boolean probe(ByteProvider byteProvider, FileSystemService fsService,
+                TaskMonitor monitor) throws IOException, CancelledException {
 
-			// Quickly and efficiently examine the bytes in 'byteProvider' to determine if 
-			// it's a valid file system.  If it is, return true. 
+            // Quickly and efficiently examine the bytes in 'byteProvider' to determine if 
+            // it's a valid file system.  If it is, return true. 
 
-			return false;
-		}
-	}
+            return false;
+        }
+    }
 
-	// Customize with metadata from files in the real file system.  This is just a stub.
-	// The elements of the file system will most likely be modeled by Java classes external to this
-	// file.
-	private static class MyMetadata {
-		private String name;
-		private String path;
-		private long offset;
-		private long size;
-	}
+    // Customize with metadata from files in the real file system.  This is just a stub.
+    // The elements of the file system will most likely be modeled by Java classes external to this
+    // file.
+    private static class MyMetadata {
+        private String name;
+        private String path;
+        private long offset;
+        private long size;
+    }
 }

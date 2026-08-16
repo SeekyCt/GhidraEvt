@@ -38,40 +38,40 @@ import resources.Icons;
  */
 //@formatter:off
 @PluginInfo(
-	status = PluginStatus.STABLE,
-	packageName = "GhidraEvt",
-	category = PluginCategoryNames.COMMON,
-	shortDescription = "Script disassembler window.",
-	description = "Super Paper Mario evt script disassembly integration."
+    status = PluginStatus.STABLE,
+    packageName = "GhidraEvt",
+    category = PluginCategoryNames.COMMON,
+    shortDescription = "Script disassembler window.",
+    description = "Super Paper Mario evt script disassembly integration."
 )
 //@formatter:on
 public class GhidraEvtPlugin extends ProgramPlugin {
 
-	GhidraEvtProvider provider;
+    GhidraEvtProvider provider;
 
-	/**
-	 * Plugin constructor.
-	 * 
-	 * @param tool The plugin tool that this plugin is added to.
-	 * @throws IOException 
-	 */
-	public GhidraEvtPlugin(PluginTool tool) throws IOException {
-		super(tool);
+    /**
+     * Plugin constructor.
+     * 
+     * @param tool The plugin tool that this plugin is added to.
+     * @throws IOException 
+     */
+    public GhidraEvtPlugin(PluginTool tool) throws IOException {
+        super(tool);
 
-		// Customize provider (or remove if a provider is not desired)
-		String pluginName = getName();
-		provider = new GhidraEvtProvider(this, pluginName);
-	}
+        // Customize provider (or remove if a provider is not desired)
+        String pluginName = getName();
+        provider = new GhidraEvtProvider(this, pluginName);
+    }
 
-	@Override
-	public void init() {
-		super.init();
-	}
+    @Override
+    public void init() {
+        super.init();
+    }
 
-	@Override
-	protected void locationChanged(ProgramLocation loc)
-	{
-		Msg.info(this, "Location changed " + loc);
-		provider.locationChanged(loc);
-	}
+    @Override
+    protected void locationChanged(ProgramLocation loc)
+    {
+        Msg.info(this, "Location changed " + loc);
+        provider.locationChanged(loc);
+    }
 }

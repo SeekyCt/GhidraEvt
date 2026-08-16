@@ -41,8 +41,8 @@ import ghidra.framework.Application;
 
 public class GhidraEvtProvider extends ComponentProvider {
     private JPanel panel;
-	private JTextArea textArea;
-	private ProgramLocation currentLocation;
+    private JTextArea textArea;
+    private ProgramLocation currentLocation;
 
     private boolean strictMode;
     private DockingAction toggleStrict;
@@ -141,9 +141,9 @@ public class GhidraEvtProvider extends ComponentProvider {
     }
 
     public void locationChanged(ProgramLocation location)
-	{
-		this.currentLocation = location;
+    {
+        this.currentLocation = location;
 
         updateDisasm();
-	}
+    }
 }

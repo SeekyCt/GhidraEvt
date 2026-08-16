@@ -31,50 +31,50 @@ import ghidra.util.exception.CancelledException;
  */
 public class GhidraEvtLoader extends AbstractProgramWrapperLoader {
 
-	@Override
-	public String getName() {
+    @Override
+    public String getName() {
 
-		// Name the loader.  This name must match the name of the loader in the .opinion files.
+        // Name the loader.  This name must match the name of the loader in the .opinion files.
 
-		return "My loader";
-	}
+        return "My loader";
+    }
 
-	@Override
-	public Collection<LoadSpec> findSupportedLoadSpecs(ByteProvider provider) throws IOException {
-		List<LoadSpec> loadSpecs = new ArrayList<>();
+    @Override
+    public Collection<LoadSpec> findSupportedLoadSpecs(ByteProvider provider) throws IOException {
+        List<LoadSpec> loadSpecs = new ArrayList<>();
 
-		// Examine the bytes in 'provider' to determine if this loader can load it.  If it 
-		// can load it, return the appropriate load specifications.
+        // Examine the bytes in 'provider' to determine if this loader can load it.  If it 
+        // can load it, return the appropriate load specifications.
 
-		return loadSpecs;
-	}
+        return loadSpecs;
+    }
 
-	@Override
-	protected void load(Program prgram, ImporterSettings settiings)
-			throws CancelledException, IOException {
+    @Override
+    protected void load(Program prgram, ImporterSettings settiings)
+            throws CancelledException, IOException {
 
-		// Load the bytes from 'settings.provider()' into the 'program'.
-	}
+        // Load the bytes from 'settings.provider()' into the 'program'.
+    }
 
-	@Override
-	public List<Option> getDefaultOptions(ByteProvider provider, LoadSpec loadSpec,
-			DomainObject domainObject, boolean isLoadIntoProgram, boolean mirrorFsLayout) {
-		List<Option> list = super.getDefaultOptions(provider, loadSpec, domainObject,
-			isLoadIntoProgram, mirrorFsLayout);
+    @Override
+    public List<Option> getDefaultOptions(ByteProvider provider, LoadSpec loadSpec,
+            DomainObject domainObject, boolean isLoadIntoProgram, boolean mirrorFsLayout) {
+        List<Option> list = super.getDefaultOptions(provider, loadSpec, domainObject,
+            isLoadIntoProgram, mirrorFsLayout);
 
-		// If this loader has custom options, add them to 'list'
-		list.add(new Option("Option name goes here", "Default option value goes here"));
+        // If this loader has custom options, add them to 'list'
+        list.add(new Option("Option name goes here", "Default option value goes here"));
 
-		return list;
-	}
+        return list;
+    }
 
-	@Override
-	public String validateOptions(ByteProvider provider, LoadSpec loadSpec, List<Option> options,
-			Program program) {
+    @Override
+    public String validateOptions(ByteProvider provider, LoadSpec loadSpec, List<Option> options,
+            Program program) {
 
-		// If this loader has custom options, validate them here.  Not all options require
-		// validation.
+        // If this loader has custom options, validate them here.  Not all options require
+        // validation.
 
-		return super.validateOptions(provider, loadSpec, options, program);
-	}
+        return super.validateOptions(provider, loadSpec, options, program);
+    }
 }

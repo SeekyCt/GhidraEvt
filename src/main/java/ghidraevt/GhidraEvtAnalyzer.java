@@ -29,46 +29,46 @@ import ghidra.util.task.TaskMonitor;
  */
 public class GhidraEvtAnalyzer extends AbstractAnalyzer {
 
-	public GhidraEvtAnalyzer() {
+    public GhidraEvtAnalyzer() {
 
-		// Name the analyzer and give it a description.
+        // Name the analyzer and give it a description.
 
-		super("My Analyzer", "Analyzer description goes here", AnalyzerType.BYTE_ANALYZER);
-	}
+        super("My Analyzer", "Analyzer description goes here", AnalyzerType.BYTE_ANALYZER);
+    }
 
-	@Override
-	public boolean getDefaultEnablement(Program program) {
+    @Override
+    public boolean getDefaultEnablement(Program program) {
 
-		// Return true if analyzer should be enabled by default
+        // Return true if analyzer should be enabled by default
 
-		return true;
-	}
+        return true;
+    }
 
-	@Override
-	public boolean canAnalyze(Program program) {
+    @Override
+    public boolean canAnalyze(Program program) {
 
-		// Examine 'program' to determine of this analyzer should analyze it.  Return true
-		// if it can.
+        // Examine 'program' to determine of this analyzer should analyze it.  Return true
+        // if it can.
 
-		return true;
-	}
+        return true;
+    }
 
-	@Override
-	public void registerOptions(Options options, Program program) {
+    @Override
+    public void registerOptions(Options options, Program program) {
 
-		// If this analyzer has custom options, register them here
+        // If this analyzer has custom options, register them here
 
-		options.registerOption("Option name goes here", false, null,
-			"Option description goes here");
-	}
+        options.registerOption("Option name goes here", false, null,
+            "Option description goes here");
+    }
 
-	@Override
-	public boolean added(Program program, AddressSetView set, TaskMonitor monitor, MessageLog log)
-			throws CancelledException {
+    @Override
+    public boolean added(Program program, AddressSetView set, TaskMonitor monitor, MessageLog log)
+            throws CancelledException {
 
-		// Perform analysis when things get added to the 'program'.  Return true if the
-		// analysis succeeded.
+        // Perform analysis when things get added to the 'program'.  Return true if the
+        // analysis succeeded.
 
-		return false;
-	}
+        return false;
+    }
 }
