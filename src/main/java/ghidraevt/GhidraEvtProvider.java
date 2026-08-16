@@ -105,8 +105,13 @@ public class GhidraEvtProvider extends ComponentProvider {
 		this.currentProgram = program;
 		this.currentLocation = location;
 
-        Msg.info(this, "-> tryDisasm");
-        String text = tryDisasm(location.getAddress());
-        textArea.setText(text);
+        if (location == null) {
+            textArea.setText("No code selected.");
+        }
+        else {
+            String text = tryDisasm(location.getAddress());
+            textArea.setText(text);
+        }
+
 	}
 }
