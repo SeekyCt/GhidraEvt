@@ -3,17 +3,47 @@ package ghidraevt;
 import java.util.List;
 
 import ghidra.program.model.address.Address;
+import ghidra.program.model.listing.Program;
+import ghidra.program.model.symbol.Symbol;
 import jevt.Instr;
 import jevt.Opcode;
 import jevt.Arg;
 
 public class GhidraPrinter {
+    Program program;
+
     boolean showLineNumbers;
     boolean showAddresses;
 
-    public GhidraPrinter(boolean showLineNumbers, boolean showAddresses) {
+    public GhidraPrinter(Program program, boolean showLineNumbers, boolean showAddresses) {
+        this.program = program;
         this.showLineNumbers = showLineNumbers;
         this.showAddresses = showAddresses;
+    }
+
+    private String printArg(Arg argument) {
+        switch (argument) {
+            case Arg.NONE arg:
+                return "NONE";
+
+            case Arg.ADDR arg:
+                Address addr = program.getAddressFactory().getDefaultAddressSpace().getAddress(arg.value());
+                Symbol sym = program.getSymbolTable().getPrimarySymbol(addr);
+                if (sym != null)
+                    return sym.getName();
+                else
+                    return "UNK_" + Long.toHexString(arg.value());
+
+            case Arg.FLOAT arg:
+                // TODO: would want macro wrapping in exports
+                return Float.toString(arg.value());
+
+            case Arg.INT arg:
+                return Integer.toString(arg.value());
+
+            case Arg.Variable arg:
+                return String.format("%s(%d)", argument.typeName(), arg.id());
+        }
     }
 
     public String print_evt(Address startAddress, List<Instr> script) {
@@ -39,7 +69,7 @@ public class GhidraPrinter {
             ret.append(opcode.name());
 
             for (Arg arg : instr.args()) {
-                ret.append(" " + arg.toString());
+                ret.append(" " + printArg(arg));
             }
 
             ret.append("\n");

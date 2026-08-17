@@ -1,9 +1,12 @@
 package jevt;
 
 public sealed interface Arg permits
-    Arg.ADDR, Arg.FLOAT, Arg.UF, Arg.UW, Arg.GSW, Arg.LSW,
-    Arg.GSWF, Arg.LSWF, Arg.GF, Arg.LF, Arg.GW, Arg.LW, Arg.INT,
-    Arg.NONE {
+    Arg.ADDR, Arg.FLOAT, Arg.INT, Arg.NONE, Arg.Variable {
+
+    static public sealed interface Variable extends Arg permits
+    Arg.UF, Arg.UW, Arg.GSW, Arg.LSW, Arg.GSWF, Arg.LSWF, Arg.GF, Arg.LF, Arg.GW, Arg.LW {
+        int id();
+    }
 
     record ADDR(long value) implements Arg {
         @Override
@@ -12,16 +15,16 @@ public sealed interface Arg permits
         }
     }
     record FLOAT(float value) implements Arg {}
-    record UF(int id) implements Arg {}
-    record UW(int id) implements Arg {}
-    record GSW(int id) implements Arg {}
-    record LSW(int id) implements Arg {}
-    record GSWF(int id) implements Arg {}
-    record LSWF(int id) implements Arg {}
-    record GF(int id) implements Arg {}
-    record LF(int id) implements Arg {}
-    record GW(int id) implements Arg {}
-    record LW(int id) implements Arg {}
+    record UF(int id) implements Arg.Variable {}
+    record UW(int id) implements Arg.Variable {}
+    record GSW(int id) implements Arg.Variable {}
+    record LSW(int id) implements Arg.Variable {}
+    record GSWF(int id) implements Arg.Variable {}
+    record LSWF(int id) implements Arg.Variable {}
+    record GF(int id) implements Arg.Variable {}
+    record LF(int id) implements Arg.Variable {}
+    record GW(int id) implements Arg.Variable {}
+    record LW(int id) implements Arg.Variable {}
     record INT(int value) implements Arg {}
     record NONE() implements Arg {}
 
@@ -144,6 +147,25 @@ public sealed interface Arg permits
             case Arg.GW arg -> arg.id + GW_BASE;
             case Arg.LW arg -> arg.id + LW_BASE;
             case Arg.INT arg -> arg.value;
+        };
+    }
+
+    public default String typeName() {
+        return switch (this) {
+            case Arg.NONE arg -> "NONE";
+            case Arg.ADDR arg -> "ADDR";
+            case Arg.FLOAT arg -> "FLOAT";
+            case Arg.UF arg -> "UF";
+            case Arg.UW arg -> "UW";
+            case Arg.GSW arg -> "GSW";
+            case Arg.LSW arg -> "LSW";
+            case Arg.GSWF arg -> "GSWF";
+            case Arg.LSWF arg -> "LSWF";
+            case Arg.GF arg -> "GF";
+            case Arg.LF arg -> "LF";
+            case Arg.GW arg -> "GW";
+            case Arg.LW arg -> "LW";
+            case Arg.INT arg -> "INT";
         };
     }
 }

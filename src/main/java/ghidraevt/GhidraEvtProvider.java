@@ -183,7 +183,7 @@ public class GhidraEvtProvider extends ComponentProvider {
             return "Unhandled disassembler exception: " + e.getMessage();
         }
 
-        GhidraPrinter printer = new GhidraPrinter(showLineNumbers.enabled(), showAddresses.enabled());
+        GhidraPrinter printer = new GhidraPrinter(program, showLineNumbers.enabled(), showAddresses.enabled());
         return printer.print_evt(address, script);
     }
 
