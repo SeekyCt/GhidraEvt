@@ -52,6 +52,7 @@ public class GhidraEvtProvider extends ComponentProvider {
     private DockingToggle showAddresses;
     private DockingToggle showLineNumbers;
     private DockingToggle snapToSymbol;
+    private DockingToggle game;
 
     public GhidraEvtProvider(Plugin plugin, String owner) {
         super(plugin.getTool(), "Evt Disassembler", owner);
@@ -115,10 +116,27 @@ public class GhidraEvtProvider extends ComponentProvider {
         snapToSymbol.setEnabled(true);
         snapToSymbol.markHelpUnnecessary();
 
+        game = new DockingToggle(
+            "Game",
+            getOwner(),
+            true, 
+            disasmCallback
+        );
+        game.setEnabled(true);
+        game.markHelpUnnecessary();
+
         dockingTool.addLocalAction(this, showLineNumbers);
         dockingTool.addLocalAction(this, showAddresses);
         dockingTool.addLocalAction(this, strictMode);
         dockingTool.addLocalAction(this, snapToSymbol);
+        dockingTool.addLocalAction(this, game);
+    }
+
+    private Game game() {
+        if (game.enabled())
+            return Game.SPM;
+        else
+            return Game.TTYD;
     }
 
     @Override
@@ -147,7 +165,7 @@ public class GhidraEvtProvider extends ComponentProvider {
 
         List<Instr> script;
         try {
-            script = Instr.disassemble(Game.SPM, stream, strictMode.enabled());
+            script = Instr.disassemble(game(), stream, strictMode.enabled());
         }
         catch (BadEvtException e) {
             String err = "Script appears invalid: " + e.getMessage();
