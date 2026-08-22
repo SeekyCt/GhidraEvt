@@ -6,3 +6,4 @@ os/**/evt-rs
 os/**/*.exe
 .vscode
 !.vscode/launch.json
+bin
