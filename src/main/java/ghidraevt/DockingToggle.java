@@ -1,6 +1,5 @@
 package ghidraevt;
 
-
 import javax.swing.*;
 import docking.ActionContext;
 import docking.action.DockingAction;

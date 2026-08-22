@@ -15,23 +15,14 @@
  */
 package ghidraevt;
 
-import java.awt.BorderLayout;
 import java.io.IOException;
 
-import javax.swing.*;
-
-import docking.ActionContext;
-import docking.ComponentProvider;
-import docking.action.DockingAction;
-import docking.action.ToolBarData;
 import ghidra.app.plugin.PluginCategoryNames;
 import ghidra.app.plugin.ProgramPlugin;
 import ghidra.framework.plugintool.*;
 import ghidra.framework.plugintool.util.PluginStatus;
 import ghidra.program.util.ProgramLocation;
-import ghidra.util.HelpLocation;
 import ghidra.util.Msg;
-import resources.Icons;
 
 /**
  * Provide class-level documentation that describes what this plugin does.
@@ -69,8 +60,7 @@ public class GhidraEvtPlugin extends ProgramPlugin {
     }
 
     @Override
-    protected void locationChanged(ProgramLocation loc)
-    {
+    protected void locationChanged(ProgramLocation loc) {
         Msg.info(this, "Location changed " + loc);
         provider.locationChanged(loc);
     }

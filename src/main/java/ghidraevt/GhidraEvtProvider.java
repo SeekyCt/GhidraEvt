@@ -3,29 +3,15 @@ package ghidraevt;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.FontMetrics;
 import java.io.IOException;
-import java.io.InputStream;
 import java.math.BigInteger;
-import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.*;
 
-import org.apache.commons.lang3.ArrayUtils;
-
-import docking.ActionContext;
 import docking.ComponentProvider;
-import docking.WindowPosition;
-import docking.action.DockingAction;
-import docking.action.ToolBarData;
 import docking.widgets.fieldpanel.field.CompositeFieldElement;
 import docking.widgets.fieldpanel.field.Field;
 import docking.widgets.fieldpanel.field.AttributedString;
@@ -41,20 +27,7 @@ import docking.widgets.fieldpanel.support.FieldHighlightFactory;
 import docking.widgets.fieldpanel.support.Highlight;
 import docking.widgets.fieldpanel.support.SingleRowLayout;
 import docking.widgets.indexedscrollpane.IndexedScrollPane;
-import generic.theme.Gui;
-import ghidra.app.decompiler.ClangCommentToken;
-import ghidra.app.decompiler.ClangLine;
-import ghidra.app.decompiler.ClangToken;
-import ghidra.app.decompiler.component.ClangFieldElement;
-import ghidra.app.decompiler.component.ClangHighlightController;
-import ghidra.app.decompiler.component.ClangTextField;
-import ghidra.app.plugin.PluginCategoryNames;
-import ghidra.app.plugin.ProgramPlugin;
-import ghidra.app.plugin.core.decompile.actions.DecompilerSearchLocation;
-import ghidra.app.util.viewer.field.CommentUtils;
 import ghidra.framework.plugintool.*;
-import ghidra.framework.plugintool.util.PluginStatus;
-import ghidra.program.flatapi.FlatProgramAPI;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.listing.FunctionManager;
 import ghidra.program.model.listing.Program;
@@ -68,12 +41,9 @@ import jevt.BadEvtException;
 import jevt.Game;
 import jevt.Instr;
 import resources.Icons;
-import ghidra.framework.Application;
-import generic.theme.Gui;
 
 public class GhidraEvtProvider extends ComponentProvider {
     private JPanel panel;
-    private JTextArea textArea;
     private ProgramLocation currentLocation;
 
     // TODO: save settings
@@ -98,45 +68,45 @@ public class GhidraEvtProvider extends ComponentProvider {
     }
 
     private static class EvtTextField extends WrappingVerticalLayoutTextField {
-        public EvtTextField(FieldElement textElement, int startX, int width, int maxLines, FieldHighlightFactory hlFactory) {
-    		// super(createSingleLineElement(fieldElements), x, width - x, 30, hlFactory, false, "");
+        public EvtTextField(FieldElement textElement, int startX, int width, int maxLines,
+                FieldHighlightFactory hlFactory) {
+            // super(createSingleLineElement(fieldElements), x, width - x, 30, hlFactory, false, "");
 
             super(textElement, startX, width, maxLines, hlFactory);
         }
     }
 
-	private static class EvtHighlightFactory implements FieldHighlightFactory {
+    private static class EvtHighlightFactory implements FieldHighlightFactory {
 
-		@Override
-		public Highlight[] createHighlights(Field field, String text, int cursorTextOffset) {
+        @Override
+        public Highlight[] createHighlights(Field field, String text, int cursorTextOffset) {
             return new Highlight[0];
-			// if (currentSearchResults == null) {
-			// 	return new Highlight[0];
-			// }
+            // if (currentSearchResults == null) {
+            //     return new Highlight[0];
+            // }
 
-			// ClangTextField cField = (ClangTextField) field;
-			// int lineNumber = cField.getLineNumber();
-			// Map<Integer, List<DecompilerSearchLocation>> locationsByLine =
-			// 	currentSearchResults.getLocationsByLine();
-			// List<DecompilerSearchLocation> locationsOnLine = locationsByLine.get(lineNumber);
-			// if (locationsOnLine == null) {
-			// 	return new Highlight[0];
-			// }
+            // ClangTextField cField = (ClangTextField) field;
+            // int lineNumber = cField.getLineNumber();
+            // Map<Integer, List<DecompilerSearchLocation>> locationsByLine =
+            //     currentSearchResults.getLocationsByLine();
+            // List<DecompilerSearchLocation> locationsOnLine = locationsByLine.get(lineNumber);
+            // if (locationsOnLine == null) {
+            //     return new Highlight[0];
+            // }
 
-			// DecompilerSearchLocation activeLocation = currentSearchResults.getActiveLocation();
-			// List<Highlight> highlights = new ArrayList<>();
-			// for (DecompilerSearchLocation location : locationsOnLine) {
-			// 	Color c =
-			// 		location == activeLocation ? activeSearchHighlightColor : searchHighlightColor;
-			// 	int start = location.getStartIndexInclusive();
-			// 	int end = location.getEndIndexInclusive();
-			// 	highlights.add(new Highlight(start, end, c));
-			// }
+            // DecompilerSearchLocation activeLocation = currentSearchResults.getActiveLocation();
+            // List<Highlight> highlights = new ArrayList<>();
+            // for (DecompilerSearchLocation location : locationsOnLine) {
+            //     Color c =
+            //         location == activeLocation ? activeSearchHighlightColor : searchHighlightColor;
+            //     int start = location.getStartIndexInclusive();
+            //     int end = location.getEndIndexInclusive();
+            //     highlights.add(new Highlight(start, end, c));
+            // }
 
-			// return highlights.toArray(Highlight[]::new);
-		}
-	}
-
+            // return highlights.toArray(Highlight[]::new);
+        }
+    }
 
     private static class EvtLayoutModel implements LayoutModel {
         private int maxWidth = 100;
@@ -205,16 +175,13 @@ public class GhidraEvtProvider extends ComponentProvider {
 
             elements[0] = new TextFieldElement(
                 new AttributedString("hello", new Color(0xffffffff), metrics),
-                0, columnPosition
-            );
+                0, columnPosition);
             elements[1] = new TextFieldElement(
                 new AttributedString("middle", new Color(0xffffffff), metrics),
-                10, columnPosition
-            );
+                10, columnPosition);
             elements[2] = new TextFieldElement(
                 new AttributedString("last", new Color(0xff00ffff), metrics),
-                2, columnPosition
-            );
+                2, columnPosition);
 
             // for (int i = 0; i < tokens.size(); ++i) {
             //     ClangToken token = tokens.get(i);
@@ -253,10 +220,9 @@ public class GhidraEvtProvider extends ComponentProvider {
             listeners.remove(listener);
         }
 
-        private void modelChanged()
-        {
-    		for (LayoutModelListener listener : listeners)
-    			listener.modelSizeChanged(IndexMapper.IDENTITY_MAPPER);
+        private void modelChanged() {
+            for (LayoutModelListener listener : listeners)
+                listener.modelSizeChanged(IndexMapper.IDENTITY_MAPPER);
         }
 
         /**
@@ -313,7 +279,7 @@ public class GhidraEvtProvider extends ComponentProvider {
         public BigInteger getNumIndexes() {
             return numIndexes;
         }
-        
+
         /**
          * Returns the width of the largest possible layout.
          */
@@ -364,8 +330,7 @@ public class GhidraEvtProvider extends ComponentProvider {
             "Strict Mode",
             getOwner(),
             false,
-            disasmCallback
-        );
+            disasmCallback);
         strictMode.setEnabled(true);
         strictMode.markHelpUnnecessary();
 
@@ -373,35 +338,31 @@ public class GhidraEvtProvider extends ComponentProvider {
             "Show Addresses",
             getOwner(),
             false,
-            disasmCallback
-        );
+            disasmCallback);
         showAddresses.setEnabled(true);
         showAddresses.markHelpUnnecessary();
 
         showLineNumbers = new DockingToggle(
             "Show Line Numbers",
             getOwner(),
-            false, 
-            disasmCallback
-        );
+            false,
+            disasmCallback);
         showLineNumbers.setEnabled(true);
         showLineNumbers.markHelpUnnecessary();
 
         snapToSymbol = new DockingToggle(
             "Snap to Symbol",
             getOwner(),
-            true, 
-            disasmCallback
-        );
+            true,
+            disasmCallback);
         snapToSymbol.setEnabled(true);
         snapToSymbol.markHelpUnnecessary();
 
         game = new DockingToggle(
             "Game",
             getOwner(),
-            true, 
-            disasmCallback
-        );
+            true,
+            disasmCallback);
         game.setEnabled(true);
         game.markHelpUnnecessary();
 
@@ -431,8 +392,7 @@ public class GhidraEvtProvider extends ComponentProvider {
         Program program = location.getProgram();
         Address address = location.getAddress();
 
-        if (snapToSymbol.enabled())
-        {
+        if (snapToSymbol.enabled()) {
             SymbolIterator iter = program.getSymbolTable().getSymbolIterator(address, false);
             if (iter.hasNext())
                 address = iter.next().getAddress();
@@ -440,8 +400,7 @@ public class GhidraEvtProvider extends ComponentProvider {
 
         MemoryInputStream stream = new MemoryInputStream(
             program.getMemory().getBlock(address),
-            address
-        );
+            address);
 
         List<Instr> script;
         try {
@@ -463,17 +422,16 @@ public class GhidraEvtProvider extends ComponentProvider {
             return "Unhandled disassembler exception: " + e.getMessage();
         }
 
-        GhidraPrinter printer = new GhidraPrinter(program, showLineNumbers.enabled(), showAddresses.enabled());
+        GhidraPrinter printer =
+            new GhidraPrinter(program, showLineNumbers.enabled(), showAddresses.enabled());
         return printer.print_evt(address, script);
     }
 
-    private void updateDisasm()
-    {
+    private void updateDisasm() {
         // textArea.setText(tryDisasm(currentLocation));
     }
 
-    public void locationChanged(ProgramLocation location)
-    {
+    public void locationChanged(ProgramLocation location) {
         currentLocation = location;
 
         // updateDisasm();

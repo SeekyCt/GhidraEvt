@@ -29,5 +29,5 @@ public class MemoryInputStream extends InputStream {
         addr = addr.add(1);
         return ret;
     }
-    
+
 }
