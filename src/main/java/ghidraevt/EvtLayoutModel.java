@@ -2,26 +2,35 @@ package ghidraevt;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.FontMetrics;
+import java.awt.Toolkit;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JPanel;
+
+import docking.widgets.fieldpanel.Layout;
+import docking.widgets.fieldpanel.LayoutModel;
+import docking.widgets.fieldpanel.field.AttributedString;
 import docking.widgets.fieldpanel.field.CompositeFieldElement;
 import docking.widgets.fieldpanel.field.Field;
-import docking.widgets.fieldpanel.field.AttributedString;
 import docking.widgets.fieldpanel.field.FieldElement;
 import docking.widgets.fieldpanel.field.TextFieldElement;
 import docking.widgets.fieldpanel.field.WrappingVerticalLayoutTextField;
-import docking.widgets.fieldpanel.Layout;
-import docking.widgets.fieldpanel.LayoutModel;
 import docking.widgets.fieldpanel.listener.IndexMapper;
 import docking.widgets.fieldpanel.listener.LayoutModelListener;
 import docking.widgets.fieldpanel.support.FieldHighlightFactory;
 import docking.widgets.fieldpanel.support.SingleRowLayout;
+import generic.theme.Gui;
+import ghidra.app.decompiler.component.ClangLayoutController;
+import ghidra.program.model.listing.Program;
+import jevt.Instr;
 
 public class EvtLayoutModel implements LayoutModel {
-    private int maxWidth = 100;
+    private int maxWidth;
+    private int maxLines = 30;
     private int indentWidth;
     // private SymbolInspector symbolInspector;
     // private DecompileOptions options;
@@ -32,16 +41,18 @@ public class EvtLayoutModel implements LayoutModel {
     private List<LayoutModelListener> listeners = new ArrayList<>();
     // private Color[] syntaxColor; // Foreground colors.
     private BigInteger numIndexes = BigInteger.ZERO;
-    private List<EvtLine> lines = new ArrayList<>();
 
     private boolean showLineNumbers = true;
 
-    public EvtLayoutModel(FieldHighlightFactory hlFactory, FontMetrics met) {
+    private JPanel evtPanel;
+
+    public EvtLayoutModel(JPanel evtPanel, FieldHighlightFactory hlFactory) {
         // syntaxColor = new Color[ClangToken.MAX_COLOR];
         this.hlFactory = hlFactory;
-        this.metrics = met;
+        // this.metrics = met;
+        this.evtPanel = evtPanel;
 
-        buildLayouts();
+        buildLayouts(EvtData.empty("No script selected."));
     }
 
     private static class EvtTextField extends WrappingVerticalLayoutTextField {
@@ -53,24 +64,36 @@ public class EvtLayoutModel implements LayoutModel {
         }
     }
 
-    public void buildLayouts() {
-        // updateOptions();
+	@SuppressWarnings("deprecation")
+	// ignoring the deprecated call for toolkit
+    public void buildLayouts(EvtData data) {
+		Font font = Gui.getFont("font.decompiler");
+		metrics = Toolkit.getDefaultToolkit().getFontMetrics(font);
+		indentWidth = metrics.stringWidth(" ");
+		maxWidth = indentWidth * 100;
 
-        indentWidth = metrics.stringWidth(" ");
-
-        // Assume docroot has been built.
-
-        GhidraPrinter printer = new GhidraPrinter(null, true, true); // TODO
-        lines = printer.getLines();
-
-        int lineCount = lines.size();
-        fieldList = new Field[lineCount]; // One field for each "C" line
-        numIndexes = BigInteger.valueOf(lineCount);
-
-        for (int i = 0; i < lineCount; ++i) {
-            fieldList[i] = createTextFieldForLine(lines.get(i), lineCount, showLineNumbers);
+        if (data.isError()) {
+            TextFieldElement element = new TextFieldElement(
+                new AttributedString(data.getErrorMessage(), new Color(0xff8080ff), metrics),
+                0, 0
+            );
+            fieldList = new Field[1];
+            fieldList[0] = new EvtTextField(element, 0, maxWidth, maxLines, hlFactory);
         }
-
+        else {
+            GhidraPrinter printer = new GhidraPrinter(); // TODO
+            List<EvtLine> lines = printer.getLines(data.getStartAddress(), data.getScript());
+            
+            int lineCount = lines.size();
+            fieldList = new Field[lineCount]; // One field for each "C" line
+            numIndexes = BigInteger.valueOf(lineCount);
+                
+            for (int i = 0; i < lineCount; ++i) {
+                fieldList[i] = createTextFieldForLine(lines.get(i), lineCount, showLineNumbers);
+            }
+        }
+        
+        numIndexes = BigInteger.valueOf(fieldList.length);
         modelChanged(); // Inform the listeners that we have changed
     }
 
@@ -78,31 +101,31 @@ public class EvtLayoutModel implements LayoutModel {
             boolean paintLineNumbers) {
         // List<ClangToken> tokens = line.getAllTokens();
 
-        FieldElement[] elements = createFieldElementsForLine();
+        FieldElement[] elements = createFieldElementsForLine(line);
         CompositeFieldElement element = new CompositeFieldElement(elements);
 
-        int indent = line.getIndent() * indentWidth;
-        return new EvtTextField(element, indent, maxWidth, 30,
+        int indent = line.indent() * indentWidth;
+        return new EvtTextField(element, indent, maxWidth, maxLines,
             hlFactory);
     }
 
-    private FieldElement[] createFieldElementsForLine() {
-
+    private FieldElement[] createFieldElementsForLine(EvtLine line) {
         // FieldElement[] elements = new FieldElement[tokens.size()];
-        FieldElement[] elements = new FieldElement[3];
+        Instr instr = line.instr();
+        FieldElement[] elements = new FieldElement[instr.args().size() + 1];
         int columnPosition = 0;
         // Program program = decompilerPanel.getProgram();
         // ClangHighlightController hlController = decompilerPanel.getHighlightController();
 
-        elements[0] = new TextFieldElement(
-            new AttributedString("hello", new Color(0xffffffff), metrics),
-            0, columnPosition);
-        elements[1] = new TextFieldElement(
-            new AttributedString("middle", new Color(0xffffffff), metrics),
-            10, columnPosition);
-        elements[2] = new TextFieldElement(
-            new AttributedString("last", new Color(0xff00ffff), metrics),
-            2, columnPosition);
+        AttributedString as = new AttributedString(instr.opcode().toString(), new Color(0xffffffff), metrics);
+        elements[0] = new TextFieldElement(as, 0, columnPosition);
+        columnPosition += as.length();
+        
+        for (int i = 0; i < instr.args().size(); i++) {
+            AttributedString as2 = new AttributedString(instr.args().get(i).toString(), new Color(0xff00ffff), metrics);
+            elements[i+1] = new TextFieldElement(as2, 0, columnPosition);
+            columnPosition += as2.length();
+        }
 
         // for (int i = 0; i < tokens.size(); ++i) {
         //     ClangToken token = tokens.get(i);

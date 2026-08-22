@@ -15,6 +15,7 @@ import docking.widgets.fieldpanel.support.Highlight;
 import docking.widgets.indexedscrollpane.IndexedScrollPane;
 import ghidra.framework.plugintool.*;
 import ghidra.program.model.address.Address;
+import ghidra.program.model.listing.CodeUnit;
 import ghidra.program.model.listing.FunctionManager;
 import ghidra.program.model.listing.Program;
 import ghidra.program.model.symbol.Symbol;
@@ -40,11 +41,12 @@ public class GhidraEvtProvider extends ComponentProvider {
     private DockingToggle snapToSymbol;
     private DockingToggle game;
 
-    private FontMetrics fm;
+    // private FontMetrics fm;
 
     private FieldPanel fieldPanel;
 
     private EvtHighlightFactory hlFactory = new EvtHighlightFactory();
+    private EvtLayoutModel layout;
 
     public GhidraEvtProvider(Plugin plugin, String owner) {
         super(plugin.getTool(), "Evt Disassembler", owner);
@@ -90,17 +92,14 @@ public class GhidraEvtProvider extends ComponentProvider {
         panel = new JPanel(new BorderLayout());
         panel.setName("Evt Master Panel");
 
-        fm = panel.getFontMetrics(panel.getFont());
-        EvtLayoutModel layout = new EvtLayoutModel(hlFactory, fm);
+        // fm = panel.getFontMetrics(panel.getFont());
+        layout = new EvtLayoutModel(panel, hlFactory);
         fieldPanel = new FieldPanel(layout, "Evt Field Panel");
 
         IndexedScrollPane scrollPane = new IndexedScrollPane(fieldPanel);
         scrollPane.setName("Evt Scroll Pane");
 
-        // textArea = new JTextArea(5, 25);
-        // textArea.setEditable(false);
-        // textArea.setText("No script selected.");
-        panel.add(fieldPanel);
+        panel.add(scrollPane);
         setVisible(true);
         setIcon(Icons.INFO_ICON);
     }
@@ -172,19 +171,21 @@ public class GhidraEvtProvider extends ComponentProvider {
         return panel;
     }
 
-    private String tryDisasm(ProgramLocation location) {
+    private EvtData tryDisasm(ProgramLocation location) {
         if (location == null)
-            return "No script selected.";
+            return EvtData.empty("No script selected.");
 
         Program program = location.getProgram();
         Address address = location.getAddress();
-
+        
         if (snapToSymbol.enabled()) {
-            SymbolIterator iter = program.getSymbolTable().getSymbolIterator(address, false);
-            if (iter.hasNext())
-                address = iter.next().getAddress();
+            CodeUnit cu = program.getListing().getCodeUnitContaining(address);
+            if (cu != null)
+                address = cu.getAddress();
         }
+        Address startAddress = address;
 
+        
         MemoryInputStream stream = new MemoryInputStream(
             program.getMemory().getBlock(address),
             address);
@@ -198,29 +199,28 @@ public class GhidraEvtProvider extends ComponentProvider {
             if (e.strictOnly()) {
                 err += "\n(Triggered by Strict mode)";
             }
-            return err;
+            return new EvtData(startAddress, null, err);
         }
         catch (IOException e) {
             Msg.error(this, "Disassembler failed", e);
-            return "Disassembler failed: " + e.getMessage();
+            return EvtData.fail(startAddress, "Disassembler failed: " + e.getMessage());
         }
         catch (Exception e) {
             Msg.error(this, "Unhandled disassembler exception", e);
-            return "Unhandled disassembler exception: " + e.getMessage();
+            return EvtData.fail(startAddress, "Unhandled disassembler exception: " + e.getMessage());
         }
 
-        GhidraPrinter printer =
-            new GhidraPrinter(program, showLineNumbers.enabled(), showAddresses.enabled());
-        return printer.print_evt(address, script);
+        return EvtData.success(startAddress, script);
     }
 
     private void updateDisasm() {
-        // textArea.setText(tryDisasm(currentLocation));
+        EvtData data = tryDisasm(currentLocation);
+        layout.buildLayouts(data);
     }
 
     public void locationChanged(ProgramLocation location) {
         currentLocation = location;
 
-        // updateDisasm();
+        updateDisasm();
     }
 }

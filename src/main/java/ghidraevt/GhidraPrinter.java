@@ -11,45 +11,81 @@ import jevt.Opcode;
 import jevt.Arg;
 
 public class GhidraPrinter {
-    Program program;
+    // Program program;
 
-    boolean showLineNumbers;
-    boolean showAddresses;
+    // boolean showLineNumbers;
+    // boolean showAddresses;
 
-    public GhidraPrinter(Program program, boolean showLineNumbers, boolean showAddresses) {
-        this.program = program;
-        this.showLineNumbers = showLineNumbers;
-        this.showAddresses = showAddresses;
-    }
+    // public GhidraPrinter(Program program, boolean showLineNumbers, boolean showAddresses) {
+    //     this.program = program;
+    //     this.showLineNumbers = showLineNumbers;
+    //     this.showAddresses = showAddresses;
+    // }
 
-    private String printArg(Arg argument) {
-        switch (argument) {
-            case Arg.NONE arg:
-                return "NONE";
+    // private String printArg(Arg argument) {
+    //     switch (argument) {
+    //         case Arg.NONE arg:
+    //             return "NONE";
 
-            case Arg.ADDR arg:
-                Address addr =
-                    program.getAddressFactory().getDefaultAddressSpace().getAddress(arg.value());
-                Symbol sym = program.getSymbolTable().getPrimarySymbol(addr);
-                if (sym != null)
-                    return sym.getName();
-                else
-                    return "UNK_" + Long.toHexString(arg.value());
+    //         case Arg.ADDR arg:
+    //             Address addr =
+    //                 program.getAddressFactory().getDefaultAddressSpace().getAddress(arg.value());
+    //             Symbol sym = program.getSymbolTable().getPrimarySymbol(addr);
+    //             if (sym != null)
+    //                 return sym.getName();
+    //             else
+    //                 return "UNK_" + Long.toHexString(arg.value());
 
-            case Arg.FLOAT arg:
-                // TODO: would want macro wrapping in exports
-                return Float.toString(arg.value());
+    //         case Arg.FLOAT arg:
+    //             // TODO: would want macro wrapping in exports
+    //             return Float.toString(arg.value());
 
-            case Arg.INT arg:
-                return Integer.toString(arg.value());
+    //         case Arg.INT arg:
+    //             return Integer.toString(arg.value());
 
-            case Arg.Variable arg:
-                return String.format("%s(%d)", argument.typeName(), arg.id());
-        }
-    }
+    //         case Arg.Variable arg:
+    //             return String.format("%s(%d)", argument.typeName(), arg.id());
+    //     }
+    // }
 
-    public String print_evt(Address startAddress, List<Instr> script) {
-        StringBuilder ret = new StringBuilder();
+    // public String print_evt(Address startAddress, List<Instr> script) {
+    //     StringBuilder ret = new StringBuilder();
+    //     int indent = 0;
+    //     int line = 1;
+    //     Address addr = startAddress;
+    //     for (Instr instr : script) {
+    //         Opcode opcode = instr.opcode();
+
+    //         // Unindent for this line
+    //         indent -= opcode.unindent();
+
+    //         if (showLineNumbers)
+    //             ret.append(String.format("[%03d] ", line));
+
+    //         if (showAddresses)
+    //             ret.append(addr + " ");
+
+    //         for (int i = 0; i < indent; i++)
+    //             ret.append("    ");
+
+    //         ret.append(opcode.name());
+
+    //         for (Arg arg : instr.args()) {
+    //             ret.append(" " + printArg(arg));
+    //         }
+
+    //         ret.append("\n");
+
+    //         // Indent for next line
+    //         indent += opcode.indent();
+    //         line += 1;
+    //         addr = addr.add(instr.bytesSize());
+    //     }
+    //     return ret.toString();
+    // }
+
+    public List<EvtLine> getLines(Address startAddress, List<Instr> script) {
+        List<EvtLine> ret = new ArrayList<>();
         int indent = 0;
         int line = 1;
         Address addr = startAddress;
@@ -59,35 +95,16 @@ public class GhidraPrinter {
             // Unindent for this line
             indent -= opcode.unindent();
 
-            if (showLineNumbers)
-                ret.append(String.format("[%03d] ", line));
+            ret.add(new EvtLine(instr, addr, line, indent));
 
-            if (showAddresses)
-                ret.append(addr + " ");
-
-            for (int i = 0; i < indent; i++)
-                ret.append("    ");
-
-            ret.append(opcode.name());
-
-            for (Arg arg : instr.args()) {
-                ret.append(" " + printArg(arg));
-            }
-
-            ret.append("\n");
+            // TODO: tokenize here?
 
             // Indent for next line
             indent += opcode.indent();
             line += 1;
             addr = addr.add(instr.bytesSize());
         }
-        return ret.toString();
 
-    }
-
-    public List<EvtLine> getLines() {
-        List<EvtLine> ret = new ArrayList<>();
-        ret.add(new EvtLine());
         return ret;
     }
 }
