@@ -1,5 +1,6 @@
 package ghidraevt;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ghidra.program.model.address.Address;
@@ -80,5 +81,12 @@ public class GhidraPrinter {
             addr = addr.add(instr.bytesSize());
         }
         return ret.toString();
+
+    }
+
+    public List<EvtLine> getLines() {
+        List<EvtLine> ret = new ArrayList<>();
+        ret.add(new EvtLine());
+        return ret;
     }
 }
