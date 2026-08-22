@@ -28,7 +28,8 @@ public class GhidraPrinter {
                 return "NONE";
 
             case Arg.ADDR arg:
-                Address addr = program.getAddressFactory().getDefaultAddressSpace().getAddress(arg.value());
+                Address addr =
+                    program.getAddressFactory().getDefaultAddressSpace().getAddress(arg.value());
                 Symbol sym = program.getSymbolTable().getPrimarySymbol(addr);
                 if (sym != null)
                     return sym.getName();
