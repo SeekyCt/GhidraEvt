@@ -61,7 +61,6 @@ public class GhidraEvtPlugin extends ProgramPlugin {
 
     @Override
     protected void locationChanged(ProgramLocation loc) {
-        Msg.info(this, "Location changed " + loc);
         provider.locationChanged(loc);
     }
 }

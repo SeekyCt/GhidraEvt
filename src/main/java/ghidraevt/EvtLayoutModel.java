@@ -118,7 +118,6 @@ public class EvtLayoutModel implements LayoutModel {
         CompositeFieldElement element = new CompositeFieldElement(elements);
 
         int indent = line.indent() * 4 * indentWidth;
-        Msg.info(this, line.indent() + ": " + element.getText());
         return new EvtTextField(element, indent, maxWidth, maxLines,
             hlFactory);
     }
