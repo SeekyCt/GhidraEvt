@@ -2,13 +2,25 @@ package ghidraevt;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import generic.theme.GColor;
 import ghidra.program.model.address.Address;
+import ghidra.program.model.data.AbstractStringDataType;
+import ghidra.program.model.listing.CodeUnit;
+import ghidra.program.model.listing.Data;
+import ghidra.program.model.listing.Function;
 import ghidra.program.model.listing.Program;
+import ghidra.program.model.symbol.Namespace;
 import ghidra.program.model.symbol.Symbol;
+import ghidra.util.Msg;
+import ghidra.util.UndefinedFunction;
+import ghidra.app.decompiler.ClangFuncNameToken;
+import ghidra.app.decompiler.ClangToken;
 import ghidra.app.decompiler.component.ClangLayoutController;
+import ghidra.app.decompiler.component.DecompilerUtils;
+import ghidra.app.util.SymbolInspector;
 import jevt.Instr;
 import jevt.Opcode;
 import jevt.Arg;
@@ -39,19 +51,24 @@ public class GhidraPrinter {
     public static Color COLOR_UF = new Color(0x800080); // purple
 
     public static Color COLOR_KEYWORD = new GColor("color.fg.decompiler.keyword");
+    public static Color COLOR_GLOBAL = new GColor("color.fg.decompiler.global");
     public static Color COLOR_CONST = new GColor("color.fg.decompiler.constant");
+    public static Color COLOR_VAR = new GColor("color.fg.decompiler.variable");
     public static Color COLOR_DEFAULT = new GColor("color.fg.decompiler");
+	public static GColor COLOR_EXTERNAL_FUNCTION = new GColor("color.fg.decompiler.external.function");
 
-    // Program program;
+    Program program;
+    SymbolInspector symbolInspector;
 
     // boolean showLineNumbers;
     // boolean showAddresses;
 
-    // public GhidraPrinter(Program program, boolean showLineNumbers, boolean showAddresses) {
-    //     this.program = program;
-    //     this.showLineNumbers = showLineNumbers;
-    //     this.showAddresses = showAddresses;
-    // }
+    public GhidraPrinter(Program program, SymbolInspector symbolInspector /*, boolean showLineNumbers, boolean showAddresses*/ ) {
+        this.program = program;
+        this.symbolInspector = symbolInspector;
+        // this.showLineNumbers = showLineNumbers;
+        // this.showAddresses = showAddresses;
+    }
 
     // private String printArg(Arg argument) {
     //     switch (argument) {
@@ -130,13 +147,119 @@ public class GhidraPrinter {
         };
     }
 
-    private EvtToken argToToken(Arg arg) {
+	private Color getFunctionColor(Function function) {
+		Symbol symbol = function.getSymbol();
+
+		if (function.isExternal()) {
+			return COLOR_EXTERNAL_FUNCTION;
+		}
+
+		if (function.isThunk()) {
+			Function thunkedFunction = function.getThunkedFunction(true);
+			if (thunkedFunction.isExternal()) {
+				return COLOR_EXTERNAL_FUNCTION;
+			}
+		}
+
+		return symbolInspector.getColor(symbol);
+	}
+    
+    
+    private Color getAddrColor(Address addr) {
+        Function func = program.getFunctionManager().getFunctionAt(addr);
+        if (func != null) {
+            return getFunctionColor(func);
+        }
+
+        // TODO: undefined data?
+
+        return COLOR_GLOBAL;
+        // switch(ct->getMetatype())
+        // case TYPE_UNKNOWN:
+        // push_integer(val,ct->getSize(),false,tag,vn,op,displayFormat);
+
+        // case TYPE_PTR:
+        // case TYPE_PTRREL:
+        // if (option_NULL&&(val==0)) { // A null pointer
+        // pushAtom(Atom(nullToken,vartoken,EmitMarkup::var_color,op,vn));
+        // return;
+        // }
+        // subtype = ((TypePointer *)ct)->getPtrTo();
+        // if (subtype->isCharPrint()) {
+        // if (pushPtrCharConstant(val,(const TypePointer *)ct,vn,op))
+        // return;
+        // }
+        // else if (subtype->getMetatype()==TYPE_CODE) {
+        // if (pushPtrCodeConstant(val,(const TypePointer *)ct,vn,op))
+        // return;
+        // }
+        // break;
+
+    }
+
+    private boolean isROString(Data data) {
+        return data.hasStringValue() && (
+            data.isConstant() ||
+            !program.getMemory().getBlock(data.getAddress()).isWrite()
+        );
+    }
+
+    private List<EvtToken> addrToTokens(Arg.ADDR arg) {
+        List<EvtToken> ret = new ArrayList<>();
+
+        Address addr = program.getAddressFactory().getDefaultAddressSpace().getAddress(arg.value());
+
+        Color color = getAddrColor(addr);
+
+        EvtToken fail = new EvtToken("ERR_" + Long.toHexString(arg.value()), COLOR_EXTERNAL_FUNCTION);
+
+        CodeUnit cu = program.getListing().getCodeUnitAt(addr);
+        if (cu == null) {
+            Msg.warn(this, "No code unit for " + Long.toHexString(arg.value()));
+            ret.add(fail);
+        }
+        else if (cu instanceof Data data && isROString(data)) {
+            String value = (String) data.getValue();
+            ret.add(new EvtToken("\"" + value + "\"", COLOR_CONST));
+        }   
+        else {
+            Symbol symbol = cu.getPrimarySymbol();
+            if (symbol == null) {
+                Msg.warn(this, "No symbol for " + Long.toHexString(arg.value()));
+                ret.add(fail);
+            }
+            else  {
+                Namespace ns = symbol.getParentNamespace();
+                // TODO: options - off/on/sync decompiler, and also force in C macro mode with spm::
+                while (!ns.isGlobal()) {
+                    ret.add(new EvtToken(ns.getName(), COLOR_GLOBAL));
+                    ret.add(new EvtToken("::", COLOR_DEFAULT));
+                    ns = ns.getParentNamespace();
+                }
+                ret.add(new EvtToken(symbol.getName(), color));
+            }
+        }
+
+
+        return ret;
+    }
+
+
+    private List<EvtToken> argToTokens(Arg arg) {
         return switch (arg) {
-            case Arg.ADDR(long value) -> new EvtToken(Long.toHexString(value), COLOR_DEFAULT); // TODO: dynamic color
-            case Arg.FLOAT(float value) -> new EvtToken(Float.toString(value), COLOR_CONST);
-            case Arg.INT(int value) -> new EvtToken(Integer.toString(value), COLOR_CONST);
-            case Arg.Variable variable -> new EvtToken(variable.typeName() + "(" + variable.id() + ")", variableToColor(variable));
-            case Arg.NONE() -> new EvtToken("NONE", COLOR_CONST);
+            case Arg.ADDR addr -> addrToTokens(addr); // TODO: dynamic color
+            case Arg.FLOAT(float value) -> Arrays.asList(
+                new EvtToken(Float.toString(value), COLOR_CONST)
+            );
+            case Arg.INT(int value) -> Arrays.asList(
+                new EvtToken(Integer.toString(value), COLOR_CONST)
+            );
+            case Arg.Variable variable -> Arrays.asList(
+                new EvtToken(variable.typeName() + "(" + variable.id() + ")", variableToColor(variable))
+            );
+            case Arg.NONE() ->  Arrays.asList(
+                new EvtToken("NONE", COLOR_VAR)
+            );
         };
     }
 
@@ -157,7 +280,7 @@ public class GhidraPrinter {
             for (Arg arg : instr.args())
             {
                 tokens.add(new EvtToken(" ", COLOR_DEFAULT));
-                tokens.add(argToToken(arg));
+                tokens.addAll(argToTokens(arg));
             }
 
             ret.add(new EvtLine(tokens, addr, line, indent));

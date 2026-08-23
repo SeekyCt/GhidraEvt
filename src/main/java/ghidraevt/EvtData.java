@@ -3,17 +3,24 @@ package ghidraevt;
 import java.util.List;
 
 import ghidra.program.model.address.Address;
+import ghidra.program.model.listing.Program;
 import jevt.Instr;
 
 public class EvtData {
+    private Program program;
     private Address startAddress;
     private List<Instr> script;
     private String errorMessage;
 
-    public EvtData(Address startAddress, List<Instr> script, String errorMesssage) {
+    public EvtData(Program program, Address startAddress, List<Instr> script, String errorMesssage) {
+        this.program = program;
         this.startAddress = startAddress;
         this.script = script;
         this.errorMessage = errorMesssage;
+    }
+
+    public Program getProgram() {
+        return program;
     }
 
     public Address getStartAddress() {
@@ -32,15 +39,15 @@ public class EvtData {
         return errorMessage != null;
     }
 
-    public static EvtData success(Address startAddress, List<Instr> script) {
-        return new EvtData(startAddress, script, null);
+    public static EvtData success(Program program, Address startAddress, List<Instr> script) {
+        return new EvtData(program, startAddress, script, null);
     }
 
     public static EvtData empty(String err) {
-        return new EvtData(null, null, err);
+        return new EvtData(null, null, null, err);
     }
 
-    public static EvtData fail(Address startAddress, String err) {
-        return new EvtData(startAddress, null, err);
+    public static EvtData fail(Program program, Address startAddress, String err) {
+        return new EvtData(program, startAddress, null, err);
     }
 }

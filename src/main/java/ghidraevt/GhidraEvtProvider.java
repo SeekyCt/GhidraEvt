@@ -1,27 +1,21 @@
 package ghidraevt;
 
 import java.awt.BorderLayout;
-import java.awt.FontMetrics;
 import java.io.IOException;
 import java.util.List;
 
 import javax.swing.*;
 
-import docking.ComponentProvider;
 import docking.widgets.fieldpanel.field.Field;
 import docking.widgets.fieldpanel.FieldPanel;
 import docking.widgets.fieldpanel.support.FieldHighlightFactory;
 import docking.widgets.fieldpanel.support.Highlight;
 import docking.widgets.indexedscrollpane.IndexedScrollPane;
-import ghidra.framework.plugintool.*;
+import ghidra.framework.plugintool.ComponentProviderAdapter;
+import ghidra.framework.plugintool.Plugin;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.listing.CodeUnit;
-import ghidra.program.model.listing.FunctionManager;
 import ghidra.program.model.listing.Program;
-import ghidra.program.model.symbol.Symbol;
-import ghidra.program.model.symbol.SymbolIterator;
-import ghidra.program.model.mem.MemoryAccessException;
-import ghidra.program.model.mem.MemoryBlock;
 import ghidra.program.util.ProgramLocation;
 import ghidra.util.Msg;
 import jevt.BadEvtException;
@@ -29,7 +23,10 @@ import jevt.Game;
 import jevt.Instr;
 import resources.Icons;
 
-public class GhidraEvtProvider extends ComponentProvider {
+import ghidra.app.decompiler.ClangTokenGroup;
+import ghidra.app.decompiler.ClangVariableToken;
+
+public class GhidraEvtProvider extends ComponentProviderAdapter {
     private JPanel panel;
     private ProgramLocation currentLocation;
 
@@ -93,7 +90,7 @@ public class GhidraEvtProvider extends ComponentProvider {
         panel.setName("Evt Master Panel");
 
         // fm = panel.getFontMetrics(panel.getFont());
-        layout = new EvtLayoutModel(panel, hlFactory);
+        layout = new EvtLayoutModel(panel, getTool(), hlFactory);
         fieldPanel = new FieldPanel(layout, "Evt Field Panel");
 
         IndexedScrollPane scrollPane = new IndexedScrollPane(fieldPanel);
@@ -199,18 +196,18 @@ public class GhidraEvtProvider extends ComponentProvider {
             if (e.strictOnly()) {
                 err += "\n(Triggered by Strict mode)";
             }
-            return new EvtData(startAddress, null, err);
+            return new EvtData(program, startAddress, null, err);
         }
         catch (IOException e) {
             Msg.error(this, "Disassembler failed", e);
-            return EvtData.fail(startAddress, "Disassembler failed: " + e.getMessage());
+            return EvtData.fail(program, startAddress, "Disassembler failed: " + e.getMessage());
         }
         catch (Exception e) {
             Msg.error(this, "Unhandled disassembler exception", e);
-            return EvtData.fail(startAddress, "Unhandled disassembler exception: " + e.getMessage());
+            return EvtData.fail(program, startAddress, "Unhandled disassembler exception: " + e.getMessage());
         }
 
-        return EvtData.success(startAddress, script);
+        return EvtData.success(program, startAddress, script);
     }
 
     private void updateDisasm() {

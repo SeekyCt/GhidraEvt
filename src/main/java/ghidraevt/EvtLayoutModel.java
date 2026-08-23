@@ -26,7 +26,9 @@ import docking.widgets.fieldpanel.support.SingleRowLayout;
 import generic.theme.GColor;
 import generic.theme.Gui;
 import ghidra.app.decompiler.component.ClangFieldElement;
+import ghidra.app.util.SymbolInspector;
 import ghidra.app.util.viewer.field.CommentUtils;
+import ghidra.framework.plugintool.ServiceProvider;
 import ghidra.util.Msg;
 
 public class EvtLayoutModel implements LayoutModel {
@@ -44,13 +46,13 @@ public class EvtLayoutModel implements LayoutModel {
 
     private boolean showLineNumbers = true;
 
-    private JPanel evtPanel;
+	private SymbolInspector symbolInspector;
 
-    public EvtLayoutModel(JPanel evtPanel, FieldHighlightFactory hlFactory) {
+    public EvtLayoutModel(JPanel evtPanel, ServiceProvider serviceProvider, FieldHighlightFactory hlFactory) {
         this.hlFactory = hlFactory;
         // this.metrics = met;
-        this.evtPanel = evtPanel;
 
+		symbolInspector = new SymbolInspector(serviceProvider, evtPanel);
         buildLayouts(EvtData.empty("No script selected."));
     }
 
@@ -80,7 +82,7 @@ public class EvtLayoutModel implements LayoutModel {
             fieldList[0] = new EvtTextField(element, 0, maxWidth, maxLines, hlFactory);
         }
         else {
-            GhidraPrinter printer = new GhidraPrinter(); // TODO
+            GhidraPrinter printer = new GhidraPrinter(data.getProgram(), symbolInspector); // TODO
             List<EvtLine> lines = printer.getLines(data.getStartAddress(), data.getScript());
             
             int lineCount = lines.size();
