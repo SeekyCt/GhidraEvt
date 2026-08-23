@@ -23,10 +23,11 @@ import docking.widgets.fieldpanel.listener.IndexMapper;
 import docking.widgets.fieldpanel.listener.LayoutModelListener;
 import docking.widgets.fieldpanel.support.FieldHighlightFactory;
 import docking.widgets.fieldpanel.support.SingleRowLayout;
+import generic.theme.GColor;
 import generic.theme.Gui;
-import ghidra.app.decompiler.component.ClangLayoutController;
-import ghidra.program.model.listing.Program;
-import jevt.Instr;
+import ghidra.app.decompiler.component.ClangFieldElement;
+import ghidra.app.util.viewer.field.CommentUtils;
+import ghidra.util.Msg;
 
 public class EvtLayoutModel implements LayoutModel {
     private int maxWidth;
@@ -39,7 +40,7 @@ public class EvtLayoutModel implements LayoutModel {
     private FontMetrics metrics;
     private FieldHighlightFactory hlFactory;
     private List<LayoutModelListener> listeners = new ArrayList<>();
-    // private Color[] syntaxColor; // Foreground colors.
+    private Color[] syntaxColor; // Foreground colors.
     private BigInteger numIndexes = BigInteger.ZERO;
 
     private boolean showLineNumbers = true;
@@ -51,6 +52,19 @@ public class EvtLayoutModel implements LayoutModel {
         this.hlFactory = hlFactory;
         // this.metrics = met;
         this.evtPanel = evtPanel;
+
+        syntaxColor = new Color[EvtToken.MAX_COLOR];
+        syntaxColor[EvtToken.KEYWORD_COLOR] = new GColor("color.fg.decompiler.keyword");
+		syntaxColor[EvtToken.FUNCTION_COLOR]  = null;
+		syntaxColor[EvtToken.TYPE_COLOR]      = new GColor("color.fg.decompiler.type");
+		syntaxColor[EvtToken.COMMENT_COLOR]   = new GColor( "color.fg.decompiler.comment");
+		syntaxColor[EvtToken.VARIABLE_COLOR]  = new GColor("color.fg.decompiler.variable");
+		syntaxColor[EvtToken.CONST_COLOR]     = new GColor("color.fg.decompiler.constant");
+		syntaxColor[EvtToken.PARAMETER_COLOR] = new GColor("color.fg.decompiler.parameter");
+		syntaxColor[EvtToken.GLOBAL_COLOR]    = new GColor("color.fg.decompiler.global");
+		syntaxColor[EvtToken.DEFAULT_COLOR]   = new GColor("color.fg.decompiler");
+		syntaxColor[EvtToken.ERROR_COLOR]     = new GColor("color.fg.decompiler.error");
+		syntaxColor[EvtToken.SPECIAL_COLOR]   = new GColor("color.fg.decompiler.special");
 
         buildLayouts(EvtData.empty("No script selected."));
     }
@@ -86,7 +100,6 @@ public class EvtLayoutModel implements LayoutModel {
             
             int lineCount = lines.size();
             fieldList = new Field[lineCount]; // One field for each "C" line
-            numIndexes = BigInteger.valueOf(lineCount);
                 
             for (int i = 0; i < lineCount; ++i) {
                 fieldList[i] = createTextFieldForLine(lines.get(i), lineCount, showLineNumbers);
@@ -101,48 +114,29 @@ public class EvtLayoutModel implements LayoutModel {
             boolean paintLineNumbers) {
         // List<ClangToken> tokens = line.getAllTokens();
 
-        FieldElement[] elements = createFieldElementsForLine(line);
+        FieldElement[] elements = createFieldElementsForLine(line.tokens());
         CompositeFieldElement element = new CompositeFieldElement(elements);
 
-        int indent = line.indent() * indentWidth;
+        int indent = line.indent() * 4 * indentWidth;
+        Msg.info(this, line.indent() + ": " + element.getText());
         return new EvtTextField(element, indent, maxWidth, maxLines,
             hlFactory);
     }
 
-    private FieldElement[] createFieldElementsForLine(EvtLine line) {
-        // FieldElement[] elements = new FieldElement[tokens.size()];
-        Instr instr = line.instr();
-        FieldElement[] elements = new FieldElement[instr.args().size() + 1];
+    private FieldElement[] createFieldElementsForLine(List<EvtToken> tokens) {
+        FieldElement[] elements = new FieldElement[tokens.size()];
         int columnPosition = 0;
-        // Program program = decompilerPanel.getProgram();
-        // ClangHighlightController hlController = decompilerPanel.getHighlightController();
 
-        AttributedString as = new AttributedString(instr.opcode().toString(), new Color(0xffffffff), metrics);
-        elements[0] = new TextFieldElement(as, 0, columnPosition);
-        columnPosition += as.length();
-        
-        for (int i = 0; i < instr.args().size(); i++) {
-            AttributedString as2 = new AttributedString(instr.args().get(i).toString(), new Color(0xff00ffff), metrics);
-            elements[i+1] = new TextFieldElement(as2, 0, columnPosition);
-            columnPosition += as2.length();
+        for (int i = 0; i < tokens.size(); ++i) {
+            EvtToken token = tokens.get(i);
+            Color color = syntaxColor[token.getColor()];
+
+            AttributedString as = new AttributedString(token.getText(), color, metrics);
+            // elements[i] = new ClangFieldElement(hlController, token, as, columnPosition);
+            elements[i] = new TextFieldElement(as, 0, columnPosition);
+            columnPosition += as.length();
         }
 
-        // for (int i = 0; i < tokens.size(); ++i) {
-        //     ClangToken token = tokens.get(i);
-        //     Color color = getTokenColor(token);
-
-        //     if (token instanceof ClangCommentToken) {
-        //         AttributedString prototype = new AttributedString("prototype", color, metrics);
-        //         elements[i] =
-        //             CommentUtils.parseTextForAnnotations(token.getText(), program, prototype, 0);
-        //         columnPosition += elements[i].length();
-        //     }
-        //     else {
-        //         AttributedString as = new AttributedString(token.getText(), color, metrics);
-        //         elements[i] = new ClangFieldElement(hlController, token, as, columnPosition);
-        //         columnPosition += as.length();
-        //     }
-        // }
         return elements;
     }
 

@@ -1,23 +1,24 @@
 package ghidraevt;
 
+import java.util.List;
+
 import ghidra.program.model.address.Address;
-import jevt.Instr;
 
 public class EvtLine {
     private int lineNumber;
     private int indent;
-    private Instr instr;
+    private List<EvtToken> tokens;
     private Address addr;
 
-    public EvtLine(Instr instr, Address addr, int lineNumber, int indent) {
-        this.instr = instr;
+    public EvtLine(List<EvtToken> tokens, Address addr, int lineNumber, int indent) {
+        this.tokens = tokens;
         this.addr = addr;
         this.lineNumber = lineNumber;
         this.indent = indent;
     }
 
-    public Instr instr() {
-        return instr;
+    public List<EvtToken> tokens() {
+        return tokens;
     }
 
     public Address addr() {

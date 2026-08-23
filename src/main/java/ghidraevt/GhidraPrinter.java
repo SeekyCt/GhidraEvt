@@ -6,6 +6,7 @@ import java.util.List;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.listing.Program;
 import ghidra.program.model.symbol.Symbol;
+import ghidra.app.decompiler.component.ClangLayoutController;
 import jevt.Instr;
 import jevt.Opcode;
 import jevt.Arg;
@@ -95,9 +96,16 @@ public class GhidraPrinter {
             // Unindent for this line
             indent -= opcode.unindent();
 
-            ret.add(new EvtLine(instr, addr, line, indent));
+            List<EvtToken> tokens = new ArrayList<>();
 
-            // TODO: tokenize here?
+            tokens.add(new EvtToken(opcode.name(), EvtToken.KEYWORD_COLOR));
+            for (Arg arg : instr.args())
+            {
+                tokens.add(new EvtToken(" "));
+                tokens.add(new EvtToken(arg.toString()));
+            }
+
+            ret.add(new EvtLine(tokens, addr, line, indent));
 
             // Indent for next line
             indent += opcode.indent();
