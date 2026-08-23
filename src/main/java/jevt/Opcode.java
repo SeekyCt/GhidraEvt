@@ -166,7 +166,9 @@ public enum Opcode {
             Opcode.IFF_SMALL, Opcode.IFF_LARGE, Opcode.IFF_SMALL_EQUAL, Opcode.IFF_LARGE_EQUAL, Opcode.IF_EQUAL,
             Opcode.IF_NOT_EQUAL, Opcode.IF_SMALL, Opcode.IF_LARGE, Opcode.IF_SMALL_EQUAL, Opcode.IF_LARGE_EQUAL,
             Opcode.IF_FLAG, Opcode.IF_NOT_FLAG, Opcode.INLINE_EVT, Opcode.INLINE_EVT_ID, Opcode.BROTHER_EVT,
-            Opcode.BROTHER_EVT_ID -> 1;
+            Opcode.BROTHER_EVT_ID, Opcode.ELSE, Opcode.CASE_EQUAL, Opcode.CASE_NOT_EQUAL, Opcode.CASE_SMALL, Opcode.CASE_LARGE,
+            Opcode.CASE_SMALL_EQUAL, Opcode.CASE_LARGE_EQUAL, Opcode.CASE_ETC, Opcode.CASE_OR, Opcode.CASE_AND, Opcode.CASE_FLAG,
+            Opcode.CASE_BETWEEN -> 1;
 
             default -> 0;
         };
