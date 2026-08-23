@@ -40,7 +40,6 @@ public class EvtLayoutModel implements LayoutModel {
     private FontMetrics metrics;
     private FieldHighlightFactory hlFactory;
     private List<LayoutModelListener> listeners = new ArrayList<>();
-    private Color[] syntaxColor; // Foreground colors.
     private BigInteger numIndexes = BigInteger.ZERO;
 
     private boolean showLineNumbers = true;
@@ -48,23 +47,9 @@ public class EvtLayoutModel implements LayoutModel {
     private JPanel evtPanel;
 
     public EvtLayoutModel(JPanel evtPanel, FieldHighlightFactory hlFactory) {
-        // syntaxColor = new Color[ClangToken.MAX_COLOR];
         this.hlFactory = hlFactory;
         // this.metrics = met;
         this.evtPanel = evtPanel;
-
-        syntaxColor = new Color[EvtToken.MAX_COLOR];
-        syntaxColor[EvtToken.KEYWORD_COLOR] = new GColor("color.fg.decompiler.keyword");
-		syntaxColor[EvtToken.FUNCTION_COLOR]  = null;
-		syntaxColor[EvtToken.TYPE_COLOR]      = new GColor("color.fg.decompiler.type");
-		syntaxColor[EvtToken.COMMENT_COLOR]   = new GColor( "color.fg.decompiler.comment");
-		syntaxColor[EvtToken.VARIABLE_COLOR]  = new GColor("color.fg.decompiler.variable");
-		syntaxColor[EvtToken.CONST_COLOR]     = new GColor("color.fg.decompiler.constant");
-		syntaxColor[EvtToken.PARAMETER_COLOR] = new GColor("color.fg.decompiler.parameter");
-		syntaxColor[EvtToken.GLOBAL_COLOR]    = new GColor("color.fg.decompiler.global");
-		syntaxColor[EvtToken.DEFAULT_COLOR]   = new GColor("color.fg.decompiler");
-		syntaxColor[EvtToken.ERROR_COLOR]     = new GColor("color.fg.decompiler.error");
-		syntaxColor[EvtToken.SPECIAL_COLOR]   = new GColor("color.fg.decompiler.special");
 
         buildLayouts(EvtData.empty("No script selected."));
     }
@@ -128,7 +113,7 @@ public class EvtLayoutModel implements LayoutModel {
 
         for (int i = 0; i < tokens.size(); ++i) {
             EvtToken token = tokens.get(i);
-            Color color = syntaxColor[token.getColor()];
+            Color color = token.getColor();
 
             AttributedString as = new AttributedString(token.getText(), color, metrics);
             // elements[i] = new ClangFieldElement(hlController, token, as, columnPosition);
