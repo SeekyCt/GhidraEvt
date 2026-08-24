@@ -17,7 +17,7 @@ public class EvtLine {
         this.indent = indent;
     }
 
-    public List<EvtToken> tokens() {
+    public List<EvtToken> getAllTokens() {
         return tokens;
     }
 

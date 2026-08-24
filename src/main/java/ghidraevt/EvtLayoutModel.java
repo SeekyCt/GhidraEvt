@@ -23,202 +23,303 @@ import docking.widgets.fieldpanel.field.WrappingVerticalLayoutTextField;
 import docking.widgets.fieldpanel.listener.IndexMapper;
 import docking.widgets.fieldpanel.listener.LayoutModelListener;
 import docking.widgets.fieldpanel.support.FieldHighlightFactory;
+import docking.widgets.fieldpanel.support.FieldLocation;
 import docking.widgets.fieldpanel.support.SingleRowLayout;
 import generic.theme.Gui;
+import ghidra.app.decompiler.ClangBreak;
+import ghidra.app.decompiler.ClangCommentToken;
+import ghidra.app.decompiler.ClangFuncNameToken;
+import ghidra.app.decompiler.ClangFunction;
+import ghidra.app.decompiler.ClangLine;
+import ghidra.app.decompiler.ClangSyntaxToken;
+import ghidra.app.decompiler.ClangToken;
+import ghidra.app.decompiler.ClangTokenGroup;
 import ghidra.app.decompiler.DecompileOptions;
+import ghidra.app.decompiler.component.ClangFieldElement;
+import ghidra.app.decompiler.component.ClangTextField;
+import ghidra.app.decompiler.component.DecompilerController;
+import ghidra.app.decompiler.component.DecompilerPanel;
 import ghidra.app.decompiler.component.DecompilerUtils;
 import ghidra.app.util.SymbolInspector;
 import ghidra.app.util.viewer.field.CommentUtils;
 import ghidra.framework.plugintool.ServiceProvider;
 import ghidra.program.model.address.Address;
+import ghidra.program.model.listing.Data;
 import ghidra.program.model.listing.Program;
+import ghidra.program.model.pcode.HighFunction;
 import ghidra.util.Msg;
+import ghidra.util.UndefinedFunction;
+import jevt.Instr;
 
-public class EvtLayoutModel implements LayoutModel {
+public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
     private int maxWidth;
-    private int maxLines = 30;
     private int charWidth;
-    private int indentWidth = 4;
     private SymbolInspector symbolInspector;
+    private EvtPanel evtPanel;
+    private DecompileOptions options;
+    private List<Instr> script;
     private Field[] fieldList; // Array of fields comprising layout
     private FontMetrics metrics;
     private FieldHighlightFactory hlFactory;
     private List<LayoutModelListener> listeners = new ArrayList<>();
     private BigInteger numIndexes = BigInteger.ZERO;
+    private List<EvtLine> lines;
+    
+    private int maxLines = 30;
+    private int indentWidth = 4;
 
     private boolean showLineNumbers = true;
 
-    private ServiceProvider serviceProvider;
+    // private ServiceProvider serviceProvider;
 
-    public EvtLayoutModel(JPanel evtPanel, ServiceProvider serviceProvider, FieldHighlightFactory hlFactory) {
-        this.hlFactory = hlFactory;
-        this.serviceProvider = serviceProvider;
+	public EvtLayoutModel(DecompileOptions opt, EvtPanel evtPanel,
+			FontMetrics met, FieldHighlightFactory hlFactory) {
+		options = opt;
+		this.evtPanel = evtPanel;
+		metrics = met;
+		this.hlFactory = hlFactory;
+		listeners = new ArrayList<>();
+		buildLayouts(null, null, null, false);
 
+		EvtController controller = evtPanel.getController();
+		ServiceProvider serviceProvider = controller.getServiceProvider();
 		symbolInspector = new SymbolInspector(serviceProvider, evtPanel);
-        buildLayouts(EvtData.empty("No script selected."));
-    }
+	}
 
+	public List<EvtLine> getLines() {
+		return lines;
+	}
+
+	@Override
+	public boolean isUniform() {
+		return false;
+	}
+
+	@Override
+	public Dimension getPreferredViewSize() {
+		return new Dimension(maxWidth, 500);
+	}
+
+	@Override
+	public BigInteger getNumIndexes() {
+		return numIndexes;
+	}
+
+	@Override
+	public Layout getLayout(BigInteger index) {
+		if (index.compareTo(numIndexes) >= 0) {
+			return null;
+		}
+		return new SingleRowLayout(fieldList[index.intValue()]);
+	}
+
+	@Override
+	public void addLayoutModelListener(LayoutModelListener listener) {
+		listeners.add(listener);
+	}
+
+	@Override
+	public void removeLayoutModelListener(LayoutModelListener listener) {
+		listeners.remove(listener);
+	}
+
+	@Override
+	public void modelSizeChanged(IndexMapper mapper) {
+		for (LayoutModelListener listener : listeners) {
+			listener.modelSizeChanged(mapper);
+		}
+	}
+
+	public void modelChanged() {
+		for (LayoutModelListener listener : listeners) {
+			listener.modelSizeChanged(IndexMapper.IDENTITY_MAPPER);
+		}
+	}
+
+	@Override
+	public void dataChanged(BigInteger start, BigInteger end) {
+		for (LayoutModelListener listener : listeners) {
+			listener.dataChanged(start, end);
+		}
+	}
+
+	public void layoutChanged() {
+		for (LayoutModelListener listener : listeners) {
+			listener.dataChanged(BigInteger.ZERO, numIndexes);
+		}
+	}
+
+	@Override
+	public BigInteger getIndexAfter(BigInteger index) {
+		BigInteger nextIndex = index.add(BigInteger.ONE);
+		if (nextIndex.compareTo(numIndexes) >= 0) {
+			return null;
+		}
+		return nextIndex;
+	}
+
+	@Override
+	public BigInteger getIndexBefore(BigInteger index) {
+		if (index.compareTo(BigInteger.ZERO) <= 0) {
+			return null;
+		}
+		return index.subtract(BigInteger.ONE);
+	}
+
+	public int getIndexBefore(int index) {
+		return index - 1;
+	}
+
+	// public List<Instr> getRoot() {
+	// 	return docroot;
+	// }
+
+	Field[] getFields() {
+		return fieldList;
+	}
+
+    private EvtTextField createTextFieldForLine(EvtLine line) {
+        List<EvtToken> tokens = line.getAllTokens();
+
+        FieldElement[] elements = createFieldElementsForLine(tokens);
+
+        int indent = line.indent() * indentWidth * charWidth;
+		return new EvtTextField(tokens, elements, indent, line.getLineNumber(), maxWidth, maxLines, hlFactory);
+	}
+
+	private FieldElement[] createFieldElementsForLine(List<EvtToken> tokens) {
+
+		FieldElement[] elements = new FieldElement[tokens.size()];
+		int columnPosition = 0;
+		for (int i = 0; i < tokens.size(); ++i) {
+			EvtToken token = tokens.get(i);
+
+			// if (token instanceof ClangCommentToken) {
+			// 	AttributedString prototype = new AttributedString("prototype", color, metrics);
+			// 	Program program = evtPanel.getProgram();
+			// 	elements[i] =
+			// 		CommentUtils.parseTextForAnnotations(token.getText(), program, prototype, 0);
+			// 	columnPosition += elements[i].length();
+			// }
+
+            AttributedString as = new AttributedString(token.getText(), token.getColor(), metrics);
+            elements[i] = new TextFieldElement(as, 0, columnPosition);
+            columnPosition += as.length();
+		}
+		return elements;
+	}
+
+	/**
+	 * Update to the current Decompiler display options
+	 */
 	@SuppressWarnings("deprecation")
 	// ignoring the deprecated call for toolkit
-    public void buildLayouts(EvtData data) {
-        Program program = data.getProgram();
-
-        DecompileOptions opts = DecompilerUtils.getDecompileOptions(serviceProvider, program);
-
-        Font font = opts.getDefaultFont();
+	private void updateOptions() {
+		// setting the metrics here will indirectly trigger the new font to be used deeper in
+		// the bowels of the FieldPanel (you can get the font from the metrics)
+		Font font = options.getDefaultFont();
 		metrics = Toolkit.getDefaultToolkit().getFontMetrics(font);
 		charWidth = metrics.stringWidth(" ");
-		maxWidth = charWidth * opts.getMaxWidth();
+		maxWidth = charWidth * options.getMaxWidth();
 
-        if (data.isError()) {
-            TextFieldElement element = new TextFieldElement(
-                new AttributedString(data.getErrorMessage(), opts.getErrorColor(), metrics),
-                0, 0
-            );
-            
-            EvtLine line = new EvtLine(
-                Arrays.asList(new EvtToken(data.getErrorMessage(), opts.getErrorColor())),
+		showLineNumbers = options.isDisplayLineNumbers();
+	}
+
+	private void splitToMaxWidthLines(List<String> res, String line) {
+		int maxchar;
+		if ((maxWidth == 0) || (indentWidth == 0)) {
+			maxchar = 40;
+		}
+		else {
+			maxchar = maxWidth / indentWidth;
+		}
+		String[] toklist = line.split("[ \t]+");
+		StringBuilder buf = new StringBuilder();
+		int cursize = 0;
+		boolean atleastone = false;
+		int i = 0;
+		while (i < toklist.length) {
+			if (!atleastone) {
+				buf.append(' ');
+				buf.append(toklist[i]);
+				atleastone = true;
+				cursize += toklist[i].length() + 1;
+				i += 1;
+				continue;
+			}
+			if (cursize + toklist[i].length() >= maxchar) {
+				String finishLine = buf.toString();
+				res.add(finishLine);
+				cursize = 5;
+				atleastone = false;
+				buf = new StringBuilder();
+				buf.append("     ");
+			}
+			else {
+				buf.append(' ');
+				buf.append(toklist[i]);
+				cursize += toklist[i].length() + 1;
+				i += 1;
+			}
+		}
+		String finalLine = buf.toString();
+		if (finalLine.length() != 0) {
+			res.add(finalLine);
+		}
+	}
+
+	private void addErrorLines(List<EvtLine> lines, String errmsg) { // Add indicated error message to display
+		if (errmsg == null) {
+			return; // No error message to add
+		}
+		String[] errlines_init = errmsg.split("[\n\r]+");
+		List<String> errlines = new ArrayList<>();
+		for (String element : errlines_init) {
+			splitToMaxWidthLines(errlines, element);
+		}
+        int i = 0;
+		for (String errline : errlines) {
+            lines.add(0,new EvtLine(
+                Arrays.asList(new EvtToken(errline, GhidraPrinter.COLOR_COMMENT)),
                 Address.NO_ADDRESS,
                 0,
                 0
-            );
-            
-            fieldList = new Field[1];
-            fieldList[0] = createTextFieldForLine(line);
-        }
-        else {
-            GhidraPrinter printer = new GhidraPrinter(data.getProgram(), symbolInspector, opts);
-            List<EvtLine> lines = printer.getLines(data.getStartAddress(), data.getScript());
+            ));
+		}
+	}
 
-            int lineCount = lines.size();
-            fieldList = new Field[lineCount];
+	public void buildLayouts(Data data, List<Instr> script, String errmsg, boolean display) {
+        this.script = script;
+        updateOptions();
 
-            for (int i = 0; i < lineCount; ++i) {
-                fieldList[i] = createTextFieldForLine(lines.get(i));
-            }
-        }
+		GhidraPrinter printer = new GhidraPrinter(data.getProgram(), symbolInspector, options);
+		lines = printer.getLines(data.getAddress(), script);
+
+        addErrorLines(lines, errmsg);
+
+		int lineCount = lines.size();
+		fieldList = new Field[lineCount]; // One field for each "C" line
+		numIndexes = BigInteger.valueOf(lineCount);
+
+		for (int i = 0; i < lineCount; ++i) {
+			EvtLine oneLine = lines.get(i);
+			fieldList[i] = createTextFieldForLine(oneLine);
+		}
+
+		if (display) {
+			modelChanged(); // Inform the listeners that we have changed
+		}
         
-        numIndexes = BigInteger.valueOf(fieldList.length);
-        modelChanged(); // Inform the listeners that we have changed
     }
 
-    private EvtTextField createTextFieldForLine(EvtLine line) {
-        FieldElement[] elements = createFieldElementsForLine(line.tokens());
-        CompositeFieldElement element = new CompositeFieldElement(elements);
+	public void locationChanged(FieldLocation loc, Field field, Color locationColor,
+			Color parenColor) {
+		// Highlighting is now handled through the decompiler panel's highlight controller.
+	}
 
-        int indent = line.indent() * indentWidth * charWidth;
-        return new EvtTextField(line, element, indent, maxWidth, maxLines,
-            hlFactory);
-    }
+	@Override
+	public void flushChanges() {
+		// nothing to do
+	}
 
-    private FieldElement[] createFieldElementsForLine(List<EvtToken> tokens) {
-        FieldElement[] elements = new FieldElement[tokens.size()];
-        int columnPosition = 0;
-
-        for (int i = 0; i < tokens.size(); ++i) {
-            EvtToken token = tokens.get(i);
-            Color color = token.getColor();
-
-            AttributedString as = new AttributedString(token.getText(), color, metrics);
-            elements[i] = new TextFieldElement(as, 0, columnPosition);
-            columnPosition += as.length();
-        }
-
-        return elements;
-    }
-
-    /**
-     * Adds a LayoutModelListener to be notified when changes occur.
-     * @param listener the LayoutModelListener to add.
-     */
-    @Override
-    public void addLayoutModelListener(LayoutModelListener listener) {
-        listeners.add(listener);
-    }
-
-    /**
-     * Removes a LayoutModelListener to be notified when changes occur.
-     * @param listener the LayoutModelListener to remove.
-     */
-    @Override
-    public void removeLayoutModelListener(LayoutModelListener listener) {
-        listeners.remove(listener);
-    }
-
-    private void modelChanged() {
-        for (LayoutModelListener listener : listeners)
-            listener.modelSizeChanged(IndexMapper.IDENTITY_MAPPER);
-    }
-
-    /**
-     * Returns true if the model knows about changes that haven't yet been told to the 
-     * LayoutModelListeners.
-     */
-    @Override
-    public void flushChanges() {
-    }
-
-    /**
-     * Returns the closest larger index in the model that has a non-null layout.
-     * @param index for which to find the next index with a non-null layout.
-     * @return returns the closest larger index in the model that has a non-null layout.
-     */
-    @Override
-    public BigInteger getIndexAfter(BigInteger index) {
-        BigInteger nextIndex = index.add(BigInteger.ONE);
-        if (nextIndex.compareTo(numIndexes) >= 0) {
-            return null;
-        }
-        return nextIndex;
-    }
-
-    /**
-     * Returns the closest smaller index in the model that has a non-null layout.
-     * @param index for which to find the previous index with a non-null layout.
-     * @return returns the closest smaller index in the model that has a non-null layout.
-     */
-    @Override
-    public BigInteger getIndexBefore(BigInteger index) {
-        if (index.compareTo(BigInteger.ZERO) <= 0) {
-            return null;
-        }
-        return index.subtract(BigInteger.ONE);
-    }
-
-    /**
-     * Returns a layout for the given index.
-     * @param index the index of the layout to retrieve.
-     */
-    @Override
-    public Layout getLayout(BigInteger index) {
-        if (index.compareTo(numIndexes) >= 0) {
-            return null;
-        }
-        return new SingleRowLayout(fieldList[index.intValue()]);
-    }
-
-    /**
-     * Returns the total number of indexes.
-     */
-    @Override
-    public BigInteger getNumIndexes() {
-        return numIndexes;
-    }
-
-    /**
-     * Returns the width of the largest possible layout.
-     */
-    @Override
-    public Dimension getPreferredViewSize() {
-        return new Dimension(maxWidth, 500);
-    }
-
-    /**
-     * Returns true if every index returns a non-null layout and all the layouts
-     * are the same height.
-     */
-    @Override
-    public boolean isUniform() {
-        return false;
-    }
 }

@@ -150,7 +150,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 		}
 	}
 
-	public DecompilerController getController() {
+	public EvtController getController() {
 		return controller;
 	}
 

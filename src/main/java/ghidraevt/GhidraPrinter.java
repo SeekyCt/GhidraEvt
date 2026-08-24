@@ -32,6 +32,7 @@ public class GhidraPrinter {
     public static Color COLOR_UW    = new GColor("color.fg.ghidraevt.uw");
     public static Color COLOR_UF    = new GColor("color.fg.ghidraevt.uf");
     public static Color COLOR_INSTR = new GColor("color.fg.ghidraevt.instr");
+    public static Color COLOR_COMMENT = new GColor("color.fg.ghidraevt.comment");
 
 	public static Color COLOR_EXTERNAL_FUNCTION = new GColor("color.fg.decompiler.external.function");
 
