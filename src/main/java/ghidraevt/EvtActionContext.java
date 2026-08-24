@@ -8,9 +8,6 @@ import ghidra.app.decompiler.*;
 import ghidra.framework.plugintool.PluginTool;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.listing.Data;
-import ghidra.program.model.listing.Function;
-import ghidra.program.model.pcode.HighFunction;
-import ghidra.util.UndefinedFunction;
 
 public class EvtActionContext extends NavigatableActionContext implements RestrictedAddressSetContext {
 	private final Address scriptEntryPoint;

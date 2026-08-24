@@ -1238,25 +1238,6 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 	// 	return ((EvtTextField) field).getToken(cursorPosition);
 	// }
 
-
-    // public String getCursorText() {
-    //     EvtToken token = getTokenAtCursor();
-	// 	// ClangToken token = panel.getTokenAtCursor();
-	// 	// if (token == null) {
-	// 	// 	return null;
-	// 	// }
-
-	// 	// if (token instanceof ClangFuncNameToken functionToken) {
-	// 	// 	Function function = DecompilerUtils.getFunction(currentProgram, functionToken);
-	// 	// 	if (function != null) {
-	// 	// 		return function.getName();
-	// 	// 	}
-	// 	// }
-
-	// 	String text = token.getText();
-	// 	return text;        
-    // }
-
     // private void createActions() {
     //     Runnable disasmCallback = new Runnable() {
     //         @Override

@@ -21,6 +21,10 @@ import docking.widgets.fieldpanel.Layout;
 import docking.widgets.fieldpanel.LayoutModel;
 import docking.widgets.fieldpanel.support.FieldRange;
 import docking.widgets.fieldpanel.support.FieldSelection;
+import ghidra.app.decompiler.ClangFuncNameToken;
+import ghidra.app.decompiler.ClangToken;
+import ghidra.app.decompiler.component.DecompilerPanel;
+import ghidra.app.decompiler.component.DecompilerUtils;
 import ghidra.app.services.ClipboardContentProviderService;
 import ghidra.app.util.ByteCopier;
 import ghidra.app.util.ClipboardType;
@@ -86,7 +90,29 @@ public class EvtClipboardProvider extends ByteCopier
 		if (copyFromSelectionEnabled) {
 			return copyTextFromSelection(monitor);
 		}
-		return new StringTransferable(provider.getCursorText());
+		return new StringTransferable(getCursorText());
+	}
+
+	private String getCursorText() {
+		if (currentProgram == null) {
+			return null; // disposed
+		}
+
+		EvtPanel panel = provider.getEvtPanel();
+		EvtToken token = panel.getTokenAtCursor();
+		if (token == null) {
+			return null;
+		}
+
+		// if (token instanceof ClangFuncNameToken functionToken) {
+		// 	Function function = DecompilerUtils.getFunction(currentProgram, functionToken);
+		// 	if (function != null) {
+		// 		return function.getName();
+		// 	}
+		// }
+
+		String text = token.getText();
+		return text;
 	}
 
 	@Override
@@ -138,7 +164,7 @@ public class EvtClipboardProvider extends ByteCopier
 
 	@Override
 	public boolean canCopy() {
-		return copyFromSelectionEnabled || !StringUtils.isBlank(provider.getCursorText());
+		return copyFromSelectionEnabled || !StringUtils.isBlank(getCursorText());
 	}
 
 	@Override
@@ -191,7 +217,7 @@ public class EvtClipboardProvider extends ByteCopier
 			endRow = fieldRange.getEnd().getRow();
 		}
 
-		LayoutModel model = provider.getLayout();
+		LayoutModel model = provider.getEvtPanel().getLayoutController();
 		Layout layout = model.getLayout(BigInteger.valueOf(lineNumber));
 		EvtTextField field = (EvtTextField) layout.getField(0);
 		int numSpaces = field.getStartX() / spaceCharWidthInPixels;
@@ -220,7 +246,7 @@ public class EvtClipboardProvider extends ByteCopier
 		int startRow = fieldRange.getStart().getRow();
 		int endRow = fieldRange.getEnd().getRow();
 
-		LayoutModel model = provider.getLayout();
+		LayoutModel model = provider.getEvtPanel().getLayoutController();
 		Layout layout = model.getLayout(BigInteger.valueOf(lineNumber));
 		EvtTextField field = (EvtTextField) layout.getField(0);
 
@@ -230,10 +256,6 @@ public class EvtClipboardProvider extends ByteCopier
 		if (startPos >= 0 && endPos >= startPos) {
 			buffer.append(field.getText().substring(startPos, endPos));
 		}
-	}
-
-	public void setFontMetrics(FontMetrics metrics) {
-		spaceCharWidthInPixels = metrics.charWidth(' ');
 	}
 
 //==================================================================================================
@@ -262,5 +284,9 @@ public class EvtClipboardProvider extends ByteCopier
 	@Override
 	public void lostOwnership(Transferable transferable) {
 		// no-op
+	}
+
+	public void setFontMetrics(FontMetrics metrics) {
+		spaceCharWidthInPixels = metrics.charWidth(' ');
 	}
 }

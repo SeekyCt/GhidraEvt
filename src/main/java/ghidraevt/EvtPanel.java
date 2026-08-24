@@ -546,7 +546,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 		}
 	}
 
-	public ClangLayoutController getLayoutController() {
+	public EvtLayoutModel getLayoutController() {
 		return layoutController;
 	}
 
