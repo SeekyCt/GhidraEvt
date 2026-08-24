@@ -23,9 +23,6 @@ import jevt.Game;
 import jevt.Instr;
 import resources.Icons;
 
-import ghidra.app.decompiler.ClangTokenGroup;
-import ghidra.app.decompiler.ClangVariableToken;
-
 public class GhidraEvtProvider extends ComponentProviderAdapter {
     private JPanel panel;
     private ProgramLocation currentLocation;
@@ -37,8 +34,6 @@ public class GhidraEvtProvider extends ComponentProviderAdapter {
     private DockingToggle showLineNumbers;
     private DockingToggle snapToSymbol;
     private DockingToggle game;
-
-    // private FontMetrics fm;
 
     private FieldPanel fieldPanel;
 
@@ -89,7 +84,6 @@ public class GhidraEvtProvider extends ComponentProviderAdapter {
         panel = new JPanel(new BorderLayout());
         panel.setName("Evt Master Panel");
 
-        // fm = panel.getFontMetrics(panel.getFont());
         layout = new EvtLayoutModel(panel, getTool(), hlFactory);
         fieldPanel = new FieldPanel(layout, "Evt Field Panel");
 

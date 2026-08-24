@@ -23,9 +23,7 @@ import docking.widgets.fieldpanel.listener.IndexMapper;
 import docking.widgets.fieldpanel.listener.LayoutModelListener;
 import docking.widgets.fieldpanel.support.FieldHighlightFactory;
 import docking.widgets.fieldpanel.support.SingleRowLayout;
-import generic.theme.GColor;
 import generic.theme.Gui;
-import ghidra.app.decompiler.component.ClangFieldElement;
 import ghidra.app.util.SymbolInspector;
 import ghidra.app.util.viewer.field.CommentUtils;
 import ghidra.framework.plugintool.ServiceProvider;
@@ -35,7 +33,7 @@ public class EvtLayoutModel implements LayoutModel {
     private int maxWidth;
     private int maxLines = 30;
     private int indentWidth;
-    // private SymbolInspector symbolInspector;
+    private SymbolInspector symbolInspector;
     // private DecompileOptions options;
     // private ClangTokenGroup docroot; // Root of displayed document
     private Field[] fieldList; // Array of fields comprising layout
@@ -46,11 +44,9 @@ public class EvtLayoutModel implements LayoutModel {
 
     private boolean showLineNumbers = true;
 
-	private SymbolInspector symbolInspector;
 
     public EvtLayoutModel(JPanel evtPanel, ServiceProvider serviceProvider, FieldHighlightFactory hlFactory) {
         this.hlFactory = hlFactory;
-        // this.metrics = met;
 
 		symbolInspector = new SymbolInspector(serviceProvider, evtPanel);
         buildLayouts(EvtData.empty("No script selected."));
@@ -99,8 +95,6 @@ public class EvtLayoutModel implements LayoutModel {
 
     private EvtTextField createTextFieldForLine(EvtLine line, int lineCount,
             boolean paintLineNumbers) {
-        // List<ClangToken> tokens = line.getAllTokens();
-
         FieldElement[] elements = createFieldElementsForLine(line.tokens());
         CompositeFieldElement element = new CompositeFieldElement(elements);
 

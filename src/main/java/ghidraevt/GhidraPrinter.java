@@ -7,7 +7,6 @@ import java.util.List;
 
 import generic.theme.GColor;
 import ghidra.program.model.address.Address;
-import ghidra.program.model.data.AbstractStringDataType;
 import ghidra.program.model.listing.CodeUnit;
 import ghidra.program.model.listing.Data;
 import ghidra.program.model.listing.Function;
@@ -15,43 +14,28 @@ import ghidra.program.model.listing.Program;
 import ghidra.program.model.symbol.Namespace;
 import ghidra.program.model.symbol.Symbol;
 import ghidra.util.Msg;
-import ghidra.util.UndefinedFunction;
-import ghidra.app.decompiler.ClangFuncNameToken;
-import ghidra.app.decompiler.ClangToken;
-import ghidra.app.decompiler.component.ClangLayoutController;
-import ghidra.app.decompiler.component.DecompilerUtils;
 import ghidra.app.util.SymbolInspector;
 import jevt.Instr;
 import jevt.Opcode;
 import jevt.Arg;
-import jevt.Arg.GF;
-import jevt.Arg.GSW;
-import jevt.Arg.GSWF;
-import jevt.Arg.GW;
-import jevt.Arg.LF;
-import jevt.Arg.LSW;
-import jevt.Arg.LSWF;
-import jevt.Arg.LW;
-import jevt.Arg.UF;
-import jevt.Arg.UW;
 
 public class GhidraPrinter {
-    public static Color COLOR_LW =    new GColor("color.fg.ghidraevt.lw");
-    public static Color COLOR_LF =    new GColor("color.fg.ghidraevt.lf");
-    public static Color COLOR_LSW =   new GColor("color.fg.ghidraevt.lsw");
-    public static Color COLOR_LSWF =  new GColor("color.fg.ghidraevt.lswf");
-    public static Color COLOR_GW =    new GColor("color.fg.ghidraevt.gw");
-    public static Color COLOR_GF =    new GColor("color.fg.ghidraevt.gf");
-    public static Color COLOR_GSW =   new GColor("color.fg.ghidraevt.gsw");
-    public static Color COLOR_GSWF =  new GColor("color.fg.ghidraevt.gswf");
-    public static Color COLOR_UW =    new GColor("color.fg.ghidraevt.uw");
-    public static Color COLOR_UF =    new GColor("color.fg.ghidraevt.uf");
+    public static Color COLOR_LW    = new GColor("color.fg.ghidraevt.lw");
+    public static Color COLOR_LF    = new GColor("color.fg.ghidraevt.lf");
+    public static Color COLOR_LSW   = new GColor("color.fg.ghidraevt.lsw");
+    public static Color COLOR_LSWF  = new GColor("color.fg.ghidraevt.lswf");
+    public static Color COLOR_GW    = new GColor("color.fg.ghidraevt.gw");
+    public static Color COLOR_GF    = new GColor("color.fg.ghidraevt.gf");
+    public static Color COLOR_GSW   = new GColor("color.fg.ghidraevt.gsw");
+    public static Color COLOR_GSWF  = new GColor("color.fg.ghidraevt.gswf");
+    public static Color COLOR_UW    = new GColor("color.fg.ghidraevt.uw");
+    public static Color COLOR_UF    = new GColor("color.fg.ghidraevt.uf");
     public static Color COLOR_INSTR = new GColor("color.fg.ghidraevt.instr");
 
-    public static Color COLOR_GLOBAL =            new GColor("color.fg.decompiler.global");
-    public static Color COLOR_CONST =             new GColor("color.fg.decompiler.constant");
-    public static Color COLOR_VAR =               new GColor("color.fg.decompiler.variable");
-    public static Color COLOR_DEFAULT =           new GColor("color.fg.decompiler");
+    public static Color COLOR_GLOBAL            = new GColor("color.fg.decompiler.global");
+    public static Color COLOR_CONST             = new GColor("color.fg.decompiler.constant");
+    public static Color COLOR_VAR               = new GColor("color.fg.decompiler.variable");
+    public static Color COLOR_DEFAULT           = new GColor("color.fg.decompiler");
 	public static Color COLOR_EXTERNAL_FUNCTION = new GColor("color.fg.decompiler.external.function");
 
     Program program;
@@ -66,68 +50,6 @@ public class GhidraPrinter {
         // this.showLineNumbers = showLineNumbers;
         // this.showAddresses = showAddresses;
     }
-
-    // private String printArg(Arg argument) {
-    //     switch (argument) {
-    //         case Arg.NONE arg:
-    //             return "NONE";
-
-    //         case Arg.ADDR arg:
-    //             Address addr =
-    //                 program.getAddressFactory().getDefaultAddressSpace().getAddress(arg.value());
-    //             Symbol sym = program.getSymbolTable().getPrimarySymbol(addr);
-    //             if (sym != null)
-    //                 return sym.getName();
-    //             else
-    //                 return "UNK_" + Long.toHexString(arg.value());
-
-    //         case Arg.FLOAT arg:
-    //             // TODO: would want macro wrapping in exports
-    //             return Float.toString(arg.value());
-
-    //         case Arg.INT arg:
-    //             return Integer.toString(arg.value());
-
-    //         case Arg.Variable arg:
-    //             return String.format("%s(%d)", argument.typeName(), arg.id());
-    //     }
-    // }
-
-    // public String print_evt(Address startAddress, List<Instr> script) {
-    //     StringBuilder ret = new StringBuilder();
-    //     int indent = 0;
-    //     int line = 1;
-    //     Address addr = startAddress;
-    //     for (Instr instr : script) {
-    //         Opcode opcode = instr.opcode();
-
-    //         // Unindent for this line
-    //         indent -= opcode.unindent();
-
-    //         if (showLineNumbers)
-    //             ret.append(String.format("[%03d] ", line));
-
-    //         if (showAddresses)
-    //             ret.append(addr + " ");
-
-    //         for (int i = 0; i < indent; i++)
-    //             ret.append("    ");
-
-    //         ret.append(opcode.name());
-
-    //         for (Arg arg : instr.args()) {
-    //             ret.append(" " + printArg(arg));
-    //         }
-
-    //         ret.append("\n");
-
-    //         // Indent for next line
-    //         indent += opcode.indent();
-    //         line += 1;
-    //         addr = addr.add(instr.bytesSize());
-    //     }
-    //     return ret.toString();
-    // }
 
     private Color variableToColor(Arg.Variable v) {
         return switch (v) {
@@ -168,30 +90,9 @@ public class GhidraPrinter {
             return getFunctionColor(func);
         }
 
-        // TODO: undefined data?
+        // TODO: undefined data? struct fields?
 
         return COLOR_GLOBAL;
-        // switch(ct->getMetatype())
-        // case TYPE_UNKNOWN:
-        // push_integer(val,ct->getSize(),false,tag,vn,op,displayFormat);
-
-        // case TYPE_PTR:
-        // case TYPE_PTRREL:
-        // if (option_NULL&&(val==0)) { // A null pointer
-        // pushAtom(Atom(nullToken,vartoken,EmitMarkup::var_color,op,vn));
-        // return;
-        // }
-        // subtype = ((TypePointer *)ct)->getPtrTo();
-        // if (subtype->isCharPrint()) {
-        // if (pushPtrCharConstant(val,(const TypePointer *)ct,vn,op))
-        // return;
-        // }
-        // else if (subtype->getMetatype()==TYPE_CODE) {
-        // if (pushPtrCodeConstant(val,(const TypePointer *)ct,vn,op))
-        // return;
-        // }
-        // break;
-
     }
 
     private boolean isROString(Data data) {
