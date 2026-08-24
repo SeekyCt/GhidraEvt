@@ -37,7 +37,7 @@ public class EvtClipboardProvider extends ByteCopier
 	private static final ClipboardType TEXT_TYPE = new ClipboardType(DataFlavor.stringFlavor, "Text");
 	private static final List<ClipboardType> COPY_TYPES = Arrays.asList(TEXT_TYPE);
 
-	private GhidraEvtProvider provider;
+	private EvtProvider provider;
 	private FieldSelection selection;
 
 	private boolean copyFromSelectionEnabled;
@@ -58,7 +58,7 @@ public class EvtClipboardProvider extends ByteCopier
 		currentSelection = null;
 	}
 
-	public EvtClipboardProvider(GhidraEvtPlugin plugin, GhidraEvtProvider provider) {
+	public EvtClipboardProvider(GhidraEvtPlugin plugin, EvtProvider provider) {
 		this.provider = provider;
 		this.tool = plugin.getTool();
 		// PAINT_CONTEXT.setTextCopying(true);

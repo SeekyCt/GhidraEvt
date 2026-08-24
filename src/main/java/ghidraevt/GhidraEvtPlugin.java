@@ -39,7 +39,7 @@ import ghidra.util.Msg;
 //@formatter:on
 public class GhidraEvtPlugin extends ProgramPlugin {
 
-    GhidraEvtProvider provider;
+    EvtProvider provider;
 
     /**
      * Plugin constructor.
@@ -52,7 +52,7 @@ public class GhidraEvtPlugin extends ProgramPlugin {
 
         // Customize provider (or remove if a provider is not desired)
         String pluginName = getName();
-        provider = new GhidraEvtProvider(this, pluginName);
+        provider = new EvtProvider(this, pluginName);
     }
 
     @Override

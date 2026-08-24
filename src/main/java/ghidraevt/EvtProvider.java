@@ -36,7 +36,7 @@ import jevt.Game;
 import jevt.Instr;
 import resources.Icons;
 
-public class GhidraEvtProvider extends NavigatableComponentProviderAdapter {
+public class EvtProvider extends NavigatableComponentProviderAdapter {
     private JPanel panel;
     private FieldPanel fieldPanel;
 
@@ -60,7 +60,7 @@ public class GhidraEvtProvider extends NavigatableComponentProviderAdapter {
 
 	private final GhidraEvtPlugin plugin;
 
-    public GhidraEvtProvider(GhidraEvtPlugin plugin, String owner) {
+    public EvtProvider(GhidraEvtPlugin plugin, String owner) {
         super(plugin.getTool(), "Evt Disassembler", owner, null);
 
         this.clipboardProvider = new EvtClipboardProvider(plugin, this); // TODO
