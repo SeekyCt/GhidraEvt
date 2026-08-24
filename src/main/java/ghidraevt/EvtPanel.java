@@ -5,7 +5,6 @@ import java.awt.event.*;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.List;
-import java.util.function.Supplier;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -22,24 +21,14 @@ import docking.widgets.fieldpanel.listener.*;
 import docking.widgets.fieldpanel.support.*;
 import docking.widgets.indexedscrollpane.IndexedScrollPane;
 import generic.theme.GColor;
-import ghidra.app.decompiler.*;
-import ghidra.app.decompiler.component.ClangTextField;
-import ghidra.app.decompiler.component.hover.DecompilerHoverService;
-import ghidra.app.decompiler.component.margin.*;
-import ghidra.app.decompiler.location.*;
-import ghidra.app.plugin.core.decompile.DecompilerClipboardProvider;
-import ghidra.app.plugin.core.decompile.actions.DecompilerSearchLocation;
-import ghidra.app.plugin.core.decompile.actions.DecompilerSearchResults;
+import ghidra.app.decompiler.component.margin.VerticalLayoutPixelIndexMap;
 import ghidra.app.util.viewer.util.ScrollpaneAlignedHorizontalLayout;
 import ghidra.program.model.address.*;
 import ghidra.program.model.listing.*;
-import ghidra.program.model.pcode.*;
-import ghidra.program.model.symbol.Symbol;
 import ghidra.program.util.ProgramLocation;
 import ghidra.program.util.ProgramSelection;
 import ghidra.util.*;
 import ghidra.util.bean.field.AnnotatedTextFieldElement;
-import ghidra.util.task.SwingUpdateManager;
 
 /**
  * Class to handle the display of a decompiled function
@@ -55,13 +44,13 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 
 	private final EvtController controller;
 	private final EvtOptions options;
-	private LineNumberDecompilerMarginProvider lineNumbersMargin;
+	// private LineNumberDecompilerMarginProvider lineNumbersMargin;
 
 	private final EvtFieldPanel fieldPanel;
 	private EvtLayoutModel layoutController;
 	private final IndexedScrollPane scroller;
 
-	private final List<DecompilerMarginProvider> marginProviders = new ArrayList<>();
+	// private final List<DecompilerMarginProvider> marginProviders = new ArrayList<>();
 	private final VerticalLayoutPixelIndexMap pixmap = new VerticalLayoutPixelIndexMap();
 
 	private FieldHighlightFactory hlFactory;
@@ -73,7 +62,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 	private Color activeSearchHighlightColor;
 	private Color searchHighlightColor;
 
-	private DecompilerSearchResults currentSearchResults;
+	// private DecompilerSearchResults currentSearchResults;
 
 	private EvtData decompileData = new EmptyEvtData("No Function");
 	private final EvtClipboardProvider clipboard;
@@ -102,15 +91,15 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 		fieldPanel.addFieldLocationListener(this);
 		fieldPanel.addLayoutListener(this);
 
-		fieldPanel.setName("Decompiler View");
-		fieldPanel.getAccessibleContext().setAccessibleName("Decompiler View");
+		fieldPanel.setName("Evt Disassembler View");
+		fieldPanel.getAccessibleContext().setAccessibleName("Evt Disassembler View");
 
 		fieldPanel.addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentResized(ComponentEvent e) {
-				for (DecompilerMarginProvider provider : marginProviders) {
-					provider.getComponent().invalidate();
-				}
+				// for (DecompilerMarginProvider provider : marginProviders) {
+				// 	provider.getComponent().invalidate();
+				// }
 				validate();
 			}
 		});
@@ -501,10 +490,10 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 		}
 
 		// don't highlight search results across functions
-		if (currentSearchResults != null) {
-			currentSearchResults.decompilerUpdated();
-			currentSearchResults = null;
-		}
+		// if (currentSearchResults != null) {
+		// 	currentSearchResults.decompilerUpdated();
+		// 	currentSearchResults = null;
+		// }
 
 		// if (function != null) {
 			// highlightController.reapplyAllHighlights(function);
@@ -901,9 +890,9 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 	@Override
 	public void layoutsChanged(List<AnchoredLayout> layouts) {
 		pixmap.layoutsChanged(layouts);
-		for (DecompilerMarginProvider element : marginProviders) {
-			element.setProgram(getProgram(), layoutController, pixmap);
-		}
+		// for (DecompilerMarginProvider element : marginProviders) {
+		// 	element.setProgram(getProgram(), layoutController, pixmap);
+		// }
 	}
 
 	private ProgramLocation getProgramLocation(Field field, FieldLocation location) {
@@ -935,33 +924,33 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 		return new DefaultEvtLocation(program, address, info);
 	}
 
-	public void clearSearchResults(DecompilerSearchResults searchResults) {
-		if (currentSearchResults == searchResults) {
-			currentSearchResults = null;
-			repaint();
-		}
-	}
+	// public void clearSearchResults(DecompilerSearchResults searchResults) {
+	// 	if (currentSearchResults == searchResults) {
+	// 		currentSearchResults = null;
+	// 		repaint();
+	// 	}
+	// }
 
-	public void setSearchResults(DecompilerSearchResults searchResults) {
-		currentSearchResults = searchResults;
+	// public void setSearchResults(DecompilerSearchResults searchResults) {
+	// 	currentSearchResults = searchResults;
 
-		if (currentSearchResults != null) {
-			DecompilerSearchLocation location = currentSearchResults.getActiveLocation();
-			if (location != null) {
-				setCursorPosition(location.getFieldLocation());
-			}
-		}
+	// 	if (currentSearchResults != null) {
+	// 		DecompilerSearchLocation location = currentSearchResults.getActiveLocation();
+	// 		if (location != null) {
+	// 			setCursorPosition(location.getFieldLocation());
+	// 		}
+	// 	}
 
-		repaint();
-	}
+	// 	repaint();
+	// }
 
-	public DecompilerSearchLocation getActiveSearchLocation() {
-		if (currentSearchResults == null) {
-			return null;
-		}
-		DecompilerSearchLocation location = currentSearchResults.getActiveLocation();
-		return location;
-	}
+	// public DecompilerSearchLocation getActiveSearchLocation() {
+	// 	if (currentSearchResults == null) {
+	// 		return null;
+	// 	}
+	// 	DecompilerSearchLocation location = currentSearchResults.getActiveLocation();
+	// 	return location;
+	// }
 
 	public Color getCurrentVariableHighlightColor() {
 		return currentVariableHighlightColor;
@@ -1076,13 +1065,13 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 		return options;
 	}
 
-	public void addHoverService(DecompilerHoverService hoverService) {
-		// decompilerHoverProvider.addHoverService(hoverService);
-	}
+	// public void addHoverService(DecompilerHoverService hoverService) {
+	// 	decompilerHoverProvider.addHoverService(hoverService);
+	// }
 
-	public void removeHoverService(DecompilerHoverService hoverService) {
-		// decompilerHoverProvider.removeHoverService(hoverService);
-	}
+	// public void removeHoverService(DecompilerHoverService hoverService) {
+	// 	decompilerHoverProvider.removeHoverService(hoverService);
+	// }
 
 	public void setHoverMode(boolean enabled) {
 		// decompilerHoverProvider.setHoverEnabled(enabled);
@@ -1193,9 +1182,9 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 
 	private JComponent buildLeftComponent() {
 		JPanel leftPanel = new JPanel(new ScrollpaneAlignedHorizontalLayout(scroller));
-		for (DecompilerMarginProvider marginProvider : marginProviders) {
-			leftPanel.add(marginProvider.getComponent());
-		}
+		// for (DecompilerMarginProvider marginProvider : marginProviders) {
+		// 	leftPanel.add(marginProvider.getComponent());
+		// }
 		return leftPanel;
 	}
 

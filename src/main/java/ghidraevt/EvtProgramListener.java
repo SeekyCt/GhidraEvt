@@ -1,12 +1,6 @@
 package ghidraevt;
 
-import static ghidra.framework.model.DomainObjectEvent.*;
-import static ghidra.program.util.ProgramEvent.*;
-
-import java.util.Iterator;
-
 import ghidra.framework.model.*;
-import ghidra.program.database.SpecExtension;
 import ghidra.program.model.listing.Program;
 import ghidra.util.task.SwingUpdateManager;
 

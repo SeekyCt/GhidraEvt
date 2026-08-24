@@ -1,23 +1,16 @@
 package ghidraevt;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import javax.swing.JComponent;
 
 import docking.widgets.fieldpanel.support.ViewerPosition;
-import ghidra.app.decompiler.*;
-import ghidra.app.decompiler.component.DecompileData;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.listing.CodeUnit;
-import ghidra.program.model.listing.Data;
-import ghidra.program.model.listing.Function;
 import ghidra.program.model.listing.Program;
 import ghidra.program.model.mem.MemoryBlock;
 import ghidra.program.util.ProgramLocation;
 import ghidra.util.Msg;
-import ghidra.util.task.*;
 import jevt.BadEvtException;
 import jevt.Game;
 import jevt.Instr;

@@ -14,7 +14,6 @@ import ghidra.program.model.listing.Program;
 import ghidra.program.model.symbol.Namespace;
 import ghidra.program.model.symbol.Symbol;
 import ghidra.util.Msg;
-import ghidra.app.decompiler.DecompileOptions;
 import ghidra.app.util.SymbolInspector;
 import jevt.Instr;
 import jevt.Opcode;

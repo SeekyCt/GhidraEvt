@@ -4,14 +4,11 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 
 import docking.widgets.fieldpanel.support.ViewerPosition;
-import ghidra.app.decompiler.component.DecompileData;
 import ghidra.framework.plugintool.ServiceProvider;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.listing.*;
-import ghidra.program.model.pcode.HighFunction;
 import ghidra.program.util.ProgramLocation;
 import ghidra.program.util.ProgramSelection;
-import ghidra.util.UndefinedFunction;
 import ghidra.util.bean.field.AnnotatedTextFieldElement;
 import utility.function.Callback;
 

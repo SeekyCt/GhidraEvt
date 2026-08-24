@@ -4,10 +4,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import ghidra.app.context.NavigatableActionContext;
 import ghidra.app.context.RestrictedAddressSetContext;
-import ghidra.app.decompiler.*;
 import ghidra.framework.plugintool.PluginTool;
 import ghidra.program.model.address.Address;
-import ghidra.program.model.listing.Data;
 
 public class EvtActionContext extends NavigatableActionContext implements RestrictedAddressSetContext {
 	private final Address scriptEntryPoint;

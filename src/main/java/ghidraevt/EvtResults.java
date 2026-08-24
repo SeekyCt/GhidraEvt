@@ -2,9 +2,7 @@ package ghidraevt;
 
 import java.util.List;
 
-import ghidra.app.decompiler.ClangTokenGroup;
 import ghidra.program.model.address.Address;
-import ghidra.program.model.listing.Data;
 import jevt.Instr;
 
 /**
@@ -118,20 +116,4 @@ public class EvtResults {
 		}
 		return length;
 	}
-
-	/**
-	 * Converts the C code results into an unadorned string.
-	 * The returned object contains both the whole function
-	 * and just the prototype as separate strings containing
-	 * raw C code
-	 * @return a DecompiledFunction object
-	 */
-	// public DecompiledFunction getDecompiledFunction() {
-	// 	if (docroot == null) {
-	// 		return null;
-	// 	}
-	// 	PrettyPrinter printer =
-	// 		new PrettyPrinter(function, docroot, new IllegalCharCppTransformer());
-	// 	return printer.print();
-	// }
 }
