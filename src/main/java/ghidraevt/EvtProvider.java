@@ -1,276 +1,338 @@
 package ghidraevt;
 
-import java.awt.BorderLayout;
-import java.io.IOException;
-import java.util.List;
+import java.awt.event.MouseEvent;
+import java.math.BigInteger;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.swing.*;
 
-import docking.widgets.fieldpanel.field.Field;
+import docking.ActionContext;
 import docking.WindowPosition;
-import docking.widgets.fieldpanel.FieldPanel;
-import docking.widgets.fieldpanel.support.FieldHighlightFactory;
+import docking.action.DockingAction;
+import docking.action.MenuData;
 import docking.widgets.fieldpanel.support.FieldLocation;
-import docking.widgets.fieldpanel.support.FieldSelection;
-import docking.widgets.fieldpanel.support.FieldSelectionHelper;
-import docking.widgets.fieldpanel.support.Highlight;
-import docking.widgets.indexedscrollpane.IndexedScrollPane;
-import ghidra.app.decompiler.ClangToken;
-import ghidra.app.decompiler.component.ClangTextField;
+import docking.widgets.fieldpanel.support.ViewerPosition;
+import ghidra.GhidraOptions;
+import ghidra.app.decompiler.DecompileOptions;
 import ghidra.app.events.ProgramSelectionPluginEvent;
 import ghidra.app.nav.LocationMemento;
+import ghidra.app.nav.Navigatable;
 import ghidra.app.plugin.core.decompile.DecompilePlugin;
-import ghidra.app.services.ClipboardContentProviderService;
 import ghidra.app.services.ClipboardService;
+import ghidra.app.services.GoToService;
+import ghidra.app.services.ProgramManager;
+import ghidra.app.services.QueryData;
 import ghidra.app.util.ListingHighlightProvider;
+import ghidra.framework.options.OptionsChangeListener;
+import ghidra.framework.options.SaveState;
+import ghidra.framework.options.ToolOptions;
 import ghidra.framework.plugintool.NavigatableComponentProviderAdapter;
-import ghidra.framework.plugintool.Plugin;
 import ghidra.program.model.address.Address;
-import ghidra.program.model.listing.CodeUnit;
+import ghidra.program.model.address.AddressOutOfBoundsException;
+import ghidra.program.model.address.AddressSpace;
+import ghidra.program.model.listing.Data;
+import ghidra.program.model.listing.Function;
 import ghidra.program.model.listing.Program;
+import ghidra.program.model.symbol.ExternalLocation;
+import ghidra.program.model.symbol.ExternalManager;
+import ghidra.program.model.symbol.Symbol;
+import ghidra.program.model.symbol.SymbolIterator;
 import ghidra.program.util.ProgramLocation;
 import ghidra.program.util.ProgramSelection;
-import ghidra.util.Msg;
+import ghidra.util.Swing;
+import ghidra.util.bean.field.AnnotatedTextFieldElement;
+import ghidra.util.task.SwingUpdateManager;
+
+import resources.Icons;
+import utility.function.Callback;
+
 import jevt.BadEvtException;
 import jevt.Game;
 import jevt.Instr;
-import resources.Icons;
 
-public class EvtProvider extends NavigatableComponentProviderAdapter {
-    private JPanel panel;
-    private FieldPanel fieldPanel;
+// DecompilerHighlightService?
 
-    private ProgramLocation currentLocation;
+public class EvtProvider extends NavigatableComponentProviderAdapter
+		implements OptionsChangeListener, EvtCallbackHandler {
+	private final GhidraEvtPlugin plugin;
+	private ClipboardService clipboardService;
+	private EvtClipboardProvider clipboardProvider;
+	private DecompileOptions decompilerOptions;
+
+	private Program program;
+	private ProgramLocation currentLocation;
 	private ProgramSelection currentSelection;
 
-    // TODO: save settings
+	private EvtController controller;
+    private EvtPanel evtPanel;
+	// private DecoratorPanel decorationPanel;
+	// private ClangHighlightController highlightController;
 
+	private ViewerPosition pendingViewerPosition;
+
+	private SwingUpdateManager redecompileUpdater;
+	private EvtProgramListener programListener;
+	private boolean lockDisplay;
+
+    // Follow-up work can be items that need to happen after a pending decompile is finished, such
+	// as updating highlights after a variable rename
+	private SwingUpdateManager followUpWorkUpdater;
+	private Queue<Callback> followUpWork = new ConcurrentLinkedQueue<>();
+	// private OverlayMessagePainter overlayPainter = new OverlayMessagePainter();
+	private DockingAction refreshAction;
+
+	// only used by disconnected providers
+	private boolean allowOutgoingEvents = false;
+
+
+    // TODO: save settings
     private DockingToggle strictMode; // TODO: type-based mode
     private DockingToggle showAddresses;
     private DockingToggle showLineNumbers;
     private DockingToggle snapToSymbol;
     private DockingToggle game;
 
-    private EvtHighlightFactory hlFactory = new EvtHighlightFactory();
-    private EvtLayoutModel layout;
+    // private EvtHighlightFactory hlFactory = new EvtHighlightFactory();
 
-    private ClipboardService clipboardService;
+    public EvtProvider(GhidraEvtPlugin plugin, boolean isConnected) {
+		super(plugin.getTool(), "Evt Disassembler", plugin.getName(), EvtActionContext.class);
 
-    private EvtClipboardProvider clipboardProvider;
+		this.plugin = plugin;
+        this.clipboardProvider = new EvtClipboardProvider(plugin, this);
+		setConnected(isConnected);
 
-	private final GhidraEvtPlugin plugin;
+		decompilerOptions = new DecompileOptions();
+		initializeDecompilerOptions();
+		controller =
+			new EvtController(getTool(), this, decompilerOptions, clipboardProvider);
+		evtPanel = controller.getEvtPanel();
 
-    public EvtProvider(GhidraEvtPlugin plugin, String owner) {
-        super(plugin.getTool(), "Evt Disassembler", owner, null);
+		// FUTURE move the hl controller into the panel
+		// highlightController = new LocationClangHighlightController();
+		// evtPanel.setHighlightController(highlightController);
+		// decorationPanel = new DecoratorPanel(evtPanel, isConnected) {
+		// 	@Override
+		// 	public void paint(Graphics g) {
+		// 		super.paint(g);
+		// 		overlayPainter.paintOverlay(g, evtPanel.getViewContentBounds());
+		// 	}
+		// };
 
-        this.clipboardProvider = new EvtClipboardProvider(plugin, this); // TODO
-        this.plugin = plugin;
+		if (!isConnected) {
+			setTransient();
+		}
 
-        buildPanel();
-        createActions();
+		setIcon(Icons.INFO_ICON);
+
+		setWindowMenuGroup("Evt Disassembler");
+		setDefaultWindowPosition(WindowPosition.RIGHT);
+		createActions(isConnected);
+		addToTool();
+
+		redecompileUpdater = new SwingUpdateManager(500, 5000, () -> doRefresh(false));
+		followUpWorkUpdater = new SwingUpdateManager(() -> doFollowUpWork());
+
+		programListener = new EvtProgramListener(controller, redecompileUpdater);
+		setDefaultFocusComponent(controller.getEvtPanel());
+
+        // buildPanel();
+        // createActions();
     }
 
-    private static class EvtHighlightFactory implements FieldHighlightFactory {
+//==================================================================================================
+// Component Provider methods
+//==================================================================================================
 
-        @Override
-        public Highlight[] createHighlights(Field field, String text, int cursorTextOffset) {
-            return new Highlight[0];
-            // if (currentSearchResults == null) {
-            //     return new Highlight[0];
-            // }
+	@Override
+	public boolean isSnapshot() {
+		// we are a snapshot when we are 'disconnected'
+		return !isConnected();
+	}
 
-            // ClangTextField cField = (ClangTextField) field;
-            // int lineNumber = cField.getLineNumber();
-            // Map<Integer, List<DecompilerSearchLocation>> locationsByLine =
-            //     currentSearchResults.getLocationsByLine();
-            // List<DecompilerSearchLocation> locationsOnLine = locationsByLine.get(lineNumber);
-            // if (locationsOnLine == null) {
-            //     return new Highlight[0];
-            // }
+	@Override
+	public void closeComponent() {
+		super.closeComponent();
+		controller.clear();
+		plugin.closeProvider(this);
+	}
 
-            // DecompilerSearchLocation activeLocation = currentSearchResults.getActiveLocation();
-            // List<Highlight> highlights = new ArrayList<>();
-            // for (DecompilerSearchLocation location : locationsOnLine) {
-            //     Color c =
-            //         location == activeLocation ? activeSearchHighlightColor : searchHighlightColor;
-            //     int start = location.getStartIndexInclusive();
-            //     int end = location.getEndIndexInclusive();
-            //     highlights.add(new Highlight(start, end, c));
-            // }
+	@Override
+	public String getWindowGroup() {
+		if (isConnected()) {
+			return "";
+		}
+		return "disconnected";
+	}
 
-            // return highlights.toArray(Highlight[]::new);
-        }
-    }
+	@Override
+	public void componentShown() {
+		if (program != null && currentLocation != null) {
+			ToolOptions fieldOptions = tool.getOptions(GhidraOptions.CATEGORY_BROWSER_FIELDS);
+			ToolOptions opt = tool.getOptions(DecompilePlugin.OPTIONS_TITLE);
+			decompilerOptions.grabFromToolAndProgram(fieldOptions, opt, program);
+			controller.setOptions(decompilerOptions);
 
-    // Customize GUI
-    private void buildPanel() {
-        panel = new JPanel(new BorderLayout());
-        panel.setName("Evt Master Panel");
+			refreshToggleButtons();
 
-        layout = new EvtLayoutModel(panel, getTool(), hlFactory);
-        fieldPanel = new FieldPanel(layout, "Evt Field Panel");
+			controller.display(program, currentLocation, null);
+		}
+	}
 
-        IndexedScrollPane scrollPane = new IndexedScrollPane(fieldPanel);
-        scrollPane.setName("Evt Scroll Pane");
-
-        panel.add(scrollPane);
-        setIcon(Icons.INFO_ICON);
-        setDefaultWindowPosition(WindowPosition.RIGHT);
-        setVisible(true);
-    }
-
-	public EvtToken getTokenAtCursor() {
-		FieldLocation cursorPosition = fieldPanel.getCursorLocation();
-		Field field = fieldPanel.getCurrentField();
-		if (field == null) {
+	@Override
+	public ActionContext getActionContext(MouseEvent event) {
+		if (program == null) {
 			return null;
 		}
-		return ((EvtTextField) field).getToken(cursorPosition);
+		Data data = controller.getData();
+		if (data == null) {
+			return null;
+		}
+		if (!controller.hasDecompileResults()) {
+			return null;
+		}
+
+		Address entryPoint = data.getAddress();
+		int lineNumber =
+			event != null ? getEvtPanel().getLineNumber(event.getY()) : 0;
+		return new EvtActionContext(this, entryPoint, lineNumber);
+	}
+
+	@Override
+	public JComponent getComponent() {
+		return evtPanel;
 	}
 
 
-    public String getCursorText() {
-        EvtToken token = getTokenAtCursor();
-		// ClangToken token = panel.getTokenAtCursor();
-		// if (token == null) {
-		// 	return null;
-		// }
+//==================================================================================================
+// Navigatable interface methods
+//==================================================================================================
 
-		// if (token instanceof ClangFuncNameToken functionToken) {
-		// 	Function function = DecompilerUtils.getFunction(currentProgram, functionToken);
-		// 	if (function != null) {
-		// 		return function.getName();
-		// 	}
-		// }
+	@Override
+	public Program getProgram() {
+		return program;
+	}
 
-		String text = token.getText();
-		return text;        
-    }
+	@Override
+	public ProgramLocation getLocation() {
+		if (currentLocation instanceof EvtLocation) {
+			return currentLocation;
+		}
+		return controller.getEvtPanel().getCurrentLocation();
+	}
 
+	@Override
+	public boolean goTo(Program gotoProgram, ProgramLocation location) {
+		if (!isConnected()) {
+			if (program == null) {
+				// Special Case: this 'disconnected' provider is waiting to be initialized
+				// with the first goTo() callback
+				doSetProgram(gotoProgram);
+			}
+			else if (gotoProgram != program) {
+				// this disconnected provider only works with its given program
+				tool.setStatusInfo("Program location not applicable for this provider!");
+				return false;
+			}
+		}
 
-    public JPanel getPanel() {
-        return panel;
-    }
+		ProgramManager programManagerService = tool.getService(ProgramManager.class);
+		if (programManagerService != null) {
+			programManagerService.setCurrentProgram(gotoProgram);
+		}
 
-    private void createActions() {
-        Runnable disasmCallback = new Runnable() {
-            @Override
-            public void run() {
-                updateDisasm();
-            }
-        };
+		setLocation(location, null);
+		pendingViewerPosition = null;
+		plugin.locationChanged(this, location);
+		return true;
+	}
 
-        strictMode = new DockingToggle(
-            "Strict Mode",
-            getOwner(),
-            false,
-            disasmCallback);
-        strictMode.setEnabled(true);
-        strictMode.markHelpUnnecessary();
+	@Override
+	public LocationMemento getMemento() {
+        // ViewerPosition vp = controller.getEvtPanel().getViewerPosition();
+		return new LocationMemento(program, currentLocation);
+	}
 
-        showAddresses = new DockingToggle(
-            "Show Addresses",
-            getOwner(),
-            false,
-            disasmCallback);
-        showAddresses.setEnabled(true);
-        showAddresses.markHelpUnnecessary();
+	@Override
+	public void setMemento(LocationMemento memento) {
+		EvtLocationMemento decompMemento = (EvtLocationMemento) memento;
+		pendingViewerPosition = decompMemento.getViewerPosition();
+	}
 
-        showLineNumbers = new DockingToggle(
-            "Show Line Numbers",
-            getOwner(),
-            false,
-            disasmCallback);
-        showLineNumbers.setEnabled(true);
-        showLineNumbers.markHelpUnnecessary();
+//==================================================================================================
+// DomainObjectListener methods
+//==================================================================================================
 
-        snapToSymbol = new DockingToggle(
-            "Snap to Symbol",
-            getOwner(),
-            true,
-            disasmCallback);
-        snapToSymbol.setEnabled(true);
-        snapToSymbol.markHelpUnnecessary();
+	private void doRefresh(boolean optionsChanged) {
+		if (!isVisible()) {
+			return;
+		}
+		ToolOptions fieldOptions = tool.getOptions(GhidraOptions.CATEGORY_BROWSER_FIELDS);
+		ToolOptions opt = tool.getOptions(DecompilePlugin.OPTIONS_TITLE);
 
-        game = new DockingToggle(
-            "Game",
-            getOwner(),
-            true,
-            disasmCallback);
-        game.setEnabled(true);
-        game.markHelpUnnecessary();
+		// Current values of toggle buttons
+		// boolean decompilerEliminatesUnreachable = decompilerOptions.isEliminateUnreachable();
+		// boolean decompilerRespectsReadOnlyFlags = decompilerOptions.isRespectReadOnly();
 
-        dockingTool.addLocalAction(this, showLineNumbers);
-        dockingTool.addLocalAction(this, showAddresses);
-        dockingTool.addLocalAction(this, strictMode);
-        dockingTool.addLocalAction(this, snapToSymbol);
-        dockingTool.addLocalAction(this, game);
-    }
+		decompilerOptions.grabFromToolAndProgram(fieldOptions, opt, program);
 
-    private Game game() {
-        if (game.enabled())
-            return Game.SPM;
-        else
-            return Game.TTYD;
-    }
+		// If the tool options were not changed
+		if (!optionsChanged) {
+			// Keep these analysis options the same
+			// decompilerOptions.setEliminateUnreachable(decompilerEliminatesUnreachable);
+			// decompilerOptions.setRespectReadOnly(decompilerRespectsReadOnlyFlags);
+		}
+		else {
+			// Otherwise, keep the new analysis options and update the state of the toggle buttons
+			refreshToggleButtons();
+		}
 
-    @Override
-    public JComponent getComponent() {
-        return panel;
-    }
+		controller.setOptions(decompilerOptions);
 
-    private EvtData tryDisasm(ProgramLocation location) {
-        if (location == null)
-            return EvtData.empty("No script selected.");
+		if (currentLocation != null) {
+			controller.refreshDisplay(program, currentLocation, null);
+		}
+	}
 
-        Program program = location.getProgram();
-        Address address = location.getAddress();
-        
-        if (snapToSymbol.enabled()) {
-            CodeUnit cu = program.getListing().getCodeUnitContaining(address);
-            if (cu != null)
-                address = cu.getAddress();
-        }
-        Address startAddress = address;
+	private void refreshToggleButtons() {
+		// displayUnreachableCodeToggle.setSelected(!decompilerOptions.isEliminateUnreachable());
+		// respectReadOnlyFlags.setSelected(!decompilerOptions.isRespectReadOnly());
+	}
 
-        
-        MemoryInputStream stream = new MemoryInputStream(
-            program.getMemory().getBlock(address),
-            address);
+	private void doFollowUpWork() {
+		if (isBusy()) {
+			// try again later
+			followUpWorkUpdater.updateLater();
+			return;
+		}
 
-        List<Instr> script;
-        try {
-            script = Instr.disassemble(game(), stream, strictMode.enabled());
-        }
-        catch (BadEvtException e) {
-            String err = "Script appears invalid: " + e.getMessage();
-            if (e.strictOnly()) {
-                err += "\n(Triggered by Strict mode)";
-            }
-            return new EvtData(program, startAddress, null, err);
-        }
-        catch (IOException e) {
-            Msg.error(this, "Disassembler failed", e);
-            return EvtData.fail(program, startAddress, "Disassembler failed: " + e.getMessage());
-        }
-        catch (Exception e) {
-            Msg.error(this, "Unhandled disassembler exception", e);
-            return EvtData.fail(program, startAddress, "Unhandled disassembler exception: " + e.getMessage());
-        }
+		Callback work = followUpWork.poll();
+		while (work != null) {
+			work.call();
+			work = followUpWork.poll();
+		}
+	}
 
-        return EvtData.success(program, startAddress, script);
-    }
+//==================================================================================================
+// OptionsListener methods
+//==================================================================================================
 
-    private void updateDisasm() {
-        EvtData data = tryDisasm(currentLocation);
-        layout.buildLayouts(data);
-    }
+	@Override
+	public void optionsChanged(ToolOptions options, String optionName, Object oldValue,
+			Object newValue) {
+		if (!isVisible()) {
+			return;
+		}
 
-    public void locationChanged(ProgramLocation location) {
-        currentLocation = location;
+		if (options.getName().equals(DecompilePlugin.OPTIONS_TITLE) ||
+			options.getName().equals(GhidraOptions.CATEGORY_BROWSER_FIELDS)) {
+			doRefresh(true);
+		}
+	}
 
-        updateDisasm();
-    }
+//==================================================================================================
+// methods called from the plugin
+//==================================================================================================
 
 	void setClipboardService(ClipboardService service) {
 		clipboardService = service;
@@ -279,94 +341,58 @@ public class EvtProvider extends NavigatableComponentProviderAdapter {
 		}
 	}
 
-    @Override
+	@Override
 	public void dispose() {
 		super.dispose();
 
-        // TODO
+		redecompileUpdater.dispose();
+		followUpWorkUpdater.dispose();
 
 		if (clipboardService != null) {
 			clipboardService.deRegisterClipboardContentProvider(clipboardProvider);
 		}
 
+		controller.dispose();
+		program = null;
 		currentLocation = null;
-        currentSelection = null;
+		currentSelection = null;
 	}
 
-
-	@Override
-	public ProgramSelection getSelection() {
-		return currentSelection;
-	}
-
-    @Override
-    public ProgramSelection getHighlight() {
-        return null;
-    }
-
-    @Override
-    public ProgramLocation getLocation() {
-        return currentLocation;
-    }
-
-    @Override
-    public LocationMemento getMemento() {
-        if (currentLocation == null)
-            return null;
-        return new LocationMemento(currentLocation.getProgram(), currentLocation);
-    }
-
-    @Override
-    public Program getProgram() {
-        if (currentLocation == null)
-            return null;
-        return currentLocation.getProgram();
-    }
-
-    @Override
-    public String getTextSelection() {
-		FieldSelection selection = fieldPanel.getSelection();
-		if (selection.isEmpty()) {
-			return null;
+	/**
+	 * Sets the current program and adds/removes itself as a domainObjectListener
+	 *
+	 * @param newProgram the new program or null to clear out the current program.
+	 */
+	void doSetProgram(Program newProgram) {
+		controller.clear();
+		if (program != null) {
+			program.removeListener(programListener);
 		}
 
-		return FieldSelectionHelper.getFieldSelectionText(selection, fieldPanel);
+		program = newProgram;
+		currentLocation = null;
+		currentSelection = null;
+		if (program != null) {
+			program.addListener(programListener);
+			ToolOptions fieldOptions = tool.getOptions(GhidraOptions.CATEGORY_BROWSER_FIELDS);
+			ToolOptions opt = tool.getOptions(DecompilePlugin.OPTIONS_TITLE);
+			decompilerOptions.grabFromToolAndProgram(fieldOptions, opt, program);
+		}
+
+		clipboardProvider.setProgram(program);
 	}
 
-    @Override
-	public boolean goTo(Program gotoProgram, ProgramLocation location) {
-        plugin.locationChanged(location);
-        return true;
-	}
-
-    @Override
-    public void removeHighlightProvider(ListingHighlightProvider highlightProvider, Program p) {
-
-    }
-
-    @Override
-    public void setHighlight(ProgramSelection highlight) {
-
-    }
-
-    @Override
-    public void setHighlightProvider(ListingHighlightProvider highlightProvider, Program p) {
-
-    }
-
-    @Override
-    public void setMemento(LocationMemento memento) {
-
-    }
-
-    @Override
-    public void setSelection(ProgramSelection selection) {
-        currentSelection = selection;
-        tool.contextChanged(this);
+	@Override
+	public void setSelection(ProgramSelection selection) {
+		currentSelection = selection;
+		if (isVisible()) {
+			contextChanged();
+			controller.setSelection(selection);
+		}
 
 		clipboardProvider.setSelection(selection);
 		notifySelectionChanged(selection);
-    }
+	}
 
 	private void notifySelectionChanged(ProgramSelection selection) {
 		if (!isConnected()) {
@@ -381,12 +407,965 @@ public class EvtProvider extends NavigatableComponentProviderAdapter {
 			new ProgramSelectionPluginEvent(plugin.getName(), selection, getProgram()));
 	}
 
+	@Override
+	public void setHighlight(ProgramSelection highlight) {
+		// do nothing for now
+	}
+
+	@Override
+	public boolean supportsHighlight() {
+		return false;
+	}
+
+	/**
+	 * sets the current location for this provider. If the provider is not visible, it does not pass
+	 * it on to the controller. When the component is later shown, the current location will then be
+	 * passed to the controller.
+	 *
+	 * @param loc the location to compile and set the cursor.
+	 * @param viewerPosition if non-null the position at which to scroll the view.
+	 */
+	void setLocation(ProgramLocation loc, ViewerPosition viewerPosition) {
+		Address currentAddress = currentLocation != null ? currentLocation.getAddress() : null;
+		currentLocation = loc;
+		clipboardProvider.setLocation(currentLocation);
+		Address newAddress = currentLocation != null ? currentLocation.getAddress() : null;
+		if (viewerPosition == null) {
+			viewerPosition = pendingViewerPosition;
+		}
+		if (isVisible() && newAddress != null && !newAddress.equals(currentAddress)) {
+			controller.display(program, loc, viewerPosition);
+		}
+		contextChanged();
+		pendingViewerPosition = null;
+
+	}
+
+	/**
+	 * Re-decompile the currently displayed location
+	 */
+	void refresh() {
+		controller.refreshDisplay(program, currentLocation, null);
+	}
+
+	/**
+	 * Update the options from decompilerOptions
+	 */
+	void updateOptionsAndRefresh() {
+		controller.setOptions(decompilerOptions);
+
+		refresh();
+	}
+
+	@Override
+	public ProgramSelection getSelection() {
+		return currentSelection;
+	}
+
+	@Override
+	public ProgramSelection getHighlight() {
+		return null;
+	}
+
+    // @Override
+    // public String getTextSelection() {
+	// 	FieldSelection selection = fieldPanel.getSelection();
+	// 	if (selection.isEmpty()) {
+	// 		return null;
+	// 	}
+
+	// 	return FieldSelectionHelper.getFieldSelectionText(selection, fieldPanel);
+	// }
+
     @Override
-    public boolean supportsHighlight() {
-        return false;
+	public String getTextSelection() {
+		EvtPanel evtPanel = controller.getEvtPanel();
+		return evtPanel.getSelectedText();
+	}
+
+	boolean isBusy() {
+		return redecompileUpdater.isBusy() || controller.isDecompiling();
+	}
+
+	/**
+	 * Set the cursor location of the decompiler.
+	 *
+	 * @param lineNumber the 1-based line number
+	 * @param offset the character offset into line; the offset is from the start of the line
+	 */
+	void setCursorLocation(int lineNumber, int offset) {
+
+		EvtPanel evtPanel = controller.getEvtPanel();
+		int row = lineNumber - 1; // 1-based number
+		BigInteger index = BigInteger.valueOf(row);
+		FieldLocation location = new FieldLocation(index, 0, 0, offset);
+		evtPanel.setCursorPosition(location);
+	}
+
+	public EvtController getController() {
+		return controller;
+	}
+
+//==================================================================================================
+// methods called from the controller
+//==================================================================================================
+
+	@Override
+	public void setStatusMessage(String message) {
+		tool.setStatusInfo(message);
+	}
+
+	@Override
+	public void decompileDataChanged(EvtData decompileData) {
+		updateTitle();
+		contextChanged();
+		controller.setSelection(currentSelection);
+	}
+
+	@Override
+	public void locationChanged(ProgramLocation programLocation) {
+		if (programLocation.equals(currentLocation)) {
+			return;
+		}
+		currentLocation = programLocation;
+		contextChanged();
+		plugin.locationChanged(this, programLocation);
+	}
+
+	@Override
+	public void selectionChanged(ProgramSelection programSelection) {
+		currentSelection = programSelection;
+		contextChanged();
+		plugin.selectionChanged(this, programSelection);
+	}
+
+	@Override
+	public void annotationClicked(AnnotatedTextFieldElement annotation, boolean newWindow) {
+
+		Navigatable navigatable = this;
+		if (newWindow) {
+			EvtProvider newProvider = plugin.createNewDisconnectedProvider();
+			navigatable = newProvider;
+		}
+
+		annotation.handleMouseClicked(navigatable, tool);
+	}
+
+	@Override
+	public void goToLabel(String symbolName, boolean newWindow) {
+
+		GoToService service = tool.getService(GoToService.class);
+		if (service == null) {
+			return;
+		}
+
+		SymbolIterator symbolIterator = program.getSymbolTable().getSymbols(symbolName);
+		if (!symbolIterator.hasNext()) {
+			tool.setStatusInfo(symbolName + " not found.");
+			return;
+		}
+
+		Navigatable navigatable = this;
+		if (newWindow) {
+			EvtProvider newProvider = plugin.createNewDisconnectedProvider();
+			navigatable = newProvider;
+		}
+
+		QueryData queryData = new QueryData(symbolName, true);
+		service.goToQuery(navigatable, null, queryData, null, null);
+	}
+
+	@Override
+	public void goToScalar(long value, boolean newWindow) {
+
+		GoToService service = tool.getService(GoToService.class);
+		if (service == null) {
+			return;
+		}
+
+		try {
+			// try space/overlay which contains function
+			AddressSpace space = controller.getData().getAddress().getAddressSpace();
+			goToAddress(space.getAddress(value), newWindow);
+			return;
+		}
+		catch (AddressOutOfBoundsException e) {
+			// ignore
+		}
+		try {
+			AddressSpace space = controller.getData().getAddress().getAddressSpace();
+			space.getAddress(value);
+			goToAddress(program.getAddressFactory().getDefaultAddressSpace().getAddress(value),
+				newWindow);
+		}
+		catch (AddressOutOfBoundsException e) {
+			tool.setStatusInfo("Invalid address: " + value);
+		}
+	}
+
+	@Override
+	public void goToAddress(Address address, boolean newWindow) {
+
+		GoToService service = tool.getService(GoToService.class);
+		if (service == null) {
+			return;
+		}
+
+		Navigatable navigatable = this;
+		if (newWindow) {
+			EvtProvider newProvider = plugin.createNewDisconnectedProvider();
+			navigatable = newProvider;
+		}
+
+		service.goTo(navigatable, new ProgramLocation(program, address), program);
+	}
+
+	@Override
+	public void goToFunction(Function function, boolean newWindow) {
+
+		GoToService service = tool.getService(GoToService.class);
+		if (service == null) {
+			return;
+		}
+
+		Navigatable navigatable = this;
+		if (newWindow) {
+			EvtProvider newProvider = plugin.createNewDisconnectedProvider();
+			navigatable = newProvider;
+		}
+
+		if (function.isExternal()) {
+			Symbol symbol = function.getSymbol();
+			ExternalManager externalManager = program.getExternalManager();
+			ExternalLocation externalLocation = externalManager.getExternalLocation(symbol);
+			service.goToExternalLocation(navigatable, externalLocation, true);
+		}
+		else {
+			Address address = function.getEntryPoint();
+			service.goTo(navigatable, new ProgramLocation(program, address), program);
+		}
+	}
+
+	@Override
+	public void doWhenNotBusy(Callback c) {
+		followUpWork.offer(c);
+		followUpWorkUpdater.update();
+	}
+
+	// @Override
+	public EvtPanel getEvtPanel() {
+		return controller.getEvtPanel();
+	}
+
+//==================================================================================================
+// methods called from other members
+//==================================================================================================
+
+	// snapshot callback
+	public void cloneWindow() {
+		EvtProvider newProvider = plugin.createNewDisconnectedProvider();
+
+		// invoke later to give the window manage a chance to create the new window
+		// (its done in an invoke later)
+		Swing.runLater(() -> {
+
+			ViewerPosition myViewPosition = controller.getEvtPanel().getViewerPosition();
+			newProvider.doSetProgram(program);
+
+			// initialize the new provider's cache and then set the location
+			EvtData myDecompileData = controller.getEvtData();
+			newProvider.controller.addToCache(myDecompileData);
+			newProvider.setLocation(currentLocation, myViewPosition);
+
+			// transfer any state after the new decompiler is initialized
+			EvtPanel myPanel = getEvtPanel();
+			EvtPanel newPanel = newProvider.getEvtPanel();
+			newProvider.doWhenNotBusy(() -> {
+				newPanel.setViewerPosition(myViewPosition);
+				// newPanel.cloneHighlights(myPanel);
+			});
+		});
+	}
+
+	@Override
+	public void contextChanged() {
+		tool.contextChanged(this);
+	}
+
+//==================================================================================================
+// private methods
+//==================================================================================================
+	/**
+	 * Updates the windows title and subtitle to reflect the currently decompiled function
+	 */
+	private void updateTitle() {
+		Data data = controller.getEvtData().getData();
+		String programName = (program != null) ? program.getDomainFile().getName() : "";
+		String title = "Evt Disassembler";
+		String functionName = "No script";
+		String tabText = "Evt Disassembler";
+		String subTitle = "";
+		if (data != null) {
+			functionName = data.getPrimarySymbol().getName();
+			title = "Disassemble: " + functionName;
+			subTitle = " (" + programName + ")";
+		}
+		if (!isConnected()) {
+			title = "[" + title + "]";
+			tabText = "[" + functionName + "]";
+		}
+		setTitle(title);
+		setSubTitle(subTitle);
+		setTabText(tabText);
+	}
+
+	private void initializeDecompilerOptions() {
+		ToolOptions fieldOptions = tool.getOptions(GhidraOptions.CATEGORY_BROWSER_FIELDS);
+		ToolOptions opt = tool.getOptions(DecompilePlugin.OPTIONS_TITLE);
+		decompilerOptions.registerOptions(fieldOptions, opt, program);
+
+		opt.addOptionsChangeListener(this);
+
+		ToolOptions codeBrowserOptions = tool.getOptions(GhidraOptions.CATEGORY_BROWSER_FIELDS);
+		codeBrowserOptions.addOptionsChangeListener(this);
+	}
+
+	private void createActions(boolean isConnected) {
+		String owner = plugin.getName();
+
+		// SelectAllAction selectAllAction =
+		// 	new SelectAllAction(owner, controller.getEvtPanel());
+
+		// DockingAction refreshAction = new DockingAction("Refresh", owner) {
+		// 	@Override
+		// 	public void actionPerformed(ActionContext context) {
+		// 		refresh();
+		// 	}
+
+		// 	@Override
+		// 	public boolean isEnabledForContext(ActionContext context) {
+		// 		EvtData decompileData = controller.getEvtData();
+		// 		if (decompileData == null) {
+		// 			return false;
+		// 		}
+		// 		return decompileData.hasDecompileResults();
+		// 	}
+		// };
+		// refreshAction.setToolBarData(new ToolBarData(REFRESH_ICON, "A" /* first on toolbar */));
+		// refreshAction.setDescription("Push at any time to trigger a re-decompile");
+		// refreshAction
+		// 		.setHelpLocation(new HelpLocation(HelpTopics.DECOMPILER, "ToolBarRedecompile")); // just use the default
+
+		// displayUnreachableCodeToggle = new ToggleDockingAction("Toggle Unreachable Code", owner) {
+		// 	@Override
+		// 	public void actionPerformed(ActionContext context) {
+		// 		boolean isSelected = this.isSelected();
+
+		// 		// Set the option based on the button state
+		// 		decompilerOptions.setEliminateUnreachable(!isSelected);
+
+		// 		updateOptionsAndRefresh();
+		// 	}
+
+		// 	@Override
+		// 	public void setSelected(boolean isSelected) {
+		// 		super.setSelected(isSelected);
+
+		// 		// Update the icon to have a slash or not
+		// 		if (!isSelected) {
+		// 			displayUnreachableCodeToggle
+		// 					.setToolBarData(new ToolBarData(TOGGLE_UNREACHABLE_CODE_ICON, "A"));
+		// 		}
+		// 		else {
+		// 			displayUnreachableCodeToggle.setToolBarData(
+		// 				new ToolBarData(TOGGLE_UNREACHABLE_CODE_DISABLED_ICON, "A"));
+		// 		}
+		// 	}
+
+		// 	@Override
+		// 	public boolean isEnabledForContext(ActionContext context) {
+		// 		DecompileData decompileData = controller.getEvtData();
+		// 		if (decompileData == null) {
+		// 			return false;
+		// 		}
+		// 		return decompileData.hasDecompileResults();
+		// 	}
+		// };
+		// displayUnreachableCodeToggle.setDescription("Toggle off to eliminate unreachable code");
+		// displayUnreachableCodeToggle.setHelpLocation(
+		// 	new HelpLocation(HelpTopics.DECOMPILER, "ToolBarEliminateUnreachableCode"));
+
+		// respectReadOnlyFlags = new ToggleDockingAction("Toggle Respecting Read-only Flags", owner) {
+		// 	@Override
+		// 	public void actionPerformed(ActionContext context) {
+		// 		boolean isSelected = this.isSelected();
+
+		// 		// Set the option based on the button state
+		// 		decompilerOptions.setRespectReadOnly(!isSelected);
+
+		// 		updateOptionsAndRefresh();
+		// 	}
+
+		// 	@Override
+		// 	public void setSelected(boolean isSelected) {
+		// 		super.setSelected(isSelected);
+
+		// 		// Update the icon to have a slash or not
+		// 		if (!isSelected) {
+		// 			respectReadOnlyFlags
+		// 					.setToolBarData(new ToolBarData(TOGGLE_READ_ONLY_ICON, "A"));
+		// 		}
+		// 		else {
+		// 			respectReadOnlyFlags
+		// 					.setToolBarData(new ToolBarData(TOGGLE_READ_ONLY_DISABLED_ICON, "A"));
+		// 		}
+		// 	}
+
+		// 	@Override
+		// 	public boolean isEnabledForContext(ActionContext context) {
+		// 		DecompileData decompileData = controller.getEvtData();
+		// 		if (decompileData == null) {
+		// 			return false;
+		// 		}
+		// 		return decompileData.hasDecompileResults();
+		// 	}
+		// };
+		// respectReadOnlyFlags.setDescription("Toggle off to respect readonly flags set on memory");
+		// respectReadOnlyFlags
+		// 		.setHelpLocation(new HelpLocation(HelpTopics.DECOMPILER, "ToolBarRespectReadOnly"));
+
+		// Set the selected state and icon for the above two toggle icons
+		refreshToggleButtons();
+
+		//
+		// Below are actions along with their groups and subgroup information.  The comments
+		// for each section indicates the logical group for the actions that follow.
+		// The actual group String used is for ordering the groups.  The int position is
+		// used to specify a position *within* each group for each action.
+		//
+		// Group naming note:  We can control the ordering of our groups.  We cannot, however,
+		// control the grouping of the dynamically inserted actions, such as the 'comment' actions.
+		// In order to organize our groups around the comment actions, we have
+		// to make our group names based upon the comment group name.
+		// Below you will see group names that will trigger group sorting by number for those
+		// groups before the comments group and then group sorting using the known comment group
+		// name for those groups after the comments.
+		//
+
+		//
+		// Function
+		//
+		// String functionGroup = "1 - Function Group";
+		// int subGroupPosition = 0;
+
+		// SpecifyCPrototypeAction specifyCProtoAction = new SpecifyCPrototypeAction();
+		// setGroupInfo(specifyCProtoAction, functionGroup, subGroupPosition++);
+
+		// OverridePrototypeAction overrideSigAction = new OverridePrototypeAction();
+		// setGroupInfo(overrideSigAction, functionGroup, subGroupPosition++);
+
+		// EditPrototypeOverrideAction editOverrideSigAction = new EditPrototypeOverrideAction();
+		// setGroupInfo(editOverrideSigAction, functionGroup, subGroupPosition++);
+
+		// DeletePrototypeOverrideAction deleteSigAction = new DeletePrototypeOverrideAction();
+		// setGroupInfo(deleteSigAction, functionGroup, subGroupPosition++);
+
+		// RenameFunctionAction renameFunctionAction = new RenameFunctionAction();
+		// setGroupInfo(renameFunctionAction, functionGroup, subGroupPosition++);
+
+		// // not function actions, but they fit nicely in this group
+		// RenameLabelAction renameLabelAction = new RenameLabelAction();
+		// setGroupInfo(renameLabelAction, functionGroup, subGroupPosition++);
+
+		// RemoveLabelAction removeLabelAction = new RemoveLabelAction();
+		// setGroupInfo(removeLabelAction, functionGroup, subGroupPosition++);
+
+		//
+		// Variables
+		//
+		// String variableGroup = "2 - Variable Group";
+		// subGroupPosition = 0; // reset for the next group
+
+		// RenameLocalAction renameLocalAction = new RenameLocalAction();
+		// setGroupInfo(renameLocalAction, variableGroup, subGroupPosition++);
+
+		// RenameGlobalAction renameGlobalAction = new RenameGlobalAction();
+		// setGroupInfo(renameGlobalAction, variableGroup, subGroupPosition++);
+
+		// RenameFieldAction renameFieldAction = new RenameFieldAction();
+		// setGroupInfo(renameFieldAction, variableGroup, subGroupPosition++);
+
+		// RenameBitFieldAction renameBitFieldAction = new RenameBitFieldAction();
+		// setGroupInfo(renameBitFieldAction, variableGroup, subGroupPosition++);
+
+		// ForceUnionAction forceUnionAction = new ForceUnionAction();
+		// setGroupInfo(forceUnionAction, variableGroup, subGroupPosition++);
+
+		// RetypeLocalAction retypeLocalAction = new RetypeLocalAction();
+		// setGroupInfo(retypeLocalAction, variableGroup, subGroupPosition++);
+
+		// CreatePointerRelative createRelativeAction = new CreatePointerRelative();
+		// setGroupInfo(createRelativeAction, variableGroup, subGroupPosition++);
+
+		// RetypeGlobalAction retypeGlobalAction = new RetypeGlobalAction();
+		// setGroupInfo(retypeGlobalAction, variableGroup, subGroupPosition++);
+
+		// RetypeReturnAction retypeReturnAction = new RetypeReturnAction();
+		// setGroupInfo(retypeReturnAction, variableGroup, subGroupPosition++);
+
+		// RetypeFieldAction retypeFieldAction = new RetypeFieldAction();
+		// setGroupInfo(retypeFieldAction, variableGroup, subGroupPosition++);
+
+		// IsolateVariableAction isolateVarAction = new IsolateVariableAction();
+		// setGroupInfo(isolateVarAction, variableGroup, subGroupPosition++);
+
+		// DecompilerStructureVariableAction decompilerCreateStructureAction =
+		// 	new DecompilerStructureVariableAction(owner, tool, controller);
+		// setGroupInfo(decompilerCreateStructureAction, variableGroup, subGroupPosition++);
+
+		// EditDataTypeAction editDataTypeAction = new EditDataTypeAction();
+		// setGroupInfo(editDataTypeAction, variableGroup, subGroupPosition++);
+
+		// // shows the quick editor dialog
+		// EditFieldAction editFieldAction = new EditFieldAction();
+		// setGroupInfo(editFieldAction, variableGroup, subGroupPosition++);
+
+		//
+		// Listing action for Creating Structure on a Variable
+		//
+		// ListingStructureVariableAction listingCreateStructureAction =
+		// 	new ListingStructureVariableAction(owner, tool, controller);
+
+		//
+		// Commit
+		//
+		// String commitGroup = "3 - Commit Group";
+		// subGroupPosition = 0; // reset for the next group
+
+		// CommitParamsAction lockProtoAction = new CommitParamsAction();
+		// setGroupInfo(lockProtoAction, commitGroup, subGroupPosition++);
+
+		// CommitLocalsAction lockLocalAction = new CommitLocalsAction();
+		// setGroupInfo(lockLocalAction, commitGroup, subGroupPosition++);
+
+		// subGroupPosition = 0; // reset for the next group
+
+		//
+		// Highlight
+		//
+		// String highlightGroup = "4a - Highlight Group";
+		// tool.setMenuGroup(new String[] { "Highlight" }, highlightGroup);
+		// HighlightDefinedUseAction defUseHighlightAction = new HighlightDefinedUseAction();
+		// setGroupInfo(defUseHighlightAction, highlightGroup, subGroupPosition++);
+
+		// ForwardSliceAction forwardSliceAction = new ForwardSliceAction();
+		// setGroupInfo(forwardSliceAction, highlightGroup, subGroupPosition++);
+
+		// BackwardsSliceAction backwardSliceAction = new BackwardsSliceAction();
+		// setGroupInfo(backwardSliceAction, highlightGroup, subGroupPosition++);
+
+		// ForwardSliceToPCodeOpsAction forwardSliceToOpsAction = new ForwardSliceToPCodeOpsAction();
+		// setGroupInfo(forwardSliceToOpsAction, highlightGroup, subGroupPosition++);
+
+		// BackwardsSliceToPCodeOpsAction backwardSliceToOpsAction =
+		// 	new BackwardsSliceToPCodeOpsAction();
+		// setGroupInfo(backwardSliceToOpsAction, highlightGroup, subGroupPosition++);
+
+		// tool.setMenuGroup(new String[] { "Secondary Highlight" }, highlightGroup);
+		// SetSecondaryHighlightAction setSecondaryHighlightAction = new SetSecondaryHighlightAction();
+		// setGroupInfo(setSecondaryHighlightAction, highlightGroup, subGroupPosition++);
+
+		// SetSecondaryHighlightColorChooserAction setSecondaryHighlightColorChooserAction =
+		// 	new SetSecondaryHighlightColorChooserAction();
+		// setGroupInfo(setSecondaryHighlightColorChooserAction, highlightGroup, subGroupPosition++);
+
+		// RemoveSecondaryHighlightAction removeSecondaryHighlightAction =
+		// 	new RemoveSecondaryHighlightAction();
+		// setGroupInfo(removeSecondaryHighlightAction, highlightGroup, subGroupPosition++);
+
+		// RemoveAllSecondaryHighlightsAction removeAllSecondadryHighlightsAction =
+		// 	new RemoveAllSecondaryHighlightsAction();
+		// setGroupInfo(removeAllSecondadryHighlightsAction, highlightGroup, subGroupPosition++);
+
+		// PreviousHighlightedTokenAction previousHighlightedTokenAction =
+		// 	new PreviousHighlightedTokenAction();
+		// setGroupInfo(previousHighlightedTokenAction, highlightGroup, subGroupPosition++);
+
+		// NextHighlightedTokenAction nextHighlightedTokenAction = new NextHighlightedTokenAction();
+		// setGroupInfo(nextHighlightedTokenAction, highlightGroup, subGroupPosition++);
+
+		// String convertGroup = "7 - Convert Group";
+		// subGroupPosition = 0;
+		// RemoveEquateAction removeEquateAction = new RemoveEquateAction();
+		// setGroupInfo(removeEquateAction, convertGroup, subGroupPosition++);
+
+		// SetEquateAction setEquateAction = new SetEquateAction(plugin);
+		// setGroupInfo(setEquateAction, convertGroup, subGroupPosition++);
+
+		// ConvertBinaryAction convertBinaryAction = new ConvertBinaryAction(plugin);
+		// setGroupInfo(convertBinaryAction, convertGroup, subGroupPosition++);
+
+		// ConvertDecAction convertDecAction = new ConvertDecAction(plugin);
+		// setGroupInfo(convertDecAction, convertGroup, subGroupPosition++);
+
+		// ConvertFloatAction convertFloatAction = new ConvertFloatAction(plugin);
+		// setGroupInfo(convertFloatAction, convertGroup, subGroupPosition++);
+
+		// ConvertDoubleAction convertDoubleAction = new ConvertDoubleAction(plugin);
+		// setGroupInfo(convertDoubleAction, convertGroup, subGroupPosition++);
+
+		// ConvertHexAction convertHexAction = new ConvertHexAction(plugin);
+		// setGroupInfo(convertHexAction, convertGroup, subGroupPosition++);
+
+		// ConvertOctAction convertOctAction = new ConvertOctAction(plugin);
+		// setGroupInfo(convertOctAction, convertGroup, subGroupPosition++);
+
+		// ConvertCharAction convertCharAction = new ConvertCharAction(plugin);
+		// setGroupInfo(convertCharAction, convertGroup, subGroupPosition++);
+
+		//
+		// Comments
+		//
+		// NOTE: this is just a placeholder to represent where the comment actions should appear
+		//       in relation to our local actions.
+		//
+
+		//
+		// Search
+		//
+		// String searchGroup = "Comment2 - Search Group";
+		// subGroupPosition = 0; // reset for the next group
+
+		// FindAction findAction = new FindAction();
+		// setGroupInfo(findAction, searchGroup, subGroupPosition++);
+
+		//
+		// References
+		//
+
+		// note: set the menu group so that the 'References' group is with the 'Find' action
+		// String referencesParentGroup = searchGroup;
+
+		// FindReferencesToDataTypeAction findReferencesAction =
+		// 	new FindReferencesToDataTypeAction(owner, tool, controller);
+		// setGroupInfo(findReferencesAction, searchGroup, subGroupPosition++);
+		// findReferencesAction.getPopupMenuData().setParentMenuGroup(referencesParentGroup);
+
+		// FindReferencesToHighSymbolAction findReferencesToSymbolAction =
+		// 	new FindReferencesToHighSymbolAction();
+		// setGroupInfo(findReferencesToSymbolAction, searchGroup, subGroupPosition++);
+		// findReferencesToSymbolAction.getPopupMenuData().setParentMenuGroup(referencesParentGroup);
+		// addLocalAction(findReferencesToSymbolAction);
+
+		// FindReferencesToAddressAction findReferencesToAddressAction =
+		// 	new FindReferencesToAddressAction(tool, owner);
+		// setGroupInfo(findReferencesToAddressAction, searchGroup, subGroupPosition++);
+		// findReferencesToAddressAction.getPopupMenuData().setParentMenuGroup(referencesParentGroup);
+		// addLocalAction(findReferencesToAddressAction);
+
+		//
+		// Options
+		//
+		// String optionsGroup = "comment6 - Options Group";
+		// subGroupPosition = 0; // reset for the next group
+
+		// EditPropertiesAction propertiesAction = new EditPropertiesAction(owner, tool);
+		// setGroupInfo(propertiesAction, optionsGroup, subGroupPosition++);
+
+		//
+		// These actions are not in the popup menu
+		//
+		// DebugDecompilerAction debugFunctionAction = new DebugDecompilerAction(controller);
+		// ExportToCAction convertAction = new ExportToCAction();
+		// CloneDecompilerAction cloneDecompilerAction = new CloneDecompilerAction();
+		// GoToNextBraceAction goToNextBraceAction = new GoToNextBraceAction();
+		// GoToPreviousBraceAction goToPreviousBraceAction = new GoToPreviousBraceAction();
+		// DisplayTypeCastsAction displayTypeCastsAction = new DisplayTypeCastsAction(plugin);
+
+		addLocalAction(refreshAction);
+		// addLocalAction(displayUnreachableCodeToggle);
+		// addLocalAction(respectReadOnlyFlags);
+		// addLocalAction(selectAllAction);
+		// addLocalAction(defUseHighlightAction);
+		// addLocalAction(forwardSliceAction);
+		// addLocalAction(backwardSliceAction);
+		// addLocalAction(forwardSliceToOpsAction);
+		// addLocalAction(backwardSliceToOpsAction);
+		// addLocalAction(lockProtoAction);
+		// addLocalAction(lockLocalAction);
+		// addLocalAction(renameLocalAction);
+		// addLocalAction(renameGlobalAction);
+		// addLocalAction(renameFieldAction);
+		// addLocalAction(renameBitFieldAction);
+		// addLocalAction(forceUnionAction);
+		// addLocalAction(setSecondaryHighlightAction);
+		// addLocalAction(setSecondaryHighlightColorChooserAction);
+		// addLocalAction(removeSecondaryHighlightAction);
+		// addLocalAction(removeAllSecondadryHighlightsAction);
+		// addLocalAction(nextHighlightedTokenAction);
+		// addLocalAction(previousHighlightedTokenAction);
+		// addLocalAction(convertBinaryAction);
+		// addLocalAction(convertDecAction);
+		// addLocalAction(convertFloatAction);
+		// addLocalAction(convertDoubleAction);
+		// addLocalAction(convertHexAction);
+		// addLocalAction(convertOctAction);
+		// addLocalAction(convertCharAction);
+		// addLocalAction(setEquateAction);
+		// addLocalAction(removeEquateAction);
+		// addLocalAction(retypeLocalAction);
+		// addLocalAction(createRelativeAction);
+		// addLocalAction(retypeGlobalAction);
+		// addLocalAction(retypeReturnAction);
+		// addLocalAction(retypeFieldAction);
+		// addLocalAction(isolateVarAction);
+		// addLocalAction(decompilerCreateStructureAction);
+		// tool.addAction(listingCreateStructureAction);
+		// addLocalAction(editDataTypeAction);
+		// addLocalAction(editFieldAction);
+		// addLocalAction(specifyCProtoAction);
+		// addLocalAction(overrideSigAction);
+		// addLocalAction(editOverrideSigAction);
+		// addLocalAction(deleteSigAction);
+		// addLocalAction(renameFunctionAction);
+		// addLocalAction(renameLabelAction);
+		// addLocalAction(removeLabelAction);
+		// addLocalAction(debugFunctionAction);
+		// addLocalAction(displayTypeCastsAction);
+		// addLocalAction(convertAction);
+		// addLocalAction(findAction);
+		// addLocalAction(findReferencesAction);
+		// addLocalAction(propertiesAction);
+		// addLocalAction(cloneDecompilerAction);
+		// addLocalAction(goToNextBraceAction);
+		// addLocalAction(goToPreviousBraceAction);
+	}
+
+	/**
+	 * Sets the group and subgroup information for the given action.
+	 */
+	private void setGroupInfo(DockingAction action, String group, int subGroupPosition) {
+		MenuData popupMenuData = action.getPopupMenuData();
+		popupMenuData.setMenuGroup(group);
+
+		// Some groups have numbers reach double-digits.  These will not compare correctly unless
+		// padded.  Ensure all string numbers are at least 2 digits.
+		String numberString = Integer.toString(subGroupPosition);
+		if (numberString.length() == 1) {
+			numberString = '0' + numberString;
+		}
+		popupMenuData.setMenuSubGroup(numberString);
+	}
+
+	@Override
+	public void exportLocation() {
+		if (program != null && currentLocation != null) {
+			plugin.exportLocation(program, currentLocation);
+		}
+	}
+
+	@Override
+	public void writeDataState(SaveState saveState) {
+		super.writeDataState(saveState);
+		if (currentLocation != null) {
+			currentLocation.saveState(saveState);
+		}
+		ViewerPosition vp = controller.getEvtPanel().getViewerPosition();
+		saveState.putInt("INDEX", vp.getIndexAsInt());
+		saveState.putInt("Y_OFFSET", vp.getYOffset());
+
+	}
+
+	@Override
+	public void readDataState(SaveState saveState) {
+		super.readDataState(saveState);
+		int index = saveState.getInt("INDEX", 0);
+		int yOffset = saveState.getInt("Y_OFFSET", 0);
+		ViewerPosition vp = new ViewerPosition(index, 0, yOffset);
+		if (program != null && isVisible()) {
+			currentLocation = ProgramLocation.getLocation(program, saveState);
+			if (currentLocation != null) {
+				controller.display(program, currentLocation, vp);
+			}
+		}
+	}
+
+	@Override
+	public void removeHighlightProvider(ListingHighlightProvider highlightProvider, Program p) {
+		// currently unsupported
+	}
+
+	@Override
+	public void setHighlightProvider(ListingHighlightProvider highlightProvider, Program p) {
+		// currently unsupported
+	}
+
+	public void programClosed(Program closedProgram) {
+		controller.programClosed(closedProgram);
+	}
+
+
+    // private static class EvtHighlightFactory implements FieldHighlightFactory {
+    //     @Override
+    //     public Highlight[] createHighlights(Field field, String text, int cursorTextOffset) {
+    //         return new Highlight[0];
+    //     }
+    // }
+
+    // // Customize GUI
+    // private void buildPanel() {
+    //     panel = new JPanel(new BorderLayout());
+    //     panel.setName("Evt Master Panel");
+
+    //     layout = new EvtLayoutModel(panel, getTool(), hlFactory);
+    //     fieldPanel = new FieldPanel(layout, "Evt Field Panel");
+
+    //     IndexedScrollPane scrollPane = new IndexedScrollPane(fieldPanel);
+    //     scrollPane.setName("Evt Scroll Pane");
+
+    //     panel.add(scrollPane);
+    //     setIcon(Icons.INFO_ICON);
+    //     setDefaultWindowPosition(WindowPosition.RIGHT);
+    //     setVisible(true);
+    // }
+
+	// public EvtToken getTokenAtCursor() {
+	// 	FieldLocation cursorPosition = fieldPanel.getCursorLocation();
+	// 	Field field = fieldPanel.getCurrentField();
+	// 	if (field == null) {
+	// 		return null;
+	// 	}
+	// 	return ((EvtTextField) field).getToken(cursorPosition);
+	// }
+
+
+    // public String getCursorText() {
+    //     EvtToken token = getTokenAtCursor();
+	// 	// ClangToken token = panel.getTokenAtCursor();
+	// 	// if (token == null) {
+	// 	// 	return null;
+	// 	// }
+
+	// 	// if (token instanceof ClangFuncNameToken functionToken) {
+	// 	// 	Function function = DecompilerUtils.getFunction(currentProgram, functionToken);
+	// 	// 	if (function != null) {
+	// 	// 		return function.getName();
+	// 	// 	}
+	// 	// }
+
+	// 	String text = token.getText();
+	// 	return text;        
+    // }
+
+    // private void createActions() {
+    //     Runnable disasmCallback = new Runnable() {
+    //         @Override
+    //         public void run() {
+    //             updateDisasm();
+    //         }
+    //     };
+
+    //     strictMode = new DockingToggle(
+    //         "Strict Mode",
+    //         getOwner(),
+    //         false,
+    //         disasmCallback);
+    //     strictMode.setEnabled(true);
+    //     strictMode.markHelpUnnecessary();
+
+    //     showAddresses = new DockingToggle(
+    //         "Show Addresses",
+    //         getOwner(),
+    //         false,
+    //         disasmCallback);
+    //     showAddresses.setEnabled(true);
+    //     showAddresses.markHelpUnnecessary();
+
+    //     showLineNumbers = new DockingToggle(
+    //         "Show Line Numbers",
+    //         getOwner(),
+    //         false,
+    //         disasmCallback);
+    //     showLineNumbers.setEnabled(true);
+    //     showLineNumbers.markHelpUnnecessary();
+
+    //     snapToSymbol = new DockingToggle(
+    //         "Snap to Symbol",
+    //         getOwner(),
+    //         true,
+    //         disasmCallback);
+    //     snapToSymbol.setEnabled(true);
+    //     snapToSymbol.markHelpUnnecessary();
+
+    //     game = new DockingToggle(
+    //         "Game",
+    //         getOwner(),
+    //         true,
+    //         disasmCallback);
+    //     game.setEnabled(true);
+    //     game.markHelpUnnecessary();
+
+    //     dockingTool.addLocalAction(this, showLineNumbers);
+    //     dockingTool.addLocalAction(this, showAddresses);
+    //     dockingTool.addLocalAction(this, strictMode);
+    //     dockingTool.addLocalAction(this, snapToSymbol);
+    //     dockingTool.addLocalAction(this, game);
+    // }
+
+    private Game game() {
+        if (game.enabled())
+            return Game.SPM;
+        else
+            return Game.TTYD;
     }
 
-    public EvtLayoutModel getLayout() {
-        return layout;
-    }
+    // private EvtData tryDisasm(ProgramLocation location) {
+    //     if (location == null)
+    //         return EvtData.empty("No script selected.");
+
+    //     Program program = location.getProgram();
+    //     Address address = location.getAddress();
+    //     if (snapToSymbol.enabled()) {
+    //         CodeUnit cu = program.getListing().getCodeUnitContaining(address);
+    //         if (cu != null)
+    //             address = cu.getAddress();
+    //     }
+    //     Address startAddress = address;
+        
+    //     Data data = program.getListing().getDataAt(address);
+
+        
+    //     MemoryInputStream stream = new MemoryInputStream(
+    //         program.getMemory().getBlock(address),
+    //         address);
+
+    //     List<Instr> script;
+    //     try {
+    //         script = Instr.disassemble(game(), stream, strictMode.enabled());
+    //     }
+    //     catch (BadEvtException e) {
+    //         String err = "Script appears invalid: " + e.getMessage();
+    //         if (e.strictOnly()) {
+    //             err += "\n(Triggered by Strict mode)";
+    //         }
+    //         return new EvtData(program, startAddress, null, err);
+    //     }
+    //     catch (IOException e) {
+    //         Msg.error(this, "Disassembler failed", e);
+    //         return EvtData.fail(program, startAddress, "Disassembler failed: " + e.getMessage());
+    //     }
+    //     catch (Exception e) {
+    //         Msg.error(this, "Unhandled disassembler exception", e);
+    //         return EvtData.fail(program, startAddress, "Unhandled disassembler exception: " + e.getMessage());
+    //     }
+
+    //     return EvtData.success(program, startAddress, script);
+    // }
+
+    // private EvtLayoutModel layout;
+
+    // private void updateDisasm() {
+    //     EvtData data = tryDisasm(currentLocation);
+    //     layout.buildLayouts(data);
+    // }
 }

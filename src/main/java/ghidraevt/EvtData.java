@@ -3,17 +3,20 @@ package ghidraevt;
 import java.util.List;
 
 import ghidra.program.model.address.Address;
+import ghidra.program.model.listing.Data;
 import ghidra.program.model.listing.Program;
 import jevt.Instr;
 
 public class EvtData {
     private Program program;
+    private Data data;
     private Address startAddress;
     private List<Instr> script;
     private String errorMessage;
 
-    public EvtData(Program program, Address startAddress, List<Instr> script, String errorMesssage) {
+    public EvtData(Program program, Data data, Address startAddress, List<Instr> script, String errorMesssage) {
         this.program = program;
+        this.data = data;
         this.startAddress = startAddress;
         this.script = script;
         this.errorMessage = errorMesssage;
@@ -21,6 +24,10 @@ public class EvtData {
 
     public Program getProgram() {
         return program;
+    }
+
+    public Data getData() {
+        return data;
     }
 
     public Address getStartAddress() {
