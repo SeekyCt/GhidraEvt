@@ -58,7 +58,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 	private final GhidraEvtPlugin plugin;
 	private ClipboardService clipboardService;
 	private EvtClipboardProvider clipboardProvider;
-	private DecompileOptions decompilerOptions;
+	private EvtOptions options;
 
 	private Program program;
 	private ProgramLocation currentLocation;
@@ -102,10 +102,13 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         this.clipboardProvider = new EvtClipboardProvider(plugin, this);
 		setConnected(isConnected);
 
-		decompilerOptions = new DecompileOptions();
-		initializeDecompilerOptions();
+		DecompileOptions decompileOptions = new DecompileOptions();
+		initializeOptions();
+		options = new EvtOptions(decompileOptions);
+
+
 		controller =
-			new EvtController(getTool(), this, decompilerOptions, clipboardProvider);
+			new EvtController(getTool(), this, options, clipboardProvider);
 		evtPanel = controller.getEvtPanel();
 
 		// FUTURE move the hl controller into the panel
@@ -135,9 +138,6 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 
 		programListener = new EvtProgramListener(controller, redecompileUpdater);
 		setDefaultFocusComponent(controller.getEvtPanel());
-
-        // buildPanel();
-        // createActions();
     }
 
 //==================================================================================================
@@ -170,8 +170,8 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 		if (program != null && currentLocation != null) {
 			ToolOptions fieldOptions = tool.getOptions(GhidraOptions.CATEGORY_BROWSER_FIELDS);
 			ToolOptions opt = tool.getOptions(DecompilePlugin.OPTIONS_TITLE);
-			decompilerOptions.grabFromToolAndProgram(fieldOptions, opt, program);
-			controller.setOptions(decompilerOptions);
+			options.grabFromToolAndProgram(fieldOptions, opt, program);
+			controller.setOptions(options);
 
 			refreshToggleButtons();
 
@@ -184,18 +184,17 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 		if (program == null) {
 			return null;
 		}
-		Data data = controller.getData();
-		if (data == null) {
+		Address address = controller.getAddress();
+		if (address == null) {
 			return null;
 		}
 		if (!controller.hasDecompileResults()) {
 			return null;
 		}
 
-		Address entryPoint = data.getAddress();
 		int lineNumber =
 			event != null ? getEvtPanel().getLineNumber(event.getY()) : 0;
-		return new EvtActionContext(this, entryPoint, lineNumber);
+		return new EvtActionContext(this, address, lineNumber);
 	}
 
 	@Override
@@ -249,7 +248,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 
 	@Override
 	public LocationMemento getMemento() {
-        // ViewerPosition vp = controller.getEvtPanel().getViewerPosition();
+        ViewerPosition vp = controller.getEvtPanel().getViewerPosition();
 		return new LocationMemento(program, currentLocation);
 	}
 
@@ -274,7 +273,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 		// boolean decompilerEliminatesUnreachable = decompilerOptions.isEliminateUnreachable();
 		// boolean decompilerRespectsReadOnlyFlags = decompilerOptions.isRespectReadOnly();
 
-		decompilerOptions.grabFromToolAndProgram(fieldOptions, opt, program);
+		options.grabFromToolAndProgram(fieldOptions, opt, program);
 
 		// If the tool options were not changed
 		if (!optionsChanged) {
@@ -287,7 +286,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 			refreshToggleButtons();
 		}
 
-		controller.setOptions(decompilerOptions);
+		controller.setOptions(options);
 
 		if (currentLocation != null) {
 			controller.refreshDisplay(program, currentLocation, null);
@@ -376,7 +375,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 			program.addListener(programListener);
 			ToolOptions fieldOptions = tool.getOptions(GhidraOptions.CATEGORY_BROWSER_FIELDS);
 			ToolOptions opt = tool.getOptions(DecompilePlugin.OPTIONS_TITLE);
-			decompilerOptions.grabFromToolAndProgram(fieldOptions, opt, program);
+			options.grabFromToolAndProgram(fieldOptions, opt, program);
 		}
 
 		clipboardProvider.setProgram(program);
@@ -452,7 +451,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 	 * Update the options from decompilerOptions
 	 */
 	void updateOptionsAndRefresh() {
-		controller.setOptions(decompilerOptions);
+		controller.setOptions(options);
 
 		refresh();
 	}
@@ -484,7 +483,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 	}
 
 	boolean isBusy() {
-		return redecompileUpdater.isBusy() || controller.isDecompiling();
+		return redecompileUpdater.isBusy();
 	}
 
 	/**
@@ -516,7 +515,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 	}
 
 	@Override
-	public void decompileDataChanged(EvtData decompileData) {
+	public void evtDataChanged(EvtData decompileData) {
 		updateTitle();
 		contextChanged();
 		controller.setSelection(currentSelection);
@@ -585,7 +584,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 
 		try {
 			// try space/overlay which contains function
-			AddressSpace space = controller.getData().getAddress().getAddressSpace();
+			AddressSpace space = controller.getAddress().getAddressSpace();
 			goToAddress(space.getAddress(value), newWindow);
 			return;
 		}
@@ -593,7 +592,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 			// ignore
 		}
 		try {
-			AddressSpace space = controller.getData().getAddress().getAddressSpace();
+			AddressSpace space = controller.getAddress().getAddressSpace();
 			space.getAddress(value);
 			goToAddress(program.getAddressFactory().getDefaultAddressSpace().getAddress(value),
 				newWindow);
@@ -673,8 +672,6 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 			newProvider.doSetProgram(program);
 
 			// initialize the new provider's cache and then set the location
-			EvtData myDecompileData = controller.getEvtData();
-			newProvider.controller.addToCache(myDecompileData);
 			newProvider.setLocation(currentLocation, myViewPosition);
 
 			// transfer any state after the new decompiler is initialized
@@ -699,14 +696,15 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 	 * Updates the windows title and subtitle to reflect the currently decompiled function
 	 */
 	private void updateTitle() {
-		Data data = controller.getEvtData().getData();
+		Address address = controller.getEvtData().getAddress();
+		Symbol symbol = program.getSymbolTable().getPrimarySymbol(address);
 		String programName = (program != null) ? program.getDomainFile().getName() : "";
 		String title = "Evt Disassembler";
 		String functionName = "No script";
 		String tabText = "Evt Disassembler";
 		String subTitle = "";
-		if (data != null) {
-			functionName = data.getPrimarySymbol().getName();
+		if (symbol != null) {
+			functionName = symbol.getName();
 			title = "Disassemble: " + functionName;
 			subTitle = " (" + programName + ")";
 		}
@@ -719,10 +717,10 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 		setTabText(tabText);
 	}
 
-	private void initializeDecompilerOptions() {
+	private void initializeOptions() {
 		ToolOptions fieldOptions = tool.getOptions(GhidraOptions.CATEGORY_BROWSER_FIELDS);
 		ToolOptions opt = tool.getOptions(DecompilePlugin.OPTIONS_TITLE);
-		decompilerOptions.registerOptions(fieldOptions, opt, program);
+		options.registerOptions(fieldOptions, opt, program);
 
 		opt.addOptionsChangeListener(this);
 
@@ -1141,6 +1139,24 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 		// addLocalAction(goToPreviousBraceAction);
 	}
 
+	private void toggleOutgoingEvents() {
+		allowOutgoingEvents = !allowOutgoingEvents;
+	}
+
+	boolean shouldSendEvents() {
+		if (isConnected()) {
+			return true;
+		}
+		return allowOutgoingEvents;
+	}
+
+	private void toggleDisplayLock() {
+		lockDisplay = !lockDisplay;
+		if (!lockDisplay) {
+			refresh();
+		}
+	}
+
 	/**
 	 * Sets the group and subgroup information for the given action.
 	 */
@@ -1199,11 +1215,6 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 	public void setHighlightProvider(ListingHighlightProvider highlightProvider, Program p) {
 		// currently unsupported
 	}
-
-	public void programClosed(Program closedProgram) {
-		controller.programClosed(closedProgram);
-	}
-
 
     // private static class EvtHighlightFactory implements FieldHighlightFactory {
     //     @Override
@@ -1292,13 +1303,6 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
     //     dockingTool.addLocalAction(this, snapToSymbol);
     //     dockingTool.addLocalAction(this, game);
     // }
-
-    private Game game() {
-        if (game.enabled())
-            return Game.SPM;
-        else
-            return Game.TTYD;
-    }
 
     // private EvtData tryDisasm(ProgramLocation location) {
     //     if (location == null)

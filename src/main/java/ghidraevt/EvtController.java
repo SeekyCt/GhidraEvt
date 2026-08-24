@@ -4,7 +4,7 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 
 import docking.widgets.fieldpanel.support.ViewerPosition;
-import ghidra.app.decompiler.DecompileOptions;
+import ghidra.app.decompiler.component.DecompileData;
 import ghidra.framework.plugintool.ServiceProvider;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.listing.*;
@@ -29,10 +29,9 @@ public class EvtController {
 	private ProgramSelection currentSelection;
 
 	public EvtController(ServiceProvider serviceProvider, EvtCallbackHandler handler,
-        DecompileOptions options, EvtClipboardProvider clipboard) {
+        EvtOptions options, EvtClipboardProvider clipboard) {
 		this.serviceProvider = serviceProvider;
 		this.callbackHandler = handler;
-		evtMgr = new EvtManager(this, options);
 		evtPanel = new EvtPanel(this, options, clipboard);
 
 		evtPanel.setHoverMode(true);
@@ -55,7 +54,6 @@ public class EvtController {
 	 * be used again.
 	 */
 	public void dispose() {
-		evtMgr.dispose();
 		evtPanel.dispose();
 	}
 
@@ -65,7 +63,6 @@ public class EvtController {
 	 */
 	public void clear() {
 		currentSelection = null;
-		evtMgr.cancelAll();
 		setEvtData(new EmptyEvtData("No Function"));
 	}
 
@@ -87,14 +84,15 @@ public class EvtController {
 			return;
 		}
 
-		evtMgr.decompile(program, location, viewerPosition, null, false);
+		EvtResults results = evtMgr.decompile(program, location, viewerPosition);
+
+		setEvtData(
+			new EvtData(program, location, results, null, viewerPosition)
+		);
+			
 	}
 
 	private boolean isAlreadyDecompiled(ProgramLocation location) {
-		if (evtMgr.isBusy()) {
-			return false;
-		}
-
 		if (!evtPanel.containsLocation(location)) {
 			return false;
 		}
@@ -111,7 +109,7 @@ public class EvtController {
 	 * 
 	 * @param decompilerOptions the options
 	 */
-	public void setOptions(DecompileOptions decompilerOptions) {
+	public void setOptions(EvtOptions decompilerOptions) {
 		evtMgr.setOptions(decompilerOptions);
 		evtPanel.optionsChanged(decompilerOptions);
 	}
@@ -158,7 +156,7 @@ public class EvtController {
 	 * @param debugFile the debug file
 	 */
 	public void refreshDisplay(Program program, ProgramLocation location, File debugFile) {
-		evtMgr.decompile(program, location, null, debugFile, true);
+		evtMgr.decompile(program, location, null);
 	}
 
 	public boolean hasDecompileResults() {
@@ -183,9 +181,9 @@ public class EvtController {
 		return null;
 	}
 
-	public Data getData() {
+	public Address getAddress() {
 		if (currentEvtData != null) {
-			return currentEvtData.getData();
+			return currentEvtData.getAddress();
 		}
 		return null;
 	}

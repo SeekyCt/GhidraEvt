@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import ghidra.program.model.address.Address;
+import ghidra.program.model.listing.Program;
 import ghidra.program.model.mem.MemoryAccessException;
 import ghidra.program.model.mem.MemoryBlock;
 
@@ -14,6 +15,10 @@ public class MemoryInputStream extends InputStream {
     public MemoryInputStream(MemoryBlock block, Address startAddr) {
         this.addr = startAddr;
         this.block = block;
+    }
+
+    public MemoryInputStream(Program program, Address startAddr) {
+        this(program.getMemory().getBlock(startAddr), startAddr);
     }
 
     @Override

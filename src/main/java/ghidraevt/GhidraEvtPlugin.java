@@ -294,9 +294,6 @@ public class GhidraEvtPlugin extends Plugin {
 				removeProvider(provider);
 			}
 		}
-		if (connectedProvider != null) {
-			connectedProvider.programClosed(closedProgram);
-		}
 	}
 
 	public ProgramLocation getCurrentLocation() {

@@ -2,6 +2,7 @@ package ghidraevt;
 
 import java.util.List;
 
+import docking.widgets.fieldpanel.support.ViewerPosition;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.address.AddressSpace;
 import ghidra.program.model.listing.Data;
@@ -11,21 +12,18 @@ import jevt.Instr;
 
 public class EvtData {
 	private final Program program;
-	private final Data data;
 	private final ProgramLocation location;
 	private final EvtResults evtResults;
 	private final String message;
-	// private final ViewerPosition viewerPosition;
-    // private Address startAddress;
+	private final ViewerPosition viewerPosition;
 
-	public EvtData(Program program, Data data, ProgramLocation location,
-			EvtResults evtResults, String errorMessage) {
+	public EvtData(Program program, ProgramLocation location,
+			EvtResults evtResults, String errorMessage, ViewerPosition viewerPosition) {
 		this.program = program;
-		this.data = data;
 		this.location = location;
 		this.evtResults = evtResults;
 		this.message = errorMessage;
-		// this.viewerPosition = viewerPosition;
+		this.viewerPosition = viewerPosition;
 	}
 
 
@@ -33,7 +31,7 @@ public class EvtData {
 		if (evtResults == null) {
 			return false;
 		}
-		return evtResults.getCCodeMarkup() != null;
+		return evtResults.getScript() != null;
 	}
 
 	public boolean isValid() {
@@ -48,26 +46,26 @@ public class EvtData {
 		return program;
 	}
 
-	public Data getData() {
-		return data;
+	public Address getAddress() {
+		return location.getAddress();
 	}
 
 	public ProgramLocation getLocation() {
 		return location;
 	}
 
-	public List<Instr> getCCodeMarkup() {
+	public List<Instr> getScript() {
 		if (evtResults == null) {
 			return null;
 		}
-		return evtResults.getCCodeMarkup();
+		return evtResults.getScript();
 	}
 
 	public String getErrorMessage() {
 		if (message != null) {
 			return message;
 		}
-		if (data == null) {
+		if (location == null || location.getAddress() == null) {
 			return "No data";
 		}
 		if (evtResults != null) {
@@ -91,16 +89,18 @@ public class EvtData {
 			return false;
 		}
 
-        return data.contains(address);
+		Address startAddress = location.getAddress();
+		return startAddress.compareTo(address) < 0 &&
+			address.subtract(startAddress) < evtResults.bytesSize();
 	}
 
 	public AddressSpace getFunctionSpace() {
-		return data.getAddress().getAddressSpace();
+		return location.getAddress().getAddressSpace();
 	}
 
-	// public ViewerPosition getViewerPosition() {
-	// 	return viewerPosition;
-	// }
+	public ViewerPosition getViewerPosition() {
+		return viewerPosition;
+	}
 
 //     public EvtData(Program program, Data data, Address startAddress, EvtResults results, String errorMesssage) {
 //         this.program = program;

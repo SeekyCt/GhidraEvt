@@ -16,7 +16,7 @@ public interface EvtLocation {
 	 * 
 	 * @return C-AST, DFG, and CFG object. null if there are no results attached to this location
 	 */
-	public DecompileResults getDecompile();
+	public EvtResults getDecompile();
 
 	/**
 	 * C text token at the current cursor location

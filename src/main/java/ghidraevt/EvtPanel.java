@@ -23,6 +23,7 @@ import docking.widgets.fieldpanel.support.*;
 import docking.widgets.indexedscrollpane.IndexedScrollPane;
 import generic.theme.GColor;
 import ghidra.app.decompiler.*;
+import ghidra.app.decompiler.component.ClangTextField;
 import ghidra.app.decompiler.component.hover.DecompilerHoverService;
 import ghidra.app.decompiler.component.margin.*;
 import ghidra.app.decompiler.location.*;
@@ -44,7 +45,7 @@ import ghidra.util.task.SwingUpdateManager;
  * Class to handle the display of a decompiled function
  */
 public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocationListener,
-		FieldSelectionListener, ClangHighlightListener, LayoutListener {
+		FieldSelectionListener, LayoutListener {
 
 	private final static Color NON_FUNCTION_BACKGROUND_COLOR_DEF = new GColor("color.bg.undefined");
 
@@ -52,31 +53,19 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 	private final static Color SPECIAL_COLOR_DEF =
 		new GColor("color.bg.decompiler.highlights.special");
 
-	private final DecompilerController controller;
-	private final DecompileOptions options;
+	private final EvtController controller;
+	private final EvtOptions options;
 	private LineNumberDecompilerMarginProvider lineNumbersMargin;
 
-	private final DecompilerFieldPanel fieldPanel;
-	private ClangLayoutController layoutController;
+	private final EvtFieldPanel fieldPanel;
+	private EvtLayoutModel layoutController;
 	private final IndexedScrollPane scroller;
-	private final JComponent taskMonitorComponent;
 
 	private final List<DecompilerMarginProvider> marginProviders = new ArrayList<>();
 	private final VerticalLayoutPixelIndexMap pixmap = new VerticalLayoutPixelIndexMap();
 
 	private FieldHighlightFactory hlFactory;
-	private ClangHighlightController highlightController;
-	private Map<String, DecompilerHighlighter> highlightersById = new HashMap<>();
-	private PendingHighlightUpdate pendingHighlightUpdate;
-	private SwingUpdateManager highlighCursorUpdater = new SwingUpdateManager(() -> {
-		if (pendingHighlightUpdate != null) {
-			pendingHighlightUpdate.doUpdate();
-			pendingHighlightUpdate = null;
-		}
-	});
 
-	private Set<String> ignoredMiddleMouseTokens = Set.of("{", "}", ";");
-	private ActiveMiddleMouse activeMiddleMouse;
 	private int middleMouseHighlightButton;
 	private Color middleMouseHighlightColor;
 	private Color currentVariableHighlightColor;
@@ -86,28 +75,26 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 
 	private DecompilerSearchResults currentSearchResults;
 
-	private DecompileData decompileData = new EmptyDecompileData("No Function");
-	private final DecompilerClipboardProvider clipboard;
+	private EvtData decompileData = new EmptyEvtData("No Function");
+	private final EvtClipboardProvider clipboard;
 
 	private Color originalBackgroundColor;
-	private boolean useNonFunctionColor = false;
 	private boolean navigationEnabled = true;
 
-	private DecompilerHoverProvider decompilerHoverProvider;
+	// private DecompilerHoverProvider decompilerHoverProvider;
 
-	EvtPanel(EvtController controller, DecompileOptions options, EvtClipboardProvider clipboard) {
+	EvtPanel(EvtController controller, EvtOptions options, EvtClipboardProvider clipboard) {
 		this.controller = controller;
 		this.options = options;
 		this.clipboard = clipboard;
-		this.taskMonitorComponent = taskMonitorComponent;
 		FontMetrics metrics = getFontMetrics(options);
 		if (clipboard != null) {
 			clipboard.setFontMetrics(metrics);
 		}
-		hlFactory = new SearchHighlightFactory();
+		// hlFactory = new SearchHighlightFactory();
 
-		layoutController = new ClangLayoutController(options, this, metrics, hlFactory);
-		fieldPanel = new DecompilerFieldPanel(layoutController);
+		layoutController = new EvtLayoutModel(options, this, metrics, hlFactory);
+		fieldPanel = new EvtFieldPanel(layoutController);
 
 		scroller = new IndexedScrollPane(fieldPanel);
 		fieldPanel.addFieldSelectionListener(this);
@@ -130,7 +117,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 
 		setBackground(options.getBackgroundColor());
 
-		decompilerHoverProvider = new DecompilerHoverProvider();
+		// decompilerHoverProvider = new DecompilerHoverProvider();
 
 		activeSearchHighlightColor = options.getActiveSearchHighlightColor();
 		searchHighlightColor = options.getSearchHighlightColor();
@@ -140,21 +127,20 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 
 		setLayout(new BorderLayout());
 		add(scroller);
-		add(taskMonitorComponent, BorderLayout.SOUTH);
 
 		setPreferredSize(new Dimension(600, 400));
-		setDecompileData(new EmptyDecompileData("No Function"));
+		setEvtData(new EmptyEvtData("No Function"));
 
-		if (options.isDisplayLineNumbers()) {
-			addMarginProvider(lineNumbersMargin = new LineNumberDecompilerMarginProvider());
-		}
+		// if (options.isDisplayLineNumbers()) {
+		// 	addMarginProvider(lineNumbersMargin = new LineNumberDecompilerMarginProvider());
+		// }
 	}
 
 	public EvtController getController() {
 		return controller;
 	}
 
-	public List<ClangLine> getLines() {
+	public List<EvtLine> getLines() {
 		return layoutController.getLines();
 	}
 
@@ -170,195 +156,195 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 // Highlight Methods
 //==================================================================================================
 
-	public TokenHighlightColors getSecondaryHighlightColors() {
-		return highlightController.getSecondaryHighlightColors();
-	}
+	// public TokenHighlightColors getSecondaryHighlightColors() {
+	// 	return highlightController.getSecondaryHighlightColors();
+	// }
 
-	public boolean hasSecondaryHighlights(Function function) {
-		return highlightController.hasSecondaryHighlights(function);
-	}
+	// public boolean hasSecondaryHighlights(Function function) {
+	// 	return highlightController.hasSecondaryHighlights(function);
+	// }
 
-	public boolean hasSecondaryHighlight(ClangToken token) {
-		return highlightController.hasSecondaryHighlight(token);
-	}
+	// public boolean hasSecondaryHighlight(EvtToken token) {
+	// 	return highlightController.hasSecondaryHighlight(token);
+	// }
 
-	public Color getSecondaryHighlight(ClangToken token) {
-		return highlightController.getSecondaryHighlight(token);
-	}
+	// public Color getSecondaryHighlight(EvtToken token) {
+	// 	return highlightController.getSecondaryHighlight(token);
+	// }
 
-	public TokenHighlights getHighlights(DecompilerHighlighter highligter) {
-		return highlightController.getHighlighterHighlights(highligter);
-	}
+	// public TokenHighlights getHighlights(DecompilerHighlighter highligter) {
+	// 	return highlightController.getHighlighterHighlights(highligter);
+	// }
 
-	public TokenHighlights getMiddleMouseHighlights() {
-		if (activeMiddleMouse != null) {
-			return activeMiddleMouse.getHighlights();
-		}
-		return null;
-	}
+	// public TokenHighlights getMiddleMouseHighlights() {
+	// 	if (activeMiddleMouse != null) {
+	// 		return activeMiddleMouse.getHighlights();
+	// 	}
+	// 	return null;
+	// }
 
-	private Set<DecompilerHighlighter> getSecondaryHighlihgtersByFunction(Function function) {
-		return highlightController.getSecondaryHighlighters(function);
-	}
+	// private Set<DecompilerHighlighter> getSecondaryHighlihgtersByFunction(Function function) {
+	// 	return highlightController.getSecondaryHighlighters(function);
+	// }
 
 	/**
 	 * Removes all secondary highlights for the current function
 	 *
 	 * @param function the function containing the secondary highlights
 	 */
-	public void removeSecondaryHighlights(Function function) {
-		highlightController.removeSecondaryHighlights(function);
-	}
+	// public void removeSecondaryHighlights(Function function) {
+	// 	highlightController.removeSecondaryHighlights(function);
+	// }
 
-	public void removeSecondaryHighlight(ClangToken token) {
-		highlightController.removeSecondaryHighlights(token);
-	}
+	// public void removeSecondaryHighlight(EvtToken token) {
+	// 	highlightController.removeSecondaryHighlights(token);
+	// }
 
-	public void addSecondaryHighlight(ClangToken token) {
-		ColorProvider cp = highlightController.getGeneratedColorProvider();
-		addSecondaryHighlight(token.getText(), cp);
-	}
+	// public void addSecondaryHighlight(EvtToken token) {
+	// 	ColorProvider cp = highlightController.getGeneratedColorProvider();
+	// 	addSecondaryHighlight(token.getText(), cp);
+	// }
 
-	public void addSecondaryHighlight(ClangToken token, Color color) {
-		ColorProvider cp = new DefaultColorProvider("User Secondary Highlight", color);
-		addSecondaryHighlight(token.getText(), cp);
-	}
+	// public void addSecondaryHighlight(EvtToken token, Color color) {
+	// 	ColorProvider cp = new DefaultColorProvider("User Secondary Highlight", color);
+	// 	addSecondaryHighlight(token.getText(), cp);
+	// }
 
-	private void addSecondaryHighlight(String tokenText, ColorProvider colorProvider) {
-		NameTokenMatcher matcher = new NameTokenMatcher(tokenText, colorProvider);
-		DecompilerHighlighter highlighter = createHighlighter(matcher);
-		applySecondaryHighlights(highlighter);
-	}
+	// private void addSecondaryHighlight(String tokenText, ColorProvider colorProvider) {
+	// 	NameTokenMatcher matcher = new NameTokenMatcher(tokenText, colorProvider);
+	// 	DecompilerHighlighter highlighter = createHighlighter(matcher);
+	// 	applySecondaryHighlights(highlighter);
+	// }
 
-	private void applySecondaryHighlights(DecompilerHighlighter highlighter) {
-		Function function = decompileData.getData();
-		highlightController.addSecondaryHighlighter(function, highlighter);
-		highlighter.applyHighlights();
-	}
+	// private void applySecondaryHighlights(DecompilerHighlighter highlighter) {
+	// 	Function function = decompileData.getData();
+	// 	highlightController.addSecondaryHighlighter(function, highlighter);
+	// 	highlighter.applyHighlights();
+	// }
 
-	private void toggleMiddleMouseHighlight(FieldLocation location, Field field) {
-		ClangToken token = ((ClangTextField) field).getToken(location);
+	// private void toggleMiddleMouseHighlight(FieldLocation location, Field field) {
+	// 	EvtToken token = ((ClangTextField) field).getToken(location);
 
-		ActiveMiddleMouse previousMiddleMouse = activeMiddleMouse;
-		activeMiddleMouse = null;
+	// 	ActiveMiddleMouse previousMiddleMouse = activeMiddleMouse;
+	// 	activeMiddleMouse = null;
 
-		if (previousMiddleMouse != null) {
-			// middle mousing always clears the last middle-mouse highlight
-			previousMiddleMouse.clear();
+	// 	if (previousMiddleMouse != null) {
+	// 		// middle mousing always clears the last middle-mouse highlight
+	// 		previousMiddleMouse.clear();
 
-			if (previousMiddleMouse.matches(token)) {
-				// middle mousing on the same token clears, but does not create a new highlight
-				return;
-			}
-		}
+	// 		if (previousMiddleMouse.matches(token)) {
+	// 			// middle mousing on the same token clears, but does not create a new highlight
+	// 			return;
+	// 		}
+	// 	}
 
-		// exclude tokens that users do not want to highlight
-		if (shouldIgnoreOpToken(token)) {
-			return;
-		}
-		if (shouldIgnoreSyntaxTokenHighlight(token)) {
-			return;
-		}
+	// 	// exclude tokens that users do not want to highlight
+	// 	if (shouldIgnoreOpToken(token)) {
+	// 		return;
+	// 	}
+	// 	if (shouldIgnoreSyntaxTokenHighlight(token)) {
+	// 		return;
+	// 	}
 
-		ActiveMiddleMouse newMiddleMouse = new ActiveMiddleMouse(token.getText());
-		newMiddleMouse.apply();
-		activeMiddleMouse = newMiddleMouse;
-	}
+	// 	ActiveMiddleMouse newMiddleMouse = new ActiveMiddleMouse(token.getText());
+	// 	newMiddleMouse.apply();
+	// 	activeMiddleMouse = newMiddleMouse;
+	// }
 
-	private boolean shouldIgnoreOpToken(ClangToken token) {
-		if (!(token instanceof ClangOpToken)) {
-			return false;
-		}
+	// private boolean shouldIgnoreOpToken(EvtToken token) {
+	// 	if (!(token instanceof ClangOpToken)) {
+	// 		return false;
+	// 	}
 
-		// users would like to be able to highlight return statements
-		String text = token.toString();
-		return !text.equals("return");
-	}
+	// 	// users would like to be able to highlight return statements
+	// 	String text = token.toString();
+	// 	return !text.equals("return");
+	// }
 
-	private boolean shouldIgnoreSyntaxTokenHighlight(ClangToken token) {
+	// private boolean shouldIgnoreSyntaxTokenHighlight(EvtToken token) {
 
-		if (!(token instanceof ClangSyntaxToken syntaxToken)) {
-			return false;
-		}
+	// 	if (!(token instanceof ClangSyntaxToken syntaxToken)) {
+	// 		return false;
+	// 	}
 
-		String string = syntaxToken.toString();
-		return ignoredMiddleMouseTokens.contains(string);
-	}
+	// 	String string = syntaxToken.toString();
+	// 	return ignoredMiddleMouseTokens.contains(string);
+	// }
 
-	void addHighlighterHighlights(ClangDecompilerHighlighter highlighter,
-			Supplier<? extends Collection<ClangToken>> tokens, ColorProvider colorProvider) {
-		highlightController.addHighlighterHighlights(highlighter, tokens, colorProvider);
-	}
+	// void addHighlighterHighlights(ClangDecompilerHighlighter highlighter,
+	// 		Supplier<? extends Collection<EvtToken>> tokens, ColorProvider colorProvider) {
+	// 	highlightController.addHighlighterHighlights(highlighter, tokens, colorProvider);
+	// }
 
-	void removeHighlighterHighlights(DecompilerHighlighter highlighter) {
-		highlightController.removeHighlighterHighlights(highlighter);
-	}
+	// void removeHighlighterHighlights(DecompilerHighlighter highlighter) {
+	// 	highlightController.removeHighlighterHighlights(highlighter);
+	// }
 
-	private DecompilerHighlighter createHighlighter(CTokenHighlightMatcher tm) {
-		Function function = decompileData.getData();
-		return createHighlighter(function, tm);
-	}
+	// private DecompilerHighlighter createHighlighter(CTokenHighlightMatcher tm) {
+	// 	Function function = decompileData.getData();
+	// 	return createHighlighter(function, tm);
+	// }
 
-	public DecompilerHighlighter createHighlighter(Function f, CTokenHighlightMatcher tm) {
-		UUID uuId = UUID.randomUUID();
-		String id = uuId.toString();
-		return createHighlighter(id, f, tm);
-	}
+	// public DecompilerHighlighter createHighlighter(Function f, CTokenHighlightMatcher tm) {
+	// 	UUID uuId = UUID.randomUUID();
+	// 	String id = uuId.toString();
+	// 	return createHighlighter(id, f, tm);
+	// }
 
-	public DecompilerHighlighter createHighlighter(String id, Function f,
-			CTokenHighlightMatcher tm) {
-		DecompilerHighlighter currentHighlighter = highlightersById.get(id);
-		if (currentHighlighter != null) {
-			currentHighlighter.dispose();
-		}
+	// public DecompilerHighlighter createHighlighter(String id, Function f,
+	// 		CTokenHighlightMatcher tm) {
+	// 	DecompilerHighlighter currentHighlighter = highlightersById.get(id);
+	// 	if (currentHighlighter != null) {
+	// 		currentHighlighter.dispose();
+	// 	}
 
-		ClangDecompilerHighlighter newHighlighter = new ClangDecompilerHighlighter(id, this, f, tm);
-		highlightersById.put(id, newHighlighter);
-		highlightController.addHighlighter(newHighlighter);
-		return newHighlighter;
-	}
+	// 	ClangDecompilerHighlighter newHighlighter = new ClangDecompilerHighlighter(id, this, f, tm);
+	// 	highlightersById.put(id, newHighlighter);
+	// 	highlightController.addHighlighter(newHighlighter);
+	// 	return newHighlighter;
+	// }
 
-	public DecompilerHighlighter getHighlighter(String id) {
-		return highlightersById.get(id);
-	}
+	// public DecompilerHighlighter getHighlighter(String id) {
+	// 	return highlightersById.get(id);
+	// }
 
-	void removeHighlighter(String id) {
-		DecompilerHighlighter highlighter = highlightersById.remove(id);
-		highlightController.removeHighlighter(highlighter);
-	}
+	// void removeHighlighter(String id) {
+	// 	DecompilerHighlighter highlighter = highlightersById.remove(id);
+	// 	highlightController.removeHighlighter(highlighter);
+	// }
 
-	public void clearPrimaryHighlights() {
-		highlightController.clearPrimaryHighlights();
-	}
+	// public void clearPrimaryHighlights() {
+	// 	highlightController.clearPrimaryHighlights();
+	// }
 
-	public void addHighlights(Set<Varnode> varnodes, ColorProvider colorProvider) {
-		ClangTokenGroup root = layoutController.getRoot();
-		highlightController.addPrimaryHighlights(root, colorProvider);
-	}
+	// public void addHighlights(Set<Varnode> varnodes, ColorProvider colorProvider) {
+	// 	ClangTokenGroup root = layoutController.getRoot();
+	// 	highlightController.addPrimaryHighlights(root, colorProvider);
+	// }
 
-	public void addHighlights(Set<PcodeOp> ops, Color hlColor) {
-		ClangTokenGroup root = layoutController.getRoot();
-		highlightController.addPrimaryHighlights(root, ops, hlColor);
-	}
+	// public void addHighlights(Set<PcodeOp> ops, Color hlColor) {
+	// 	ClangTokenGroup root = layoutController.getRoot();
+	// 	highlightController.addPrimaryHighlights(root, ops, hlColor);
+	// }
 
-	public void setHighlightController(ClangHighlightController highlightController) {
-		if (this.highlightController != null) {
-			this.highlightController.removeListener(this);
-		}
+	// public void setHighlightController(ClangHighlightController highlightController) {
+	// 	if (this.highlightController != null) {
+	// 		this.highlightController.removeListener(this);
+	// 	}
 
-		this.highlightController = ClangHighlightController.dummyIfNull(highlightController);
-		highlightController.setHighlightColor(currentVariableHighlightColor);
-		highlightController.addListener(this);
-	}
+	// 	this.highlightController = ClangHighlightController.dummyIfNull(highlightController);
+	// 	highlightController.setHighlightColor(currentVariableHighlightColor);
+	// 	highlightController.addListener(this);
+	// }
 
-	public ClangHighlightController getHighlightController() {
-		return highlightController;
-	}
+	// public ClangHighlightController getHighlightController() {
+	// 	return highlightController;
+	// }
 
-	@Override
-	public void tokenHighlightsChanged() {
-		repaint();
-	}
+	// @Override
+	// public void tokenHighlightsChanged() {
+	// 	repaint();
+	// }
 
 	/**
 	 * This function is used to alert the panel that a token was renamed. If the token being renamed
@@ -374,65 +360,65 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 	 * @param token the token being renamed
 	 * @param newName the new name of the token
 	 */
-	public void tokenRenamed(ClangToken token, String newName) {
+	public void tokenRenamed(EvtToken token, String newName) {
 		repairMiddleMouseSelectionForRename(token, newName);
 		repairSecondarySelectionForRename(token, newName);
 	}
 
-	private void repairSecondarySelectionForRename(ClangToken token, String newName) {
-		Color hlColor = highlightController.getSecondaryHighlight(token);
-		if (hlColor == null) {
-			return; // not highlighted
-		}
+	private void repairSecondarySelectionForRename(EvtToken token, String newName) {
+		// Color hlColor = highlightController.getSecondaryHighlight(token);
+		// if (hlColor == null) {
+		// 	return; // not highlighted
+		// }
 
-		highlightController.removeSecondaryHighlights(token);
+		// highlightController.removeSecondaryHighlights(token);
 
-		// Add the new highlighter when we have rebuilt the token
-		controller.doWhenNotBusy(() -> {
-			addSecondaryHighlight(newName, t -> hlColor);
-		});
+		// // Add the new highlighter when we have rebuilt the token
+		// controller.doWhenNotBusy(() -> {
+		// 	addSecondaryHighlight(newName, t -> hlColor);
+		// });
 	}
 
-	private void repairMiddleMouseSelectionForRename(ClangToken token, String newName) {
-		if (activeMiddleMouse == null || !activeMiddleMouse.matches(token)) {
-			return;
-		}
+	private void repairMiddleMouseSelectionForRename(EvtToken token, String newName) {
+		// if (activeMiddleMouse == null || !activeMiddleMouse.matches(token)) {
+		// 	return;
+		// }
 
-		activeMiddleMouse.clear();
-		activeMiddleMouse = new ActiveMiddleMouse(newName);
+		// activeMiddleMouse.clear();
+		// activeMiddleMouse = new ActiveMiddleMouse(newName);
 
-		// Apply the new middle-mouse highlighter when we have rebuilt the token
-		controller.doWhenNotBusy(() -> {
-			activeMiddleMouse.apply();
-		});
+		// // Apply the new middle-mouse highlighter when we have rebuilt the token
+		// controller.doWhenNotBusy(() -> {
+		// 	activeMiddleMouse.apply();
+		// });
 	}
 
-	private void cloneServiceHiglighters(DecompilerPanel sourcePanel) {
+	// private void cloneServiceHiglighters(EvtPanel sourcePanel) {
 
-		Set<DecompilerHighlighter> serviceHighlighters =
-			sourcePanel.highlightController.getServiceHighlighters();
+	// 	Set<DecompilerHighlighter> serviceHighlighters =
+	// 		sourcePanel.highlightController.getServiceHighlighters();
 
-		for (DecompilerHighlighter otherHighlighter : serviceHighlighters) {
+	// 	for (DecompilerHighlighter otherHighlighter : serviceHighlighters) {
 
-			if (!(otherHighlighter instanceof ClangDecompilerHighlighter clangHighlighter)) {
-				continue;
-			}
+	// 		if (!(otherHighlighter instanceof ClangDecompilerHighlighter clangHighlighter)) {
+	// 			continue;
+	// 		}
 
-			DecompilerHighlighter newHighlighter = clangHighlighter.clone(this);
-			highlightersById.put(newHighlighter.getId(), newHighlighter);
+	// 		DecompilerHighlighter newHighlighter = clangHighlighter.clone(this);
+	// 		highlightersById.put(newHighlighter.getId(), newHighlighter);
 
-			TokenHighlights otherHighlighterTokens =
-				sourcePanel.highlightController.getHighlighterHighlights(otherHighlighter);
-			if (otherHighlighterTokens == null || otherHighlighterTokens.isEmpty()) {
-				// The highlighter has been created but no highlights have been applied.  It is up
-				// to the client to apply the highlights. The new highlighter will respond to the
-				// client request if the later apply the highlights.
-				continue;
-			}
+	// 		TokenHighlights otherHighlighterTokens =
+	// 			sourcePanel.highlightController.getHighlighterHighlights(otherHighlighter);
+	// 		if (otherHighlighterTokens == null || otherHighlighterTokens.isEmpty()) {
+	// 			// The highlighter has been created but no highlights have been applied.  It is up
+	// 			// to the client to apply the highlights. The new highlighter will respond to the
+	// 			// client request if the later apply the highlights.
+	// 			continue;
+	// 		}
 
-			newHighlighter.applyHighlights();
-		}
-	}
+	// 		newHighlighter.applyHighlights();
+	// 	}
+	// }
 
 	/**
 	 * Called by the provider to clone all highlights in the source panel and apply them to this
@@ -440,33 +426,33 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 	 *
 	 * @param sourcePanel the panel that was cloned
 	 */
-	public void cloneHighlights(DecompilerPanel sourcePanel) {
+	// public void cloneHighlights(EvtPanel sourcePanel) {
 
-		Function function = decompileData.getData();
-		cloneServiceHiglighters(sourcePanel);
+	// 	Function function = decompileData.getData();
+	// 	cloneServiceHiglighters(sourcePanel);
 
-		//
-		// Keep only those secondary highlighters for the current function.  This ensures that the
-		// clone will match the cloned decompiler.
-		//
-		Set<DecompilerHighlighter> secondaryHighlighters =
-			sourcePanel.getSecondaryHighlihgtersByFunction(function);
+	// 	//
+	// 	// Keep only those secondary highlighters for the current function.  This ensures that the
+	// 	// clone will match the cloned decompiler.
+	// 	//
+	// 	Set<DecompilerHighlighter> secondaryHighlighters =
+	// 		sourcePanel.getSecondaryHighlihgtersByFunction(function);
 
-		//
-		// We do NOT clone the secondary highlighters.  This allows the user the remove them
-		// from the primary provider without effecting the cloned provider and vice versa.
-		//
-		for (DecompilerHighlighter highlighter : secondaryHighlighters) {
+	// 	//
+	// 	// We do NOT clone the secondary highlighters.  This allows the user the remove them
+	// 	// from the primary provider without effecting the cloned provider and vice versa.
+	// 	//
+	// 	for (DecompilerHighlighter highlighter : secondaryHighlighters) {
 
-			if (!(highlighter instanceof ClangDecompilerHighlighter clangHighlighter)) {
-				continue;
-			}
+	// 		if (!(highlighter instanceof ClangDecompilerHighlighter clangHighlighter)) {
+	// 			continue;
+	// 		}
 
-			DecompilerHighlighter newHighlighter = clangHighlighter.copy(this);
-			highlightersById.put(newHighlighter.getId(), newHighlighter);
-			applySecondaryHighlights(newHighlighter);
-		}
-	}
+	// 		DecompilerHighlighter newHighlighter = clangHighlighter.copy(this);
+	// 		highlightersById.put(newHighlighter.getId(), newHighlighter);
+	// 		applySecondaryHighlights(newHighlighter);
+	// 	}
+	// }
 
 //==================================================================================================
 // End Highlight Methods
@@ -475,9 +461,6 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 	@Override
 	public void setBackground(Color bg) {
 		originalBackgroundColor = bg;
-		if (useNonFunctionColor) {
-			bg = NON_FUNCTION_BACKGROUND_COLOR_DEF;
-		}
 		if (fieldPanel != null) {
 			fieldPanel.setBackgroundColor(bg);
 			scroller.setBackground(bg);
@@ -496,15 +479,11 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 			return;
 		}
 
-		DecompileData oldData = this.decompileData;
+		EvtData oldData = this.decompileData;
 		this.decompileData = decompileData;
-		Function function = decompileData.getData();
+		Address address = decompileData.getAddress();
 		if (decompileData.hasDecompileResults()) {
-			layoutController.buildLayouts(function, decompileData.getCCodeMarkup(), null, true);
-			if (decompileData.getDebugFile() != null) {
-				controller.setStatusMessage(
-					"Debug file generated: " + decompileData.getDebugFile().getAbsolutePath());
-			}
+			layoutController.buildLayouts(address, decompileData.getScript(), null, true);
 		}
 		else {
 			layoutController.buildLayouts(null, null, decompileData.getErrorMessage(), true);
@@ -512,10 +491,9 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 
 		setLocation(oldData, decompileData);
 
-		decompilerHoverProvider.setProgram(decompileData.getProgram());
+		// decompilerHoverProvider.setProgram(decompileData.getProgram());
 
 		// give user notice when seeing the decompile of a non-function
-		useNonFunctionColor = function instanceof UndefinedFunction;
 		setBackground(originalBackgroundColor);
 
 		if (clipboard != null) {
@@ -528,14 +506,14 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 			currentSearchResults = null;
 		}
 
-		if (function != null) {
-			highlightController.reapplyAllHighlights(function);
-		}
+		// if (function != null) {
+			// highlightController.reapplyAllHighlights(function);
+		// }
 	}
 
-	private void setLocation(DecompileData oldData, DecompileData newData) {
-		Function function = oldData.getData();
-		if (SystemUtilities.isEqual(function, newData.getData())) {
+	private void setLocation(EvtData oldData, EvtData newData) {
+		Address address = oldData.getAddress();
+		if (SystemUtilities.isEqual(address, newData.getAddress())) {
 			return;
 		}
 
@@ -564,71 +542,16 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 				viewerPosition.getYOffset());
 		}
 
-		if (location instanceof DecompilerLocation) {
-			DecompilerLocation decompilerLocation = (DecompilerLocation) location;
+		if (location instanceof EvtLocation) {
+			EvtLocation decompilerLocation = (EvtLocation) location;
 			fieldPanel.goTo(BigInteger.valueOf(decompilerLocation.getLineNumber()), 0, 0,
 				decompilerLocation.getCharPos(), false);
 			return;
 		}
 
-		//
-		// Try to figure out where the given location's address maps to.  If we can find the
-		// line that contains the address, the go to the beginning of that line.  (We do not try
-		// to go to an actual token, since multiple tokens can share an address, we woudln't know
-		// which token is best.)
-		//
-		// Note:  at the time of this writing, not all fields have an address value.  For
-		//        example, the ClangFuncNameToken, does not have an address.  (It seems that most
-		//        of the tokens in the function signature do not have an address, which can
-		//        probably be fixed.)   So, to deal with this oddity, we will have some special
-		//        case code below.
-		//
-		Address address = location.getAddress();
-		if (goToFunctionSignature(address)) {
-			// special case: the address is at the function entry, which means we just navigate
-			// to the signature
-			return;
-		}
-
-		List<ClangToken> tokens =
-			DecompilerUtils.getTokensFromView(layoutController.getFields(), address);
+		List<EvtToken> tokens =
+			EvtUtils.getTokensFromView(layoutController.getFields(), location.getAddress());
 		goToBeginningOfLine(tokens);
-	}
-
-	private boolean goToFunctionSignature(Address address) {
-
-		if (!decompileData.hasDecompileResults()) {
-			return false;
-		}
-
-		Address entry = decompileData.getData().getEntryPoint();
-		if (!entry.equals(address)) {
-			return false;
-		}
-
-		List<ClangLine> lines = layoutController.getLines();
-		ClangLine signatureLine = getFunctionSignatureLine(lines);
-		if (signatureLine == null) {
-			return false; // can happen when there is no function decompiled
-		}
-
-		// -1 since the FieldPanel is 0-based; we are 1-based
-		int lineNumber = signatureLine.getLineNumber() - 1;
-		fieldPanel.goTo(BigInteger.valueOf(lineNumber), 0, 0, 0, false);
-
-		return true;
-	}
-
-	private ClangLine getFunctionSignatureLine(List<ClangLine> functionLines) {
-		for (ClangLine line : functionLines) {
-			List<ClangToken> tokens = line.getAllTokens();
-			for (ClangToken token : tokens) {
-				if (token.Parent() instanceof ClangFuncProto) {
-					return line;
-				}
-			}
-		}
-		return null;
 	}
 
 	/**
@@ -636,25 +559,25 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 	 *
 	 * @param tokens the tokens to search for
 	 */
-	private void goToBeginningOfLine(List<ClangToken> tokens) {
+	private void goToBeginningOfLine(List<EvtToken> tokens) {
 		if (tokens.isEmpty()) {
 			return;
 		}
 
 		int firstLineNumber =
-			DecompilerUtils.findIndexOfFirstField(tokens, layoutController.getFields());
+			EvtUtils.findIndexOfFirstField(tokens, layoutController.getFields());
 		if (firstLineNumber != -1) {
 			fieldPanel.goTo(BigInteger.valueOf(firstLineNumber), 0, 0, 0, false);
 		}
 	}
 
-	public void goToToken(ClangToken token) {
+	public void goToToken(EvtToken token) {
 
-		ClangLine line = token.getLineParent();
+		EvtLine line = token.getLineParent();
 
 		int offset = 0;
-		List<ClangToken> tokens = line.getAllTokens();
-		for (ClangToken lineToken : tokens) {
+		List<EvtToken> tokens = line.getAllTokens();
+		for (EvtToken lineToken : tokens) {
 			if (lineToken.equals(token)) {
 				break;
 			}
@@ -701,35 +624,35 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 			fieldSelection = new FieldSelection();
 		}
 		else {
-			List<ClangToken> tokens =
-				DecompilerUtils.getTokens(layoutController.getRoot(), selection);
-			fieldSelection = DecompilerUtils.getFieldSelection(tokens);
+			List<EvtToken> tokens =
+				EvtUtils.getTokens(layoutController.getLines(), selection);
+			fieldSelection = EvtUtils.getFieldSelection(tokens);
 		}
 		fieldPanel.setSelection(fieldSelection);
 	}
 
-	public void setDecompilerHoverProvider(DecompilerHoverProvider provider) {
-		if (provider == null) {
-			throw new IllegalArgumentException("Cannot set the hover handler to null!");
-		}
+	// public void setDecompilerHoverProvider(DecompilerHoverProvider provider) {
+	// 	if (provider == null) {
+	// 		throw new IllegalArgumentException("Cannot set the hover handler to null!");
+	// 	}
 
-		if (decompilerHoverProvider != null) {
-			if (decompilerHoverProvider.isShowing()) {
-				decompilerHoverProvider.closeHover();
-			}
-			decompilerHoverProvider.initializeListingHoverHandler(provider);
-			decompilerHoverProvider.dispose();
-		}
-		decompilerHoverProvider = provider;
-	}
+	// 	if (decompilerHoverProvider != null) {
+	// 		if (decompilerHoverProvider.isShowing()) {
+	// 			decompilerHoverProvider.closeHover();
+	// 		}
+	// 		decompilerHoverProvider.initializeListingHoverHandler(provider);
+	// 		decompilerHoverProvider.dispose();
+	// 	}
+	// 	decompilerHoverProvider = provider;
+	// }
 
 	public void dispose() {
-		setDecompileData(new EmptyDecompileData("Disposed"));
+		setEvtData(new EmptyEvtData("Disposed"));
 		layoutController = null;
-		decompilerHoverProvider.dispose();
-		highlighCursorUpdater.dispose();
-		highlightController.dispose();
-		highlightersById.clear();
+		// decompilerHoverProvider.dispose();
+		// highlighCursorUpdater.dispose();
+		// highlightController.dispose();
+		// highlightersById.clear();
 	}
 
 	public FontMetrics getFontMetrics() {
@@ -737,7 +660,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 		return super.getFontMetrics(font);
 	}
 
-	private FontMetrics getFontMetrics(DecompileOptions decompileOptions) {
+	private FontMetrics getFontMetrics(EvtOptions decompileOptions) {
 		Font font = decompileOptions.getDefaultFont();
 		return getFontMetrics(font);
 	}
@@ -772,9 +695,9 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 			}
 		}
 
-		if (buttonState == middleMouseHighlightButton && clickCount == 1) {
-			toggleMiddleMouseHighlight(location, field);
-		}
+		// if (buttonState == middleMouseHighlightButton && clickCount == 1) {
+			// toggleMiddleMouseHighlight(location, field);
+		// }
 	}
 
 	private void tryToGoto(FieldLocation location, Field field, MouseEvent event,
@@ -783,140 +706,137 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 			return;
 		}
 
-		ClangTextField textField = (ClangTextField) field;
-		ClangToken token = textField.getToken(location);
-		if (token instanceof ClangFuncNameToken) {
-			tryGoToFunction((ClangFuncNameToken) token, newWindow);
-		}
-		else if (token instanceof ClangLabelToken) {
-			tryGoToLabel((ClangLabelToken) token, newWindow);
-		}
-		else if (token instanceof ClangVariableToken) {
-			tryGoToVarnode((ClangVariableToken) token, newWindow);
-		}
-		else if (token instanceof ClangCommentToken) {
-			tryGoToComment(location, event, textField, newWindow);
-		}
-		else if (token instanceof ClangSyntaxToken) {
-			tryGoToSyntaxToken((ClangSyntaxToken) token);
-		}
+		EvtTextField textField = (EvtTextField) field;
+		EvtToken token = textField.getToken(location);
+		tryGoToLabel(token, newWindow);
+		// if (token instanceof ClangFuncNameToken) {
+		// 	tryGoToFunction((ClangFuncNameToken) token, newWindow);
+		// }
+		// else if (token instanceof ClangLabelToken) {
+		// 	tryGoToLabel((ClangLabelToken) token, newWindow);
+		// }
+		// else if (token instanceof ClangVariableToken) {
+		// 	tryGoToVarnode((ClangVariableToken) token, newWindow);
+		// }
+		// else if (token instanceof ClangCommentToken) {
+		// 	tryGoToComment(location, event, textField, newWindow);
+		// }
+		// else if (token instanceof ClangSyntaxToken) {
+		// 	tryGoToSyntaxToken((ClangSyntaxToken) token);
+		// }
 	}
 
-	private void tryGoToComment(FieldLocation location, MouseEvent event, ClangTextField textField,
-			boolean newWindow) {
+	// private void tryGoToComment(FieldLocation location, MouseEvent event, ClangTextField textField,
+	// 		boolean newWindow) {
 
-		// comments may use annotations; tell the annotation it was clicked
-		FieldElement clickedElement = textField.getClickedObject(location);
-		if (clickedElement instanceof AnnotatedTextFieldElement) {
-			AnnotatedTextFieldElement annotation = (AnnotatedTextFieldElement) clickedElement;
-			controller.annotationClicked(annotation, event, newWindow);
-			return;
-		}
+	// 	// comments may use annotations; tell the annotation it was clicked
+	// 	FieldElement clickedElement = textField.getClickedObject(location);
+	// 	if (clickedElement instanceof AnnotatedTextFieldElement) {
+	// 		AnnotatedTextFieldElement annotation = (AnnotatedTextFieldElement) clickedElement;
+	// 		controller.annotationClicked(annotation, event, newWindow);
+	// 		return;
+	// 	}
 
-		String text = textField.getText();
-		String word = StringUtilities.findWord(text, location.col);
-		tryGoToScalar(word, newWindow);
-	}
+	// 	String text = textField.getText();
+	// 	String word = StringUtilities.findWord(text, location.col);
+	// 	tryGoToScalar(word, newWindow);
+	// }
 
-	private void tryGoToFunction(ClangFuncNameToken functionToken, boolean newWindow) {
-		Function function = DecompilerUtils.getFunction(controller.getProgram(), functionToken);
-		if (function != null) {
-			controller.goToFunction(function, newWindow);
-			return;
-		}
-	}
+	// private void tryGoToFunction(ClangFuncNameToken functionToken, boolean newWindow) {
+	// 	Function function = EvtUtils.getFunction(controller.getProgram(), functionToken);
+	// 	if (function != null) {
+	// 		controller.goToFunction(function, newWindow);
+	// 		return;
+	// 	}
+	// }
 
-	private void tryGoToLabel(ClangLabelToken token, boolean newWindow) {
-		ClangNode node = token.Parent();
-		if (node instanceof ClangStatement) {
-			// check for a goto label
-			ClangTokenGroup root = layoutController.getRoot();
-			ClangLabelToken destination = DecompilerUtils.getGoToTargetToken(root, token);
-			if (destination != null) {
-				goToToken(destination);
-				return;
-			}
-		}
+	private void tryGoToLabel(EvtToken token, boolean newWindow) {
+		// check for a goto label
+		// ClangLabelToken destination = EvtUtils.getGoToTargetToken(root, token);
+		// if (destination != null) {
+		// 	goToToken(destination);
+		// 	return;
+		// }
 
 		Address addr = token.getMinAddress();
 		controller.goToAddress(addr, newWindow);
 	}
 
-	private void tryGoToSyntaxToken(ClangSyntaxToken token) {
+	// private void tryGoToSyntaxToken(ClangSyntaxToken token) {
 
-		if (DecompilerUtils.isBrace(token)) {
-			ClangSyntaxToken otherBrace = DecompilerUtils.getMatchingBrace(token);
-			if (otherBrace != null) {
-				goToToken(otherBrace);
-			}
-		}
-	}
+	// 	if (EvtUtils.isBrace(token)) {
+	// 		ClangSyntaxToken otherBrace = EvtUtils.getMatchingBrace(token);
+	// 		if (otherBrace != null) {
+	// 			goToToken(otherBrace);
+	// 		}
+	// 	}
+	// }
 
-	private void tryGoToVarnode(ClangVariableToken token, boolean newWindow) {
-		Varnode vn = token.getVarnode();
-		if (vn == null) {
-			PcodeOp op = token.getPcodeOp();
-			if (op == null) {
-				return;
-			}
-			int operation = op.getOpcode();
-			if (!(operation == PcodeOp.PTRSUB || operation == PcodeOp.PTRADD)) {
-				return;
-			}
-			vn = op.getInput(1);
-			if (vn == null) {
-				return;
-			}
+	// private void tryGoToVarnode(ClangVariableToken token, boolean newWindow) {
+	// 	Varnode vn = token.getVarnode();
+	// 	if (vn == null) {
+	// 		PcodeOp op = token.getPcodeOp();
+	// 		if (op == null) {
+	// 			return;
+	// 		}
+	// 		int operation = op.getOpcode();
+	// 		if (!(operation == PcodeOp.PTRSUB || operation == PcodeOp.PTRADD)) {
+	// 			return;
+	// 		}
+	// 		vn = op.getInput(1);
+	// 		if (vn == null) {
+	// 			return;
+	// 		}
 
-		}
-		HighVariable highVar = vn.getHigh();
-		if (highVar instanceof HighGlobal) {
-			vn = highVar.getRepresentative();
-		}
-		if (vn.isAddress()) {
-			Address addr = vn.getAddress();
-			if (addr.isMemoryAddress()) {
-				controller.goToAddress(vn.getAddress(), newWindow);
-			}
-		}
-		else if (vn.isConstant()) {
-			controller.goToScalar(vn.getOffset(), newWindow);
-		}
-	}
+	// 	}
+	// 	HighVariable highVar = vn.getHigh();
+	// 	if (highVar instanceof HighGlobal) {
+	// 		vn = highVar.getRepresentative();
+	// 	}
+	// 	if (vn.isAddress()) {
+	// 		Address addr = vn.getAddress();
+	// 		if (addr.isMemoryAddress()) {
+	// 			controller.goToAddress(vn.getAddress(), newWindow);
+	// 		}
+	// 	}
+	// 	else if (vn.isConstant()) {
+	// 		controller.goToScalar(vn.getOffset(), newWindow);
+	// 	}
+	// }
 
-	private void tryGoToScalar(String text, boolean newWindow) {
-		if (text.startsWith("0x")) {
-			text = text.substring(2);
-		}
-		else if (text.startsWith("(") && text.endsWith(")")) {
-			int commaIx = text.indexOf(",0x");
-			if (commaIx < 2) {
-				return;
-			}
-			String spaceName = text.substring(1, commaIx);
-			String offsetStr = text.substring(commaIx + 3, text.length() - 1);
-			try {
-				AddressSpace space =
-					decompileData.getProgram().getAddressFactory().getAddressSpace(spaceName);
-				if (space == null) {
-					return;
-				}
-				Address addr = space.getAddress(NumericUtilities.parseHexLong(offsetStr), true);
-				controller.goToAddress(addr, newWindow);
-			}
-			catch (AddressOutOfBoundsException e) {
-				// give-up
-			}
-			return;
-		}
-		try {
-			long value = NumericUtilities.parseHexLong(text);
-			controller.goToScalar(value, newWindow);
-		}
-		catch (NumberFormatException e) {
-			return; // give up
-		}
-	}
+	// private void tryGoToScalar(String text, boolean newWindow) {
+	// 	if (text.startsWith("0x")) {
+	// 		text = text.substring(2);
+	// 	}
+	// 	else if (text.startsWith("(") && text.endsWith(")")) {
+	// 		int commaIx = text.indexOf(",0x");
+	// 		if (commaIx < 2) {
+	// 			return;
+	// 		}
+	// 		String spaceName = text.substring(1, commaIx);
+	// 		String offsetStr = text.substring(commaIx + 3, text.length() - 1);
+	// 		try {
+	// 			AddressSpace space =
+	// 				decompileData.getProgram().getAddressFactory().getAddressSpace(spaceName);
+	// 			if (space == null) {
+	// 				return;
+	// 			}
+	// 			Address addr = space.getAddress(NumericUtilities.parseHexLong(offsetStr), true);
+	// 			controller.goToAddress(addr, newWindow);
+	// 		}
+	// 		catch (AddressOutOfBoundsException e) {
+	// 			// give-up
+	// 		}
+	// 		return;
+	// 	}
+	// 	try {
+	// 		long value = NumericUtilities.parseHexLong(text);
+	// 		controller.goToScalar(value, newWindow);
+	// 	}
+	// 	catch (NumberFormatException e) {
+	// 		return; // give up
+	// 	}
+	// }
 
 	Program getProgram() {
 		return decompileData.getProgram();
@@ -937,14 +857,14 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 			return;
 		}
 
-		pendingHighlightUpdate = new PendingHighlightUpdate(location, field, trigger);
-		highlighCursorUpdater.update();
+		// pendingHighlightUpdate = new PendingHighlightUpdate(location, field, trigger);
+		// highlighCursorUpdater.update();
 
-		if (!(field instanceof ClangTextField)) {
+		if (!(field instanceof EvtTextField)) {
 			return;
 		}
 
-		ClangToken tok = ((ClangTextField) field).getToken(location);
+		EvtToken tok = ((EvtTextField) field).getToken(location);
 		if (tok == null) {
 			return;
 		}
@@ -969,10 +889,10 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 		if (trigger != EventTrigger.API_CALL) {
 			Program program = decompileData.getProgram();
 			Field[] lines = layoutController.getFields();
-			List<ClangToken> tokenList = DecompilerUtils.getTokensInSelection(selection, lines);
+			List<EvtToken> tokenList = EvtUtils.getTokensInSelection(selection, lines);
 			AddressSpace functionSpace = decompileData.getFunctionSpace();
 			AddressSet addrset =
-				DecompilerUtils.findClosestAddressSet(program, functionSpace, tokenList);
+				EvtUtils.findClosestAddressSet(program, functionSpace, tokenList);
 			ProgramSelection programSelection = new ProgramSelection(addrset);
 			controller.selectionChanged(programSelection);
 		}
@@ -987,113 +907,32 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 	}
 
 	private ProgramLocation getProgramLocation(Field field, FieldLocation location) {
-		if (!(field instanceof ClangTextField)) {
+		if (!(field instanceof EvtTextField)) {
 			return null;
 		}
-		ClangToken token = ((ClangTextField) field).getToken(location);
+		EvtToken token = ((EvtTextField) field).getToken(location);
 		if (token == null) {
 			return null;
 		}
 
-		Address address = DecompilerUtils.getClosestAddress(getProgram(), token);
+		Address address = EvtUtils.getClosestAddress(getProgram(), token);
 		if (address == null) {
-			address = DecompilerUtils.findAddressBefore(layoutController.getFields(), token);
+			address = EvtUtils.findAddressBefore(layoutController.getFields(), token);
 		}
 
-		Function function = decompileData.getData();
+		Address entryPoint = decompileData.getAddress();
 		if (address == null) {
-			address = function.getEntryPoint();
+			address = entryPoint;
 		}
 
-		Address entryPoint = function.getEntryPoint();
-		DecompileResults results = decompileData.getDecompileResults();
+		EvtResults results = decompileData.getDecompileResults();
 		int lineNumber = location.getIndex().intValue();
 		int charPos = location.col;
-		DecompilerLocationInfo info =
-			new DecompilerLocationInfo(entryPoint, results, token, lineNumber, charPos);
+		EvtLocationInfo info =
+			new EvtLocationInfo(entryPoint, results, token, lineNumber, charPos);
 		Program program = decompileData.getProgram();
-		ProgramLocation signatureLocation = createFunctionSignatureLocation(token, address, info);
-		if (signatureLocation != null) {
-			return signatureLocation;
-		}
 
-		return new DefaultDecompilerLocation(program, address, info);
-	}
-
-	private ProgramLocation createFunctionSignatureLocation(ClangToken token, Address address,
-			DecompilerLocationInfo info) {
-
-		Function function = decompileData.getData();
-		Address entryPoint = function.getEntryPoint();
-		if (!entryPoint.equals(address)) {
-			// Another address implies that we are not on the function signature
-			return null;
-		}
-
-		if (token instanceof ClangFuncNameToken ft) {
-			// if the token address is the entry point of this function, then create a location that
-			// will place the cursor on the function signature in the listing
-			Program program = decompileData.getProgram();
-			String functionName = ft.getText();
-			return new FunctionNameDecompilerLocation(program, entryPoint, functionName, info);
-		}
-		else if (token instanceof ClangVariableToken cvt) {
-			return createVariableDeclarationLocation(cvt, address, info);
-		}
-		return null;
-	}
-
-	private ProgramLocation createVariableDeclarationLocation(ClangVariableToken cvt,
-			Address address, DecompilerLocationInfo info) {
-
-		Function function = decompileData.getData();
-		Address entryPoint = function.getEntryPoint();
-		Program program = decompileData.getProgram();
-		Variable variable = getVariable(cvt);
-		if (variable != null) {
-			return new VariableDecompilerLocation(program, entryPoint, variable, info);
-		}
-
-		HighVariable highVar = cvt.getHighVariable();
-		if (highVar == null) {
-			// decomp param that is not in the listing; put on signature
-			return new FunctionNameDecompilerLocation(program, entryPoint, cvt.getText(), info);
-		}
-
-		HighSymbol highSymbol = highVar.getSymbol();
-		if (highSymbol != null && highSymbol.isParameter()) {
-			// decomp param that is not in the listing; put on signature
-			return new FunctionNameDecompilerLocation(program, entryPoint, cvt.getText(), info);
-		}
-
-		return null;
-	}
-
-	private Variable getVariable(ClangVariableToken token) {
-
-		HighVariable highVar = token.getHighVariable();
-		if (highVar == null) {
-			return null;
-		}
-		HighSymbol highSymbol = highVar.getSymbol();
-		if (highSymbol == null) {
-			return null;
-		}
-		Variable variable = HighFunctionDBUtil.getFunctionVariable(highSymbol);
-		if (variable != null) {
-			return variable;
-		}
-
-		Function function = decompileData.getData();
-		Symbol symbol = highSymbol.getSymbol();
-		Variable[] locals = function.getLocalVariables();
-		for (Variable local : locals) {
-			Symbol localSymbol = local.getSymbol();
-			if (symbol == localSymbol) {
-				return local;
-			}
-		}
-		return null;
+		return new DefaultEvtLocation(program, address, info);
 	}
 
 	public void clearSearchResults(DecompilerSearchResults searchResults) {
@@ -1142,28 +981,23 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 		return SPECIAL_COLOR_DEF;
 	}
 
-	public String getHighlightedText() {
-		ClangToken token = highlightController.getHighlightedToken();
-		if (token == null) {
-			return null;
-		}
-		if (token instanceof ClangCommentToken) {
-			return null; // comments are not single words that get highlighted
-		}
-		return token.getText();
-	}
+	// public String getHighlightedText() {
+	// 	EvtToken token = highlightController.getHighlightedToken();
+	// 	if (token == null) {
+	// 		return null;
+	// 	}
+	// 	if (token instanceof ClangCommentToken) {
+	// 		return null; // comments are not single words that get highlighted
+	// 	}
+	// 	return token.getText();
+	// }
 
 	public String getTextUnderCursor() {
 
 		FieldLocation location = fieldPanel.getCursorLocation();
-		ClangTextField textField = (ClangTextField) fieldPanel.getCurrentField();
+		EvtTextField textField = (EvtTextField) fieldPanel.getCurrentField();
 		if (textField == null) {
 			return null;
-		}
-
-		ClangToken token = textField.getToken(location);
-		if (!(token instanceof ClangCommentToken)) {
-			return token.getText(); // non-comment tokens are not multi-word; use the token's text
 		}
 
 		FieldElement clickedElement = textField.getClickedObject(location);
@@ -1200,14 +1034,14 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 	 *
 	 * @return a single selected token; null if there is no selection or multiple tokens selected.
 	 */
-	public ClangToken getSelectedToken() {
+	public EvtToken getSelectedToken() {
 		FieldSelection selection = fieldPanel.getSelection();
 		if (selection.isEmpty()) {
 			return null;
 		}
 
 		Field[] lines = layoutController.getFields();
-		List<ClangToken> tokens = DecompilerUtils.getTokensInSelection(selection, lines);
+		List<EvtToken> tokens = EvtUtils.getTokensInSelection(selection, lines);
 
 		long count = tokens.stream().filter(t -> !t.getText().trim().isEmpty()).count();
 		if (count == 1) {
@@ -1222,7 +1056,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 		if (field == null) {
 			return null;
 		}
-		return ((ClangTextField) field).getToken(cursorPosition);
+		return ((EvtTextField) field).getToken(cursorPosition);
 	}
 
 	/**
@@ -1238,47 +1072,41 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 		return pixmap.getIndex(y).intValue() + 1;
 	}
 
-	public DecompileOptions getOptions() {
+	public EvtOptions getOptions() {
 		return options;
 	}
 
 	public void addHoverService(DecompilerHoverService hoverService) {
-		decompilerHoverProvider.addHoverService(hoverService);
+		// decompilerHoverProvider.addHoverService(hoverService);
 	}
 
 	public void removeHoverService(DecompilerHoverService hoverService) {
-		decompilerHoverProvider.removeHoverService(hoverService);
+		// decompilerHoverProvider.removeHoverService(hoverService);
 	}
 
 	public void setHoverMode(boolean enabled) {
-		decompilerHoverProvider.setHoverEnabled(enabled);
-		if (enabled) {
-			fieldPanel.setHoverProvider(decompilerHoverProvider);
-		}
-		else {
-			fieldPanel.setHoverProvider(null);
-		}
+		// decompilerHoverProvider.setHoverEnabled(enabled);
+		// if (enabled) {
+		// 	fieldPanel.setHoverProvider(decompilerHoverProvider);
+		// }
+		// else {
+		// 	fieldPanel.setHoverProvider(null);
+		// }
 	}
 
-	public boolean isHoverShowing() {
-		return decompilerHoverProvider.isShowing();
-	}
+	// public boolean isHoverShowing() {
+	// 	return decompilerHoverProvider.isShowing();
+	// }
 
-	public List<ClangToken> findTokensByName(String name) {
-		List<ClangToken> tokens = new ArrayList<>();
-		doFindTokensByName(tokens, layoutController.getRoot(), name);
+	public List<EvtToken> findTokensByName(String name) {
+		List<EvtToken> tokens = new ArrayList<>();
+		doFindTokensByName(tokens, layoutController.getLines(), name);
 		return tokens;
 	}
 
-	private void doFindTokensByName(List<ClangToken> tokens, ClangTokenGroup group, String name) {
-
-		for (int i = 0; i < group.numChildren(); ++i) {
-			ClangNode child = group.Child(i);
-			if (child instanceof ClangTokenGroup) {
-				doFindTokensByName(tokens, (ClangTokenGroup) child, name);
-			}
-			else if (child instanceof ClangToken) {
-				ClangToken token = (ClangToken) child;
+	private void doFindTokensByName(List<EvtToken> tokens, List<EvtLine> lines, String name) {
+		for (EvtLine line : lines) {
+			for (EvtToken token : line.getAllTokens()) {
 				if (name.equals(token.getText())) {
 					tokens.add(token);
 				}
@@ -1307,43 +1135,43 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 		fieldPanel.setSelection(selection, trigger);
 	}
 
-	public void optionsChanged(DecompileOptions decompilerOptions) {
+	public void optionsChanged(EvtOptions decompilerOptions) {
 		setBackground(decompilerOptions.getBackgroundColor());
 		currentVariableHighlightColor = options.getCurrentVariableHighlightColor();
 		middleMouseHighlightColor = decompilerOptions.getMiddleMouseHighlightColor();
 		middleMouseHighlightButton = decompilerOptions.getMiddleMouseHighlightButton();
 		searchHighlightColor = decompilerOptions.getSearchHighlightColor();
 
-		highlightController.setHighlightColor(currentVariableHighlightColor);
+		// highlightController.setHighlightColor(currentVariableHighlightColor);
 
-		if (options.isDisplayLineNumbers()) {
-			if (lineNumbersMargin == null) {
-				addMarginProvider(lineNumbersMargin = new LineNumberDecompilerMarginProvider());
-			}
-		}
-		else {
-			if (lineNumbersMargin != null) {
-				removeMarginProvider(lineNumbersMargin);
-				lineNumbersMargin = null;
-			}
-		}
+		// if (options.isDisplayLineNumbers()) {
+		// 	if (lineNumbersMargin == null) {
+		// 		addMarginProvider(lineNumbersMargin = new LineNumberDecompilerMarginProvider());
+		// 	}
+		// }
+		// else {
+		// 	if (lineNumbersMargin != null) {
+		// 		removeMarginProvider(lineNumbersMargin);
+		// 		lineNumbersMargin = null;
+		// 	}
+		// }
 
-		for (DecompilerMarginProvider element : marginProviders) {
-			element.setOptions(options);
-		}
+		// for (DecompilerMarginProvider element : marginProviders) {
+		// 	element.setOptions(options);
+		// }
 	}
 
-	public void addMarginProvider(DecompilerMarginProvider provider) {
-		marginProviders.add(0, provider);
-		provider.setOptions(options);
-		provider.setProgram(getProgram(), layoutController, pixmap);
-		buildPanels();
-	}
+	// public void addMarginProvider(DecompilerMarginProvider provider) {
+	// 	marginProviders.add(0, provider);
+	// 	provider.setOptions(options);
+	// 	provider.setProgram(getProgram(), layoutController, pixmap);
+	// 	buildPanels();
+	// }
 
-	public void removeMarginProvider(DecompilerMarginProvider provider) {
-		marginProviders.remove(provider);
-		buildPanels();
-	}
+	// public void removeMarginProvider(DecompilerMarginProvider provider) {
+	// 	marginProviders.remove(provider);
+	// 	buildPanels();
+	// }
 
 	@Override
 	public synchronized void addFocusListener(FocusListener l) {
@@ -1361,7 +1189,6 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 		removeAll();
 		add(buildLeftComponent(), BorderLayout.WEST);
 		add(scroller, BorderLayout.CENTER);
-		add(taskMonitorComponent, BorderLayout.SOUTH);
 	}
 
 	private JComponent buildLeftComponent() {
@@ -1376,36 +1203,36 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 // Inner Classes
 //==================================================================================================
 
-	private class SearchHighlightFactory implements FieldHighlightFactory {
+	// private class SearchHighlightFactory implements FieldHighlightFactory {
 
-		@Override
-		public Highlight[] createHighlights(Field field, String text, int cursorTextOffset) {
-			if (currentSearchResults == null) {
-				return new Highlight[0];
-			}
+	// 	@Override
+	// 	public Highlight[] createHighlights(Field field, String text, int cursorTextOffset) {
+	// 		if (currentSearchResults == null) {
+	// 			return new Highlight[0];
+	// 		}
 
-			ClangTextField cField = (ClangTextField) field;
-			int lineNumber = cField.getLineNumber();
-			Map<Integer, List<DecompilerSearchLocation>> locationsByLine =
-				currentSearchResults.getLocationsByLine();
-			List<DecompilerSearchLocation> locationsOnLine = locationsByLine.get(lineNumber);
-			if (locationsOnLine == null) {
-				return new Highlight[0];
-			}
+	// 		ClangTextField cField = (ClangTextField) field;
+	// 		int lineNumber = cField.getLineNumber();
+	// 		Map<Integer, List<DecompilerSearchLocation>> locationsByLine =
+	// 			currentSearchResults.getLocationsByLine();
+	// 		List<DecompilerSearchLocation> locationsOnLine = locationsByLine.get(lineNumber);
+	// 		if (locationsOnLine == null) {
+	// 			return new Highlight[0];
+	// 		}
 
-			DecompilerSearchLocation activeLocation = currentSearchResults.getActiveLocation();
-			List<Highlight> highlights = new ArrayList<>();
-			for (DecompilerSearchLocation location : locationsOnLine) {
-				Color c =
-					location == activeLocation ? activeSearchHighlightColor : searchHighlightColor;
-				int start = location.getStartIndexInclusive();
-				int end = location.getEndIndexInclusive();
-				highlights.add(new Highlight(start, end, c));
-			}
+	// 		DecompilerSearchLocation activeLocation = currentSearchResults.getActiveLocation();
+	// 		List<Highlight> highlights = new ArrayList<>();
+	// 		for (DecompilerSearchLocation location : locationsOnLine) {
+	// 			Color c =
+	// 				location == activeLocation ? activeSearchHighlightColor : searchHighlightColor;
+	// 			int start = location.getStartIndexInclusive();
+	// 			int end = location.getEndIndexInclusive();
+	// 			highlights.add(new Highlight(start, end, c));
+	// 		}
 
-			return highlights.toArray(Highlight[]::new);
-		}
-	}
+	// 		return highlights.toArray(Highlight[]::new);
+	// 	}
+	// }
 
 	/**
 	 * A simple class that handles the animators callback to scroll the display
@@ -1457,10 +1284,10 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 		}
 	}
 
-	private class DecompilerFieldPanel extends FieldPanel {
+	private class EvtFieldPanel extends FieldPanel {
 
-		public DecompilerFieldPanel(LayoutModel model) {
-			super(model, "Decompiler");
+		public EvtFieldPanel(LayoutModel model) {
+			super(model, "Evt Disassembler");
 			// In the decompiler each field represents a line, so make the field description
 			// simply be the line number
 			setFieldDescriptionProvider((l, f) -> {
@@ -1485,86 +1312,4 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 				EventTrigger.GUI_ACTION);
 		}
 	}
-
-	/**
-	 * A class to track pending location updates. This allows us to buffer updates, only sending the
-	 * last one received.
-	 */
-	private class PendingHighlightUpdate {
-
-		private FieldLocation location;
-		private Field field;
-		private EventTrigger trigger;
-		private long updateId;
-
-		PendingHighlightUpdate(FieldLocation location, Field field, EventTrigger trigger) {
-			this.location = location;
-			this.field = field;
-			this.trigger = trigger;
-			this.updateId = highlightController.getUpdateId();
-		}
-
-		void doUpdate() {
-
-			// Note: don't send this buffered cursor change highlight if some other highlight
-			//       has been applied.  Otherwise, this highlight would overwrite the last
-			//       applied highlight.
-			long lastUpdateId = highlightController.getUpdateId();
-			if (updateId == lastUpdateId) {
-				highlightController.fieldLocationChanged(location, field, trigger);
-			}
-		}
-	}
-
-	private class MiddleMouseColorProvider implements ColorProvider {
-
-		@Override
-		public Color getColor(ClangToken token) {
-			return middleMouseHighlightColor;
-		}
-
-		@Override
-		public String toString() {
-			return "Middle Mouse Color Provider " + middleMouseHighlightColor;
-		}
-	}
-
-	/**
-	 * A class to track the current middle moused token.
-	 */
-	private class ActiveMiddleMouse {
-
-		private String tokenText;
-		private DecompilerHighlighter highlighter;
-
-		ActiveMiddleMouse(String tokenText) {
-			this.tokenText = tokenText;
-
-			ColorProvider cp = new MiddleMouseColorProvider();
-			NameTokenMatcher matcher = new NameTokenMatcher(tokenText, cp);
-			this.highlighter = createHighlighter(matcher);
-		}
-
-		TokenHighlights getHighlights() {
-			return highlightController.getHighlighterHighlights(highlighter);
-		}
-
-		boolean matches(ClangToken other) {
-			return tokenText.equals(other.getText());
-		}
-
-		void clear() {
-			highlightController.removeHighlighter(highlighter);
-		}
-
-		void apply() {
-			applySecondaryHighlights(highlighter);
-		}
-
-		@Override
-		public String toString() {
-			return "Middle Mouse Token " + tokenText;
-		}
-	}
-
 }

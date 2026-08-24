@@ -1,15 +1,26 @@
 package ghidraevt;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 import javax.swing.JComponent;
 
 import docking.widgets.fieldpanel.support.ViewerPosition;
 import ghidra.app.decompiler.*;
+import ghidra.app.decompiler.component.DecompileData;
+import ghidra.program.model.address.Address;
+import ghidra.program.model.listing.CodeUnit;
+import ghidra.program.model.listing.Data;
 import ghidra.program.model.listing.Function;
 import ghidra.program.model.listing.Program;
+import ghidra.program.model.mem.MemoryBlock;
 import ghidra.program.util.ProgramLocation;
+import ghidra.util.Msg;
 import ghidra.util.task.*;
+import jevt.BadEvtException;
+import jevt.Game;
+import jevt.Instr;
 
 /**
  * Manages the threading involved with dealing with the decompiler. It uses a simpler approach
@@ -25,36 +36,24 @@ import ghidra.util.task.*;
 public class EvtManager {
 
 	private EvtController decompilerController;
-	private SwingUpdateManager updateManager;
+	private EvtOptions options;
 
-	public EvtManager(EvtController decompilerController, DecompileOptions options) {
+	// TODO: settings
+	private boolean snapToSymbol = true;
+	private Game game = Game.SPM;
+	private boolean strictMode = false;
+
+	public EvtManager(EvtController decompilerController, EvtOptions options) {
 		this.decompilerController = decompilerController;
-
-		updateManager = new SwingUpdateManager(500, () -> doPendingDecompile());
+		this.options = options;
 	}
 
 	/**
 	 * Set the decompiler options for future decompiles.
 	 */
-	void setOptions(DecompileOptions decompilerOptions) {
-
+	void setOptions(EvtOptions options) {
+		this.options = options;
     }
-
-	/**
-	 * Returns the TaskMonitorComponent created by the RunManager and to be used in the
-	 * DecompilerPanel.
-	 */
-	JComponent getTaskMonitorComponent() {
-        return null;
-	}
-
-	/**
-	 * Resets the native decompiler process.  Call this method when the decompiler's view
-	 * of a program has been invalidated, such as when a new overlay space has been added.
-	 */
-	public void resetDecompiler() {
-
-	}
 
 	/**
 	 * Requests a new decompile be scheduled.  If a current decompile is already in progress,
@@ -68,106 +67,41 @@ public class EvtManager {
 	 * @param forceDecompile true forces a new decompile to be scheduled even if the current job
 	 * is the same function.
 	 */
-	synchronized void decompile(Program program, ProgramLocation location,
-			ViewerPosition viewerPosition, File debugFile, boolean forceDecompile) {
+	EvtResults decompile(Program program, ProgramLocation location, ViewerPosition viewerPosition) {
+	    if (location == null)
+            return EvtResults.empty("No script selected.");
 
-		// DecompileRunnable newDecompileRunnable =
-		// 	new DecompileRunnable(program, location, debugFile, viewerPosition, this);
+        Address address = location.getAddress();
+        if (snapToSymbol) {
+            CodeUnit cu = program.getListing().getCodeUnitContaining(address);
+            if (cu != null)
+                address = cu.getAddress();
+        }
+        Address startAddress = address;
 
-		// if (forceDecompile) {
-		// 	cancelAll();
-		// 	setPendingRunnable(newDecompileRunnable);
-		// 	return;
-		// }
+		MemoryBlock block = program.getMemory().getBlock(address);
+        MemoryInputStream stream = new MemoryInputStream(program, address);
 
-		// if (updateCurrentRunnable(newDecompileRunnable)) {
-		// 	return;
-		// }
+        List<Instr> script;
+        try {
+            script = Instr.disassemble(game, stream, strictMode);
+        }
+        catch (BadEvtException e) {
+            String err = "Script appears invalid: " + e.getMessage();
+            if (e.strictOnly()) {
+                err += "\n(Triggered by Strict mode)";
+            }
+            return EvtResults.fail(startAddress, err);
+        }
+        catch (IOException e) {
+            Msg.error(this, "Disassembler failed", e);
+            return EvtResults.fail(startAddress, "Disassembler failed: " + e.getMessage());
+        }
+        catch (Exception e) {
+            Msg.error(this, "Unhandled disassembler exception", e);
+            return EvtResults.fail(startAddress, "Unhandled disassembler exception: " + e.getMessage());
+        }
 
-		// setPendingRunnable(newDecompileRunnable);
+        return EvtResults.success(startAddress, script);
 	}
-
-	private synchronized void setPendingRunnable(DecompileRunnable newDecompileRunnable) {
-		pendingDecompileRunnable = newDecompileRunnable;
-		updateManager.update();
-	}
-
-	private synchronized boolean updateCurrentRunnable(DecompileRunnable newDecompileRunnable) {
-		if (pendingDecompileRunnable != null) {
-			return false; // can't update when pending
-		}
-
-		if (currentDecompileRunnable == null) {
-			return false; // nothing to update
-		}
-
-		return currentDecompileRunnable.update(newDecompileRunnable);
-	}
-
-	public synchronized boolean isBusy() {
-		return currentDecompileRunnable != null || pendingDecompileRunnable != null;
-	}
-
-	public synchronized void cancelAll() {
-		cancelCurrentRunnable();
-		pendingDecompileRunnable = null;
-	}
-
-	private synchronized void cancelCurrentRunnable() {
-		if (currentDecompileRunnable != null) {
-			runManager.cancelAllRunnables();
-			decompiler.cancelCurrentAction();
-			currentDecompileRunnable = null;
-		}
-	}
-
-	public void dispose() {
-		updateManager.dispose();
-		runManager.dispose();
-		cancelAll();
-		decompiler.dispose();
-	}
-
-	private synchronized void doPendingDecompile() {
-		if (pendingDecompileRunnable == null) {
-			return; // somebody cleared the pending update
-		}
-
-		cancelCurrentRunnable();
-
-		currentDecompileRunnable = pendingDecompileRunnable;
-		pendingDecompileRunnable = null;
-
-		decompilerController.decompilerStatusChanged();
-		runManager.runNow(currentDecompileRunnable, "Decompiler", 500);
-	}
-
-//==================================================================================================
-// DecompileRunnable methods
-//==================================================================================================
-
-	DecompileResults decompile(Program program, Function functionToDecompile, File debugFile,
-			TaskMonitor monitor) throws DecompileException {
-
-		return decompiler.decompile(program, functionToDecompile, debugFile, monitor);
-
-	}
-
-	void setDecompileData(DecompileRunnable runnable, DecompileData decompileData) {
-
-		if (decompilerController == null) {
-			return; // disposed!
-		}
-
-		synchronized (this) {
-			if (currentDecompileRunnable != runnable) {
-				return; // a new request has come in, ignore these outdated results
-			}
-
-			currentDecompileRunnable = null;
-		}
-
-		decompilerController.setDecompileData(decompileData);
-	}
-
 }

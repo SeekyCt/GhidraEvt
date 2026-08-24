@@ -43,27 +43,6 @@ public class EvtProgramListener implements DomainObjectListener {
 
 	@Override
 	public void domainObjectChanged(DomainObjectChangedEvent ev) {
-		// Check for events that signal that a decompiler process' data is stale
-		// and if so force a new process to be spawned
-		if (ev.contains(MEMORY_BLOCK_ADDED, MEMORY_BLOCK_REMOVED, RESTORED)) {
-			controller.resetDecompiler();
-		}
-		else if (ev.contains(DomainObjectEvent.PROPERTY_CHANGED)) {
-			Iterator<DomainObjectChangeRecord> iter = ev.iterator();
-			while (iter.hasNext()) {
-				DomainObjectChangeRecord record = iter.next();
-				if (record.getEventType() == DomainObjectEvent.PROPERTY_CHANGED) {
-					if (record.getOldValue() instanceof String) {
-						String value = (String) record.getOldValue();
-						if (value.startsWith(SpecExtension.SPEC_EXTENSION)) {
-							controller.resetDecompiler();
-							break;
-						}
-					}
-				}
-			}
-		}
-
 		updater.update();
 	}
 

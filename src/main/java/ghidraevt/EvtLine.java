@@ -21,7 +21,7 @@ public class EvtLine {
         return tokens;
     }
 
-    public Address addr() {
+    public Address getAddr() {
         return addr;
     }
 
@@ -29,11 +29,7 @@ public class EvtLine {
         return lineNumber;
     }
 
-    public int line() {
-        return lineNumber;
-    }
-
-    public int indent() {
+    public int getIndent() {
         return indent;
     }
 

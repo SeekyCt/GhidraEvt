@@ -99,8 +99,8 @@ public class EvtActionContext extends NavigatableActionContext implements Restri
 		return getComponentProvider().getEvtPanel();
 	}
 
-	public Data getData() {
-		return getComponentProvider().getController().getData();
+	public Address getAddress() {
+		return getComponentProvider().getController().getAddress();
 	}
 
 	// public HighFunction getHighFunction() {

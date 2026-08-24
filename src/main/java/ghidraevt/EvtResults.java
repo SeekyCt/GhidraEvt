@@ -3,6 +3,7 @@ package ghidraevt;
 import java.util.List;
 
 import ghidra.app.decompiler.ClangTokenGroup;
+import ghidra.program.model.address.Address;
 import ghidra.program.model.listing.Data;
 import jevt.Instr;
 
@@ -35,16 +36,28 @@ import jevt.Instr;
  *
  */
 public class EvtResults {
-	private Data data; // Function to which results pertain
+	private Address address; // Function to which results pertain
 	private String errMsg; // Error message from decompiler
 
 	private List<Instr> script;
 
 
-	public EvtResults(Data d, List<Instr> script, String e) {
-		this.data = d;
+	private EvtResults(Address address, List<Instr> script, String e) {
+		this.address = address;
 		this.script = script;
 		this.errMsg = e;
+	}
+
+	public static EvtResults success(Address address, List<Instr> script) {
+		return new EvtResults(address, script, null);
+	}
+
+	public static EvtResults fail(Address address, String message) {
+		return new EvtResults(address, null, message);
+	}
+
+	public static EvtResults empty(String message) {
+		return new EvtResults(null, null, message);
 	}
 
 	/**
@@ -59,8 +72,8 @@ public class EvtResults {
 		return script != null;
 	}
 
-	public Data getData() {
-		return data;
+	public Address getAddress() {
+		return address;
 	}
 
 	/** 
@@ -90,8 +103,20 @@ public class EvtResults {
 	 * code generation was turned off, return null
 	 * @return the resulting root of C markup
 	 */
-	public List<Instr> getCCodeMarkup() {
+	// public List<Instr> getCCodeMarkup() {
+	// 	return script;
+	// }
+
+	public List<Instr> getScript() {
 		return script;
+	}
+
+	public int bytesSize() {
+		int length = 0;
+		for (Instr instr : script) {
+			length += instr.bytesSize();
+		}
+		return length;
 	}
 
 	/**

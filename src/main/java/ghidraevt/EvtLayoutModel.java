@@ -10,45 +10,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.swing.JPanel;
-
 import docking.widgets.fieldpanel.Layout;
 import docking.widgets.fieldpanel.LayoutModel;
 import docking.widgets.fieldpanel.field.AttributedString;
-import docking.widgets.fieldpanel.field.CompositeFieldElement;
 import docking.widgets.fieldpanel.field.Field;
 import docking.widgets.fieldpanel.field.FieldElement;
 import docking.widgets.fieldpanel.field.TextFieldElement;
-import docking.widgets.fieldpanel.field.WrappingVerticalLayoutTextField;
 import docking.widgets.fieldpanel.listener.IndexMapper;
 import docking.widgets.fieldpanel.listener.LayoutModelListener;
 import docking.widgets.fieldpanel.support.FieldHighlightFactory;
 import docking.widgets.fieldpanel.support.FieldLocation;
 import docking.widgets.fieldpanel.support.SingleRowLayout;
-import generic.theme.Gui;
-import ghidra.app.decompiler.ClangBreak;
-import ghidra.app.decompiler.ClangCommentToken;
-import ghidra.app.decompiler.ClangFuncNameToken;
-import ghidra.app.decompiler.ClangFunction;
-import ghidra.app.decompiler.ClangLine;
-import ghidra.app.decompiler.ClangSyntaxToken;
-import ghidra.app.decompiler.ClangToken;
-import ghidra.app.decompiler.ClangTokenGroup;
-import ghidra.app.decompiler.DecompileOptions;
-import ghidra.app.decompiler.component.ClangFieldElement;
-import ghidra.app.decompiler.component.ClangTextField;
-import ghidra.app.decompiler.component.DecompilerController;
-import ghidra.app.decompiler.component.DecompilerPanel;
-import ghidra.app.decompiler.component.DecompilerUtils;
 import ghidra.app.util.SymbolInspector;
-import ghidra.app.util.viewer.field.CommentUtils;
 import ghidra.framework.plugintool.ServiceProvider;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.listing.Data;
-import ghidra.program.model.listing.Program;
-import ghidra.program.model.pcode.HighFunction;
-import ghidra.util.Msg;
-import ghidra.util.UndefinedFunction;
 import jevt.Instr;
 
 public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
@@ -56,7 +32,7 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
     private int charWidth;
     private SymbolInspector symbolInspector;
     private EvtPanel evtPanel;
-    private DecompileOptions options;
+    private EvtOptions options;
     private List<Instr> script;
     private Field[] fieldList; // Array of fields comprising layout
     private FontMetrics metrics;
@@ -72,7 +48,7 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
 
     // private ServiceProvider serviceProvider;
 
-	public EvtLayoutModel(DecompileOptions opt, EvtPanel evtPanel,
+	public EvtLayoutModel(EvtOptions opt, EvtPanel evtPanel,
 			FontMetrics met, FieldHighlightFactory hlFactory) {
 		options = opt;
 		this.evtPanel = evtPanel;
@@ -170,10 +146,6 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
 		return index - 1;
 	}
 
-	// public List<Instr> getRoot() {
-	// 	return docroot;
-	// }
-
 	Field[] getFields() {
 		return fieldList;
 	}
@@ -183,7 +155,7 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
 
         FieldElement[] elements = createFieldElementsForLine(tokens);
 
-        int indent = line.indent() * indentWidth * charWidth;
+        int indent = line.getIndent() * indentWidth * charWidth;
 		return new EvtTextField(tokens, elements, indent, line.getLineNumber(), maxWidth, maxLines, hlFactory);
 	}
 
@@ -280,7 +252,7 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
         int i = 0;
 		for (String errline : errlines) {
             lines.add(0,new EvtLine(
-                Arrays.asList(new EvtToken(errline, GhidraPrinter.COLOR_COMMENT)),
+                Arrays.asList(new EvtToken(errline, GhidraPrinter.COLOR_COMMENT, null, 0)),
                 Address.NO_ADDRESS,
                 0,
                 0
@@ -288,12 +260,12 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
 		}
 	}
 
-	public void buildLayouts(Data data, List<Instr> script, String errmsg, boolean display) {
+	public void buildLayouts(Address address, List<Instr> script, String errmsg, boolean display) {
         this.script = script;
         updateOptions();
 
-		GhidraPrinter printer = new GhidraPrinter(data.getProgram(), symbolInspector, options);
-		lines = printer.getLines(data.getAddress(), script);
+		GhidraPrinter printer = new GhidraPrinter(evtPanel.getProgram(), symbolInspector, options);
+		lines = printer.getLines(address, script);
 
         addErrorLines(lines, errmsg);
 
@@ -321,5 +293,4 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
 	public void flushChanges() {
 		// nothing to do
 	}
-
 }
