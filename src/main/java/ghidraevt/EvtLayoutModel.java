@@ -57,7 +57,7 @@ public class EvtLayoutModel implements LayoutModel {
                 FieldHighlightFactory hlFactory) {
             // super(createSingleLineElement(fieldElements), x, width - x, 30, hlFactory, false, "");
 
-            super(textElement, startX, width, maxLines, hlFactory);
+            super(textElement, startX, width - startX, maxLines, hlFactory);
         }
     }
 
