@@ -6,7 +6,6 @@ import docking.widgets.fieldpanel.field.FieldElement;
 import docking.widgets.fieldpanel.field.WrappingVerticalLayoutTextField;
 import docking.widgets.fieldpanel.support.FieldHighlightFactory;
 import docking.widgets.fieldpanel.support.FieldLocation;
-import ghidra.app.decompiler.ClangToken;
 
 public class EvtTextField extends WrappingVerticalLayoutTextField {
     private EvtLine line;
