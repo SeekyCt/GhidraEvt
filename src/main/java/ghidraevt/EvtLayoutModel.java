@@ -35,7 +35,8 @@ import ghidra.util.Msg;
 public class EvtLayoutModel implements LayoutModel {
     private int maxWidth;
     private int maxLines = 30;
-    private int indentWidth;
+    private int charWidth;
+    private int indentWidth = 4;
     private SymbolInspector symbolInspector;
     // private DecompileOptions options;
     // private ClangTokenGroup docroot; // Root of displayed document
@@ -75,8 +76,8 @@ public class EvtLayoutModel implements LayoutModel {
 
         Font font = opts.getDefaultFont();
 		metrics = Toolkit.getDefaultToolkit().getFontMetrics(font);
-		indentWidth = metrics.stringWidth(" ");
-		maxWidth = indentWidth * opts.getMaxWidth();
+		charWidth = metrics.stringWidth(" ");
+		maxWidth = charWidth * opts.getMaxWidth();
 
         if (data.isError()) {
             TextFieldElement element = new TextFieldElement(
@@ -107,7 +108,7 @@ public class EvtLayoutModel implements LayoutModel {
         FieldElement[] elements = createFieldElementsForLine(line.tokens());
         CompositeFieldElement element = new CompositeFieldElement(elements);
 
-        int indent = line.indent() * 4 * indentWidth;
+        int indent = line.indent() * indentWidth * charWidth;
         return new EvtTextField(element, indent, maxWidth, maxLines,
             hlFactory);
     }
