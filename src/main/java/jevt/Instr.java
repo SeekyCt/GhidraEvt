@@ -35,13 +35,17 @@ public class Instr {
 
     public static Instr decode(Game game, DataInputStream stream, boolean strict) throws IOException, BadEvtException {
         int nargs = stream.readShort() & 0xffff;
-        if (strict && nargs > 0xff) // TODO: check per-instruction too like search.py
-            throw new StrictEvtException("Invalid argument count " + nargs);
+        if (nargs > 0xff) // TODO: strict mode check per-instruction too like search.py
+            throw new BadEvtException("Invalid argument count " + nargs);
 
         // TODO: when strict check indentation validity, paired start-ends, etc
 
         short opcodeId = stream.readShort();
         Opcode opcode = Opcode.decode(game, opcodeId, strict);
+
+        if (opcode.equals(Opcode.END_SCRIPT) && nargs > 0) {
+            throw new BadEvtException("END_SCRIPT does not take arguments");
+        }
 
         List<Arg> args = new ArrayList<>(nargs);
         for (int i = 0; i < nargs; i++)
