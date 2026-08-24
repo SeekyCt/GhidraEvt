@@ -3,12 +3,8 @@ package ghidraevt;
 import java.awt.event.MouseEvent;
 import java.io.File;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-
 import docking.widgets.fieldpanel.support.ViewerPosition;
-import ghidra.app.decompiler.*;
-import ghidra.app.plugin.core.decompile.DecompilerClipboardProvider;
+import ghidra.app.decompiler.DecompileOptions;
 import ghidra.framework.plugintool.ServiceProvider;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.listing.*;
@@ -20,29 +16,24 @@ import ghidra.util.bean.field.AnnotatedTextFieldElement;
 import utility.function.Callback;
 
 /**
- * Coordinates the interactions between the DecompilerProvider, DecompilerPanel, and the
- * DecompilerManager
+ * Coordinates the interactions between the EvtProvider, EvtPanel, and the
+ * EvtManager
 */
 public class EvtController {
 
 	private ServiceProvider serviceProvider;
 	private EvtPanel evtPanel;
-	private EvtManager decompilerMgr;
+	private EvtManager evtMgr;
 	private final EvtCallbackHandler callbackHandler;
 	private EvtData currentEvtData;
 	private ProgramSelection currentSelection;
-	private Cache<Function, DecompileResults> decompilerCache;
-	private int cacheSize;
 
 	public EvtController(ServiceProvider serviceProvider, EvtCallbackHandler handler,
         DecompileOptions options, EvtClipboardProvider clipboard) {
 		this.serviceProvider = serviceProvider;
-		this.cacheSize = options.getCacheSize();
 		this.callbackHandler = handler;
-		decompilerCache = buildCache();
-		decompilerMgr = new EvtManager(this, options);
-		evtPanel =
-			new EvtPanel(this, options, clipboard, decompilerMgr.getTaskMonitorComponent());
+		evtMgr = new EvtManager(this, options);
+		evtPanel = new EvtPanel(this, options, clipboard);
 
 		evtPanel.setHoverMode(true);
 	}
@@ -64,8 +55,7 @@ public class EvtController {
 	 * be used again.
 	 */
 	public void dispose() {
-		clearCache();
-		decompilerMgr.dispose();
+		evtMgr.dispose();
 		evtPanel.dispose();
 	}
 
@@ -75,7 +65,7 @@ public class EvtController {
 	 */
 	public void clear() {
 		currentSelection = null;
-		decompilerMgr.cancelAll();
+		evtMgr.cancelAll();
 		setEvtData(new EmptyEvtData("No Function"));
 	}
 
@@ -97,60 +87,17 @@ public class EvtController {
 			return;
 		}
 
-		if (loadFromCache(program, location, viewerPosition)) {
-			evtPanel.setLocation(location, viewerPosition);
-			return;
-		}
-		decompilerMgr.decompile(program, location, viewerPosition, null, false);
+		evtMgr.decompile(program, location, viewerPosition, null, false);
 	}
 
 	private boolean isAlreadyDecompiled(ProgramLocation location) {
-		if (decompilerMgr.isBusy()) {
+		if (evtMgr.isBusy()) {
 			return false;
 		}
 
 		if (!evtPanel.containsLocation(location)) {
 			return false;
 		}
-
-		Function currentFunction = currentEvtData.getData();
-		if (currentFunction instanceof UndefinedFunction) {
-			//
-			// There is an oddness with some Undefined functions where their body overlaps a normal
-			// function body.  If the current function is Undefined, check to see if the location is
-			// also in a defined function.  If so, the return false so the new location will get 
-			// decompiled.
-			// 
-			Program program = location.getProgram();
-			FunctionManager manager = program.getFunctionManager();
-			Address address = location.getAddress();
-			Function function = manager.getFunctionContaining(address);
-			if (!currentFunction.equals(function)) {
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	private boolean loadFromCache(Program program, ProgramLocation location,
-			ViewerPosition viewerPosition) {
-		FunctionManager functionManager = program.getFunctionManager();
-		Function function = functionManager.getFunctionContaining(location.getAddress());
-
-		if (function == null) { // cache can't handle null keys
-			return false;
-		}
-
-		DecompileResults results = decompilerCache.getIfPresent(function);
-		if (results == null) {
-			return false;
-		}
-
-		// cancel pending decompile tasks; previous requests shouldn't overwrite the latest request
-		decompilerMgr.cancelAll();
-		setEvtData(
-			new EvtData(program, function, location, results, null, null, viewerPosition));
 
 		return true;
 	}
@@ -165,37 +112,12 @@ public class EvtController {
 	 * @param decompilerOptions the options
 	 */
 	public void setOptions(DecompileOptions decompilerOptions) {
-		clearCache();
-		if (decompilerOptions.getCacheSize() != cacheSize) {
-			cacheSize = decompilerOptions.getCacheSize();
-			decompilerCache = buildCache();
-		}
-		decompilerMgr.setOptions(decompilerOptions);
+		evtMgr.setOptions(decompilerOptions);
 		evtPanel.optionsChanged(decompilerOptions);
-	}
-
-	public boolean isDecompiling() {
-		return decompilerMgr.isBusy();
 	}
 
 	public void setMouseNavigationEnabled(boolean enabled) {
 		evtPanel.setMouseNavigationEnabled(enabled);
-	}
-
-	/**
-	 * Resets the native decompiler process. Call this method when the decompiler's view of a
-	 * program has been invalidated, such as when a new overlay space has been added.
-	 */
-	public void resetDecompiler() {
-		decompilerMgr.resetDecompiler();
-	}
-
-	/**
-	 * Adds the given data to the cache.  Meant for internal use only.
-	 * @param data the data
-	 */
-	public void addToCache(EvtData data) {
-		updateCache(data);
 	}
 
 //==================================================================================================
@@ -207,20 +129,11 @@ public class EvtController {
 	 * 
 	 * @param EvtData the new data
 	 */
-	public void setEvtData(EvtData EvtData) {
-		updateCache(EvtData);
-		currentEvtData = EvtData;
-		evtPanel.setEvtData(EvtData);
+	public void setEvtData(EvtData evtData) {
+		currentEvtData = evtData;
+		evtPanel.setEvtData(evtData);
 		evtPanel.setSelection(currentSelection);
-		callbackHandler.EvtDataChanged(EvtData);
-	}
-
-	private void updateCache(EvtData EvtData) {
-		Function function = EvtData.getData();
-		DecompileResults results = EvtData.getDecompileResults();
-		if (function != null && results != null && results.decompileCompleted()) {
-			decompilerCache.put(function, results);
-		}
+		callbackHandler.evtDataChanged(evtData);
 	}
 
 	void decompilerStatusChanged() {
@@ -245,8 +158,7 @@ public class EvtController {
 	 * @param debugFile the debug file
 	 */
 	public void refreshDisplay(Program program, ProgramLocation location, File debugFile) {
-		clearCache();
-		decompilerMgr.decompile(program, location, null, debugFile, true);
+		evtMgr.decompile(program, location, null, debugFile, true);
 	}
 
 	public boolean hasDecompileResults() {
@@ -256,9 +168,9 @@ public class EvtController {
 		return false;
 	}
 
-	public ClangTokenGroup getCCodeModel() {
-		return currentEvtData.getCCodeMarkup();
-	}
+	// public ClangTokenGroup getCCodeModel() {
+	// 	return currentEvtData.getCCodeMarkup();
+	// }
 
 	public void setStatusMessage(String message) {
 		callbackHandler.setStatusMessage(message);
@@ -277,14 +189,6 @@ public class EvtController {
 		}
 		return null;
 	}
-
-	public HighFunction getHighFunction() {
-		if (currentEvtData != null) {
-			return currentEvtData.getHighFunction();
-		}
-		return null;
-	}
-
 	public ProgramLocation getLocation() {
 		if (currentEvtData != null) {
 			return currentEvtData.getLocation();
@@ -332,33 +236,5 @@ public class EvtController {
 
 	public void exportLocation() {
 		callbackHandler.exportLocation();
-	}
-
-	private Cache<Function, DecompileResults> buildCache() {
-		//@formatter:off
-		return CacheBuilder.newBuilder()
-		                   .softValues()
-			               .maximumSize(cacheSize)
-			               .build();
-		//@formatter:on
-	}
-
-	// for testing
-	void setCache(Cache<Function, DecompileResults> cache) {
-		this.decompilerCache.invalidateAll();
-		this.decompilerCache = cache;
-	}
-
-	public void clearCache() {
-		decompilerCache.invalidateAll();
-	}
-
-	public void programClosed(Program closedProgram) {
-		for (Function function : decompilerCache.asMap().keySet()) {
-			Program functionProgram = function.getProgram();
-			if (functionProgram == closedProgram) {
-				decompilerCache.invalidate(function);
-			}
-		}
 	}
 }

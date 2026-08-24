@@ -95,8 +95,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 
 	private DecompilerHoverProvider decompilerHoverProvider;
 
-	DecompilerPanel(DecompilerController controller, DecompileOptions options,
-			DecompilerClipboardProvider clipboard, JComponent taskMonitorComponent) {
+	EvtPanel(EvtController controller, DecompileOptions options, EvtClipboardProvider clipboard) {
 		this.controller = controller;
 		this.options = options;
 		this.clipboard = clipboard;
@@ -491,7 +490,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 	 *
 	 * @param decompileData the new data
 	 */
-	void setDecompileData(DecompileData decompileData) {
+	void setEvtData(EvtData decompileData) {
 		if (layoutController == null) {
 			// we've been disposed!
 			return;

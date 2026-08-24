@@ -24,7 +24,7 @@ import utility.function.Callback;
 
 public interface EvtCallbackHandler {
 
-	void decompileDataChanged(EvtData data);
+	void evtDataChanged(EvtData data);
 
 	void contextChanged();
 
