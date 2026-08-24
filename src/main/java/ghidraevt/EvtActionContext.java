@@ -5,19 +5,18 @@ import org.apache.commons.lang3.StringUtils;
 import ghidra.app.context.NavigatableActionContext;
 import ghidra.app.context.RestrictedAddressSetContext;
 import ghidra.app.decompiler.*;
-import ghidra.app.decompiler.component.DecompilerPanel;
-import ghidra.app.decompiler.component.DecompilerUtils;
 import ghidra.framework.plugintool.PluginTool;
 import ghidra.program.model.address.Address;
+import ghidra.program.model.listing.Data;
 import ghidra.program.model.listing.Function;
 import ghidra.program.model.pcode.HighFunction;
 import ghidra.util.UndefinedFunction;
 
 public class EvtActionContext extends NavigatableActionContext implements RestrictedAddressSetContext {
-	private final Address functionEntryPoint;
+	private final Address scriptEntryPoint;
 	private final int lineNumber;
 
-	private ClangToken tokenAtCursor = null;
+	private EvtToken tokenAtCursor = null;
 	private boolean tokenIsInitialized = false;
 
 	/**
@@ -29,15 +28,15 @@ public class EvtActionContext extends NavigatableActionContext implements Restri
 	 * margin. In these cases, the line number should be that under the mouse cursor.
 	 * 
 	 * @param provider the decompiler provider producing the context
-	 * @param functionEntryPoint the current function's entry, if applicable
+	 * @param scriptEntryPoint the current function's entry, if applicable
 	 * @param lineNumber non-zero to specify the line number
 	 */
-	public EvtActionContext(EvtProvider provider, Address functionEntryPoint, int lineNumber) {
+	public EvtActionContext(EvtProvider provider, Address scriptEntryPoint, int lineNumber) {
 		super(provider, provider);
 		if (lineNumber < 0) {
 			throw new IllegalArgumentException("lineNumber must be >= 0. Got " + lineNumber);
 		}
-		this.functionEntryPoint = functionEntryPoint;
+		this.scriptEntryPoint = scriptEntryPoint;
 		this.lineNumber = lineNumber;
 	}
 
@@ -48,13 +47,12 @@ public class EvtActionContext extends NavigatableActionContext implements Restri
 	 * @param functionEntryPoint the current function's entry, if applicable
 	 * @param isDecompiling true if the decompiler is still working
 	 */
-	public EvtActionContext(EvtProvider provider, Address functionEntryPoint,
-			boolean isDecompiling) {
-		this(provider, functionEntryPoint, isDecompiling, 0);
+	public EvtActionContext(EvtProvider provider, Address scriptEntryPoint) {
+		this(provider, scriptEntryPoint, 0);
 	}
 
-	public Address getFunctionEntryPoint() {
-		return functionEntryPoint;
+	public Address getScriptEntryPoint() {
+		return scriptEntryPoint;
 	}
 
 	@Override
@@ -66,9 +64,9 @@ public class EvtActionContext extends NavigatableActionContext implements Restri
 		return getComponentProvider().getTool();
 	}
 
-	public ClangToken getTokenAtCursor() {
+	public EvtToken getTokenAtCursor() {
 		if (!tokenIsInitialized) {
-			tokenAtCursor = getDecompilerPanel().getTokenAtCursor();
+			tokenAtCursor = getEvtPanel().getTokenAtCursor();
 			tokenIsInitialized = true;
 		}
 		return tokenAtCursor;
@@ -96,30 +94,25 @@ public class EvtActionContext extends NavigatableActionContext implements Restri
 		if (lineNumber != 0) {
 			return lineNumber;
 		}
-		ClangToken token = getTokenAtCursor();
+		EvtToken token = getTokenAtCursor();
 		return token == null ? 0 : token.getLineParent().getLineNumber();
 	}
 
-	public EvtPanel getDecompilerPanel() {
-		return getComponentProvider().getDecompilerPanel();
+	public EvtPanel getEvtPanel() {
+		return getComponentProvider().getEvtPanel();
 	}
 
-	public Function getFunction() {
-		return getComponentProvider().getController().getFunction();
+	public Data getData() {
+		return getComponentProvider().getController().getData();
 	}
 
-	public HighFunction getHighFunction() {
-		return getComponentProvider().getController().getHighFunction();
-	}
+	// public HighFunction getHighFunction() {
+	// 	return getComponentProvider().getController().getHighFunction();
+	// }
 
-	public ClangTokenGroup getCCodeModel() {
-		return getComponentProvider().getController().getCCodeModel();
-	}
-
-	public boolean hasRealFunction() {
-		Function f = getFunction();
-		return f != null && !(f instanceof UndefinedFunction);
-	}
+	// public ClangTokenGroup getCCodeModel() {
+	// 	return getComponentProvider().getController().getCCodeModel();
+	// }
 
 	public void setStatusMessage(String msg) {
 		getComponentProvider().getController().setStatusMessage(msg);
@@ -127,29 +120,12 @@ public class EvtActionContext extends NavigatableActionContext implements Restri
 
 	@Override
 	public boolean hasSelection() {
-
-		DecompilerProvider provider = getComponentProvider();
+		EvtProvider provider = getComponentProvider();
 		String textSelection = provider.getTextSelection();
 		if (!StringUtils.isBlank(textSelection)) {
 			return true;
 		}
 
 		return super.hasSelection();
-	}
-
-	// allows this Decompiler action context to signal the location is on a function
-	@Override
-	protected Function getFunctionForLocation() {
-		ClangToken token = getTokenAtCursor();
-		if (token == null) {
-			return null;
-		}
-
-		if (token instanceof ClangFuncNameToken functionToken) {
-			Function function = DecompilerUtils.getFunction(program, functionToken);
-			return function;
-		}
-
-		return null;
 	}
 }

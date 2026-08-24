@@ -113,7 +113,7 @@ public class EvtController {
 			return false;
 		}
 
-		Function currentFunction = currentEvtData.getFunction();
+		Function currentFunction = currentEvtData.getData();
 		if (currentFunction instanceof UndefinedFunction) {
 			//
 			// There is an oddness with some Undefined functions where their body overlaps a normal
@@ -216,7 +216,7 @@ public class EvtController {
 	}
 
 	private void updateCache(EvtData EvtData) {
-		Function function = EvtData.getFunction();
+		Function function = EvtData.getData();
 		DecompileResults results = EvtData.getDecompileResults();
 		if (function != null && results != null && results.decompileCompleted()) {
 			decompilerCache.put(function, results);
@@ -273,7 +273,7 @@ public class EvtController {
 
 	public Data getData() {
 		if (currentEvtData != null) {
-			return currentEvtData.getFunction();
+			return currentEvtData.getData();
 		}
 		return null;
 	}

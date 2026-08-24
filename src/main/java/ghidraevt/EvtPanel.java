@@ -232,7 +232,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 	}
 
 	private void applySecondaryHighlights(DecompilerHighlighter highlighter) {
-		Function function = decompileData.getFunction();
+		Function function = decompileData.getData();
 		highlightController.addSecondaryHighlighter(function, highlighter);
 		highlighter.applyHighlights();
 	}
@@ -296,7 +296,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 	}
 
 	private DecompilerHighlighter createHighlighter(CTokenHighlightMatcher tm) {
-		Function function = decompileData.getFunction();
+		Function function = decompileData.getData();
 		return createHighlighter(function, tm);
 	}
 
@@ -443,7 +443,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 	 */
 	public void cloneHighlights(DecompilerPanel sourcePanel) {
 
-		Function function = decompileData.getFunction();
+		Function function = decompileData.getData();
 		cloneServiceHiglighters(sourcePanel);
 
 		//
@@ -499,7 +499,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 
 		DecompileData oldData = this.decompileData;
 		this.decompileData = decompileData;
-		Function function = decompileData.getFunction();
+		Function function = decompileData.getData();
 		if (decompileData.hasDecompileResults()) {
 			layoutController.buildLayouts(function, decompileData.getCCodeMarkup(), null, true);
 			if (decompileData.getDebugFile() != null) {
@@ -535,8 +535,8 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 	}
 
 	private void setLocation(DecompileData oldData, DecompileData newData) {
-		Function function = oldData.getFunction();
-		if (SystemUtilities.isEqual(function, newData.getFunction())) {
+		Function function = oldData.getData();
+		if (SystemUtilities.isEqual(function, newData.getData())) {
 			return;
 		}
 
@@ -602,7 +602,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 			return false;
 		}
 
-		Address entry = decompileData.getFunction().getEntryPoint();
+		Address entry = decompileData.getData().getEntryPoint();
 		if (!entry.equals(address)) {
 			return false;
 		}
@@ -1001,7 +1001,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 			address = DecompilerUtils.findAddressBefore(layoutController.getFields(), token);
 		}
 
-		Function function = decompileData.getFunction();
+		Function function = decompileData.getData();
 		if (address == null) {
 			address = function.getEntryPoint();
 		}
@@ -1024,7 +1024,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 	private ProgramLocation createFunctionSignatureLocation(ClangToken token, Address address,
 			DecompilerLocationInfo info) {
 
-		Function function = decompileData.getFunction();
+		Function function = decompileData.getData();
 		Address entryPoint = function.getEntryPoint();
 		if (!entryPoint.equals(address)) {
 			// Another address implies that we are not on the function signature
@@ -1047,7 +1047,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 	private ProgramLocation createVariableDeclarationLocation(ClangVariableToken cvt,
 			Address address, DecompilerLocationInfo info) {
 
-		Function function = decompileData.getFunction();
+		Function function = decompileData.getData();
 		Address entryPoint = function.getEntryPoint();
 		Program program = decompileData.getProgram();
 		Variable variable = getVariable(cvt);
@@ -1085,7 +1085,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 			return variable;
 		}
 
-		Function function = decompileData.getFunction();
+		Function function = decompileData.getData();
 		Symbol symbol = highSymbol.getSymbol();
 		Variable[] locals = function.getLocalVariables();
 		for (Variable local : locals) {
@@ -1217,7 +1217,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 		return null;
 	}
 
-	public ClangToken getTokenAtCursor() {
+	public EvtToken getTokenAtCursor() {
 		FieldLocation cursorPosition = fieldPanel.getCursorLocation();
 		Field field = fieldPanel.getCurrentField();
 		if (field == null) {

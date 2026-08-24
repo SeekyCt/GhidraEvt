@@ -25,7 +25,11 @@ public class EvtLine {
         return addr;
     }
 
-    public int linenumber() {
+    public int getLineNumber() {
+        return lineNumber;
+    }
+
+    public int line() {
         return lineNumber;
     }
 
