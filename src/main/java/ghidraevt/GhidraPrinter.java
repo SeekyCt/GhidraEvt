@@ -36,26 +36,23 @@ import jevt.Arg.UF;
 import jevt.Arg.UW;
 
 public class GhidraPrinter {
-    // TODO: gcolor
-    public static Color COLOR_LW = new Color(0xffa500); // orange
-    public static Color COLOR_LF =  new Color(0xff4500); // orangered
-    public static Color COLOR_LSW = new Color(0xff7f50); // coral
-    public static Color COLOR_LSWF = new Color(0xd2691e); // chocolate
+    public static Color COLOR_LW =    new GColor("color.fg.ghidraevt.lw");
+    public static Color COLOR_LF =    new GColor("color.fg.ghidraevt.lf");
+    public static Color COLOR_LSW =   new GColor("color.fg.ghidraevt.lsw");
+    public static Color COLOR_LSWF =  new GColor("color.fg.ghidraevt.lswf");
+    public static Color COLOR_GW =    new GColor("color.fg.ghidraevt.gw");
+    public static Color COLOR_GF =    new GColor("color.fg.ghidraevt.gf");
+    public static Color COLOR_GSW =   new GColor("color.fg.ghidraevt.gsw");
+    public static Color COLOR_GSWF =  new GColor("color.fg.ghidraevt.gswf");
+    public static Color COLOR_UW =    new GColor("color.fg.ghidraevt.uw");
+    public static Color COLOR_UF =    new GColor("color.fg.ghidraevt.uf");
+    public static Color COLOR_INSTR = new GColor("color.fg.ghidraevt.instr");
 
-    public static Color COLOR_GW = new Color(0x7fffd4); // aquamarine
-    public static Color COLOR_GF = new Color(0x00ffff); // aqua
-    public static Color COLOR_GSW = new Color(0x90ee90); // lightgreen
-    public static Color COLOR_GSWF = new Color(0xadff2f); // greenyellow
-
-    public static Color COLOR_UW = new Color(0xffc0cb); // pink
-    public static Color COLOR_UF = new Color(0x800080); // purple
-
-    public static Color COLOR_KEYWORD = new GColor("color.fg.decompiler.keyword");
-    public static Color COLOR_GLOBAL = new GColor("color.fg.decompiler.global");
-    public static Color COLOR_CONST = new GColor("color.fg.decompiler.constant");
-    public static Color COLOR_VAR = new GColor("color.fg.decompiler.variable");
-    public static Color COLOR_DEFAULT = new GColor("color.fg.decompiler");
-	public static GColor COLOR_EXTERNAL_FUNCTION = new GColor("color.fg.decompiler.external.function");
+    public static Color COLOR_GLOBAL =            new GColor("color.fg.decompiler.global");
+    public static Color COLOR_CONST =             new GColor("color.fg.decompiler.constant");
+    public static Color COLOR_VAR =               new GColor("color.fg.decompiler.variable");
+    public static Color COLOR_DEFAULT =           new GColor("color.fg.decompiler");
+	public static Color COLOR_EXTERNAL_FUNCTION = new GColor("color.fg.decompiler.external.function");
 
     Program program;
     SymbolInspector symbolInspector;
@@ -276,7 +273,7 @@ public class GhidraPrinter {
 
             List<EvtToken> tokens = new ArrayList<>();
 
-            tokens.add(new EvtToken(opcode.name(), COLOR_KEYWORD));
+            tokens.add(new EvtToken(opcode.name(), COLOR_INSTR));
             for (Arg arg : instr.args())
             {
                 tokens.add(new EvtToken(" ", COLOR_DEFAULT));
