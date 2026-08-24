@@ -7,6 +7,7 @@ import java.awt.FontMetrics;
 import java.awt.Toolkit;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.JPanel;
@@ -29,6 +30,7 @@ import ghidra.app.decompiler.component.DecompilerUtils;
 import ghidra.app.util.SymbolInspector;
 import ghidra.app.util.viewer.field.CommentUtils;
 import ghidra.framework.plugintool.ServiceProvider;
+import ghidra.program.model.address.Address;
 import ghidra.program.model.listing.Program;
 import ghidra.util.Msg;
 
@@ -38,8 +40,6 @@ public class EvtLayoutModel implements LayoutModel {
     private int charWidth;
     private int indentWidth = 4;
     private SymbolInspector symbolInspector;
-    // private DecompileOptions options;
-    // private ClangTokenGroup docroot; // Root of displayed document
     private Field[] fieldList; // Array of fields comprising layout
     private FontMetrics metrics;
     private FieldHighlightFactory hlFactory;
@@ -75,8 +75,16 @@ public class EvtLayoutModel implements LayoutModel {
                 new AttributedString(data.getErrorMessage(), opts.getErrorColor(), metrics),
                 0, 0
             );
+            
+            EvtLine line = new EvtLine(
+                Arrays.asList(new EvtToken(data.getErrorMessage(), opts.getErrorColor())),
+                Address.NO_ADDRESS,
+                0,
+                0
+            );
+            
             fieldList = new Field[1];
-            fieldList[0] = new EvtTextField(element, 0, maxWidth, maxLines, hlFactory);
+            fieldList[0] = createTextFieldForLine(line);
         }
         else {
             GhidraPrinter printer = new GhidraPrinter(data.getProgram(), symbolInspector, opts);
@@ -86,7 +94,7 @@ public class EvtLayoutModel implements LayoutModel {
             fieldList = new Field[lineCount];
 
             for (int i = 0; i < lineCount; ++i) {
-                fieldList[i] = createTextFieldForLine(lines.get(i), lineCount, showLineNumbers);
+                fieldList[i] = createTextFieldForLine(lines.get(i));
             }
         }
         
@@ -94,13 +102,12 @@ public class EvtLayoutModel implements LayoutModel {
         modelChanged(); // Inform the listeners that we have changed
     }
 
-    private EvtTextField createTextFieldForLine(EvtLine line, int lineCount,
-            boolean paintLineNumbers) {
+    private EvtTextField createTextFieldForLine(EvtLine line) {
         FieldElement[] elements = createFieldElementsForLine(line.tokens());
         CompositeFieldElement element = new CompositeFieldElement(elements);
 
         int indent = line.indent() * indentWidth * charWidth;
-        return new EvtTextField(element, indent, maxWidth, maxLines,
+        return new EvtTextField(line, element, indent, maxWidth, maxLines,
             hlFactory);
     }
 
@@ -113,7 +120,6 @@ public class EvtLayoutModel implements LayoutModel {
             Color color = token.getColor();
 
             AttributedString as = new AttributedString(token.getText(), color, metrics);
-            // elements[i] = new ClangFieldElement(hlController, token, as, columnPosition);
             elements[i] = new TextFieldElement(as, 0, columnPosition);
             columnPosition += as.length();
         }

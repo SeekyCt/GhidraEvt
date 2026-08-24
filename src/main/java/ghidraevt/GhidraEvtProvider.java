@@ -7,25 +7,41 @@ import java.util.List;
 import javax.swing.*;
 
 import docking.widgets.fieldpanel.field.Field;
+import docking.WindowPosition;
 import docking.widgets.fieldpanel.FieldPanel;
 import docking.widgets.fieldpanel.support.FieldHighlightFactory;
+import docking.widgets.fieldpanel.support.FieldLocation;
+import docking.widgets.fieldpanel.support.FieldSelection;
+import docking.widgets.fieldpanel.support.FieldSelectionHelper;
 import docking.widgets.fieldpanel.support.Highlight;
 import docking.widgets.indexedscrollpane.IndexedScrollPane;
-import ghidra.framework.plugintool.ComponentProviderAdapter;
+import ghidra.app.decompiler.ClangToken;
+import ghidra.app.decompiler.component.ClangTextField;
+import ghidra.app.events.ProgramSelectionPluginEvent;
+import ghidra.app.nav.LocationMemento;
+import ghidra.app.plugin.core.decompile.DecompilePlugin;
+import ghidra.app.services.ClipboardContentProviderService;
+import ghidra.app.services.ClipboardService;
+import ghidra.app.util.ListingHighlightProvider;
+import ghidra.framework.plugintool.NavigatableComponentProviderAdapter;
 import ghidra.framework.plugintool.Plugin;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.listing.CodeUnit;
 import ghidra.program.model.listing.Program;
 import ghidra.program.util.ProgramLocation;
+import ghidra.program.util.ProgramSelection;
 import ghidra.util.Msg;
 import jevt.BadEvtException;
 import jevt.Game;
 import jevt.Instr;
 import resources.Icons;
 
-public class GhidraEvtProvider extends ComponentProviderAdapter {
+public class GhidraEvtProvider extends NavigatableComponentProviderAdapter {
     private JPanel panel;
+    private FieldPanel fieldPanel;
+
     private ProgramLocation currentLocation;
+	private ProgramSelection currentSelection;
 
     // TODO: save settings
 
@@ -35,13 +51,20 @@ public class GhidraEvtProvider extends ComponentProviderAdapter {
     private DockingToggle snapToSymbol;
     private DockingToggle game;
 
-    private FieldPanel fieldPanel;
-
     private EvtHighlightFactory hlFactory = new EvtHighlightFactory();
     private EvtLayoutModel layout;
 
-    public GhidraEvtProvider(Plugin plugin, String owner) {
-        super(plugin.getTool(), "Evt Disassembler", owner);
+    private ClipboardService clipboardService;
+
+    private EvtClipboardProvider clipboardProvider;
+
+	private final GhidraEvtPlugin plugin;
+
+    public GhidraEvtProvider(GhidraEvtPlugin plugin, String owner) {
+        super(plugin.getTool(), "Evt Disassembler", owner, null);
+
+        this.clipboardProvider = new EvtClipboardProvider(plugin, this); // TODO
+        this.plugin = plugin;
 
         buildPanel();
         createActions();
@@ -91,8 +114,42 @@ public class GhidraEvtProvider extends ComponentProviderAdapter {
         scrollPane.setName("Evt Scroll Pane");
 
         panel.add(scrollPane);
-        setVisible(true);
         setIcon(Icons.INFO_ICON);
+        setDefaultWindowPosition(WindowPosition.RIGHT);
+        setVisible(true);
+    }
+
+	public EvtToken getTokenAtCursor() {
+		FieldLocation cursorPosition = fieldPanel.getCursorLocation();
+		Field field = fieldPanel.getCurrentField();
+		if (field == null) {
+			return null;
+		}
+		return ((EvtTextField) field).getToken(cursorPosition);
+	}
+
+
+    public String getCursorText() {
+        EvtToken token = getTokenAtCursor();
+		// ClangToken token = panel.getTokenAtCursor();
+		// if (token == null) {
+		// 	return null;
+		// }
+
+		// if (token instanceof ClangFuncNameToken functionToken) {
+		// 	Function function = DecompilerUtils.getFunction(currentProgram, functionToken);
+		// 	if (function != null) {
+		// 		return function.getName();
+		// 	}
+		// }
+
+		String text = token.getText();
+		return text;        
+    }
+
+
+    public JPanel getPanel() {
+        return panel;
     }
 
     private void createActions() {
@@ -213,5 +270,123 @@ public class GhidraEvtProvider extends ComponentProviderAdapter {
         currentLocation = location;
 
         updateDisasm();
+    }
+
+	void setClipboardService(ClipboardService service) {
+		clipboardService = service;
+		if (clipboardService != null) {
+			clipboardService.registerClipboardContentProvider(clipboardProvider);
+		}
+	}
+
+    @Override
+	public void dispose() {
+		super.dispose();
+
+        // TODO
+
+		if (clipboardService != null) {
+			clipboardService.deRegisterClipboardContentProvider(clipboardProvider);
+		}
+
+		currentLocation = null;
+        currentSelection = null;
+	}
+
+
+	@Override
+	public ProgramSelection getSelection() {
+		return currentSelection;
+	}
+
+    @Override
+    public ProgramSelection getHighlight() {
+        return null;
+    }
+
+    @Override
+    public ProgramLocation getLocation() {
+        return currentLocation;
+    }
+
+    @Override
+    public LocationMemento getMemento() {
+        if (currentLocation == null)
+            return null;
+        return new LocationMemento(currentLocation.getProgram(), currentLocation);
+    }
+
+    @Override
+    public Program getProgram() {
+        if (currentLocation == null)
+            return null;
+        return currentLocation.getProgram();
+    }
+
+    @Override
+    public String getTextSelection() {
+		FieldSelection selection = fieldPanel.getSelection();
+		if (selection.isEmpty()) {
+			return null;
+		}
+
+		return FieldSelectionHelper.getFieldSelectionText(selection, fieldPanel);
+	}
+
+    @Override
+	public boolean goTo(Program gotoProgram, ProgramLocation location) {
+        plugin.locationChanged(location);
+        return true;
+	}
+
+    @Override
+    public void removeHighlightProvider(ListingHighlightProvider highlightProvider, Program p) {
+
+    }
+
+    @Override
+    public void setHighlight(ProgramSelection highlight) {
+
+    }
+
+    @Override
+    public void setHighlightProvider(ListingHighlightProvider highlightProvider, Program p) {
+
+    }
+
+    @Override
+    public void setMemento(LocationMemento memento) {
+
+    }
+
+    @Override
+    public void setSelection(ProgramSelection selection) {
+        currentSelection = selection;
+        tool.contextChanged(this);
+
+		clipboardProvider.setSelection(selection);
+		notifySelectionChanged(selection);
+    }
+
+	private void notifySelectionChanged(ProgramSelection selection) {
+		if (!isConnected()) {
+			return;
+		}
+
+		if (selection == null) {
+			return;
+		}
+
+		plugin.firePluginEvent(
+			new ProgramSelectionPluginEvent(plugin.getName(), selection, getProgram()));
+	}
+
+    @Override
+    public boolean supportsHighlight() {
+        return false;
+    }
+
+    public EvtLayoutModel getLayout() {
+        return layout;
     }
 }

@@ -19,6 +19,7 @@ import java.io.IOException;
 
 import ghidra.app.plugin.PluginCategoryNames;
 import ghidra.app.plugin.ProgramPlugin;
+import ghidra.app.services.ClipboardService;
 import ghidra.framework.plugintool.*;
 import ghidra.framework.plugintool.util.PluginStatus;
 import ghidra.program.util.ProgramLocation;
@@ -57,6 +58,11 @@ public class GhidraEvtPlugin extends ProgramPlugin {
     @Override
     public void init() {
         super.init();
+
+		ClipboardService clipboardService = tool.getService(ClipboardService.class);
+		if (clipboardService != null) {
+			provider.setClipboardService(clipboardService);
+		}
     }
 
     @Override
