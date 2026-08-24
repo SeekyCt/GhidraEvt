@@ -58,15 +58,6 @@ public class EvtLayoutModel implements LayoutModel {
         buildLayouts(EvtData.empty("No script selected."));
     }
 
-    private static class EvtTextField extends WrappingVerticalLayoutTextField {
-        public EvtTextField(FieldElement textElement, int startX, int width, int maxLines,
-                FieldHighlightFactory hlFactory) {
-            // super(createSingleLineElement(fieldElements), x, width - x, 30, hlFactory, false, "");
-
-            super(textElement, startX, width - startX, maxLines, hlFactory);
-        }
-    }
-
 	@SuppressWarnings("deprecation")
 	// ignoring the deprecated call for toolkit
     public void buildLayouts(EvtData data) {
