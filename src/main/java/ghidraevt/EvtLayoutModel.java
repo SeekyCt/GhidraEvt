@@ -24,9 +24,12 @@ import docking.widgets.fieldpanel.listener.LayoutModelListener;
 import docking.widgets.fieldpanel.support.FieldHighlightFactory;
 import docking.widgets.fieldpanel.support.SingleRowLayout;
 import generic.theme.Gui;
+import ghidra.app.decompiler.DecompileOptions;
+import ghidra.app.decompiler.component.DecompilerUtils;
 import ghidra.app.util.SymbolInspector;
 import ghidra.app.util.viewer.field.CommentUtils;
 import ghidra.framework.plugintool.ServiceProvider;
+import ghidra.program.model.listing.Program;
 import ghidra.util.Msg;
 
 public class EvtLayoutModel implements LayoutModel {
@@ -44,9 +47,11 @@ public class EvtLayoutModel implements LayoutModel {
 
     private boolean showLineNumbers = true;
 
+    private ServiceProvider serviceProvider;
 
     public EvtLayoutModel(JPanel evtPanel, ServiceProvider serviceProvider, FieldHighlightFactory hlFactory) {
         this.hlFactory = hlFactory;
+        this.serviceProvider = serviceProvider;
 
 		symbolInspector = new SymbolInspector(serviceProvider, evtPanel);
         buildLayouts(EvtData.empty("No script selected."));
@@ -64,26 +69,30 @@ public class EvtLayoutModel implements LayoutModel {
 	@SuppressWarnings("deprecation")
 	// ignoring the deprecated call for toolkit
     public void buildLayouts(EvtData data) {
-		Font font = Gui.getFont("font.decompiler");
+        Program program = data.getProgram();
+
+        DecompileOptions opts = DecompilerUtils.getDecompileOptions(serviceProvider, program);
+
+        Font font = opts.getDefaultFont();
 		metrics = Toolkit.getDefaultToolkit().getFontMetrics(font);
 		indentWidth = metrics.stringWidth(" ");
-		maxWidth = indentWidth * 100;
+		maxWidth = indentWidth * opts.getMaxWidth();
 
         if (data.isError()) {
             TextFieldElement element = new TextFieldElement(
-                new AttributedString(data.getErrorMessage(), new Color(0xff8080ff), metrics),
+                new AttributedString(data.getErrorMessage(), opts.getErrorColor(), metrics),
                 0, 0
             );
             fieldList = new Field[1];
             fieldList[0] = new EvtTextField(element, 0, maxWidth, maxLines, hlFactory);
         }
         else {
-            GhidraPrinter printer = new GhidraPrinter(data.getProgram(), symbolInspector); // TODO
+            GhidraPrinter printer = new GhidraPrinter(data.getProgram(), symbolInspector, opts);
             List<EvtLine> lines = printer.getLines(data.getStartAddress(), data.getScript());
-            
+
             int lineCount = lines.size();
-            fieldList = new Field[lineCount]; // One field for each "C" line
-                
+            fieldList = new Field[lineCount];
+
             for (int i = 0; i < lineCount; ++i) {
                 fieldList[i] = createTextFieldForLine(lines.get(i), lineCount, showLineNumbers);
             }

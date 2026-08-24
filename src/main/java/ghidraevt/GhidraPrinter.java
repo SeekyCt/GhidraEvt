@@ -14,6 +14,7 @@ import ghidra.program.model.listing.Program;
 import ghidra.program.model.symbol.Namespace;
 import ghidra.program.model.symbol.Symbol;
 import ghidra.util.Msg;
+import ghidra.app.decompiler.DecompileOptions;
 import ghidra.app.util.SymbolInspector;
 import jevt.Instr;
 import jevt.Opcode;
@@ -32,21 +33,19 @@ public class GhidraPrinter {
     public static Color COLOR_UF    = new GColor("color.fg.ghidraevt.uf");
     public static Color COLOR_INSTR = new GColor("color.fg.ghidraevt.instr");
 
-    public static Color COLOR_GLOBAL            = new GColor("color.fg.decompiler.global");
-    public static Color COLOR_CONST             = new GColor("color.fg.decompiler.constant");
-    public static Color COLOR_VAR               = new GColor("color.fg.decompiler.variable");
-    public static Color COLOR_DEFAULT           = new GColor("color.fg.decompiler");
 	public static Color COLOR_EXTERNAL_FUNCTION = new GColor("color.fg.decompiler.external.function");
 
     Program program;
     SymbolInspector symbolInspector;
+    DecompileOptions decompileOptions;
 
     // boolean showLineNumbers;
     // boolean showAddresses;
 
-    public GhidraPrinter(Program program, SymbolInspector symbolInspector /*, boolean showLineNumbers, boolean showAddresses*/ ) {
+    public GhidraPrinter(Program program, SymbolInspector symbolInspector, DecompileOptions decompileOptions /*, boolean showLineNumbers, boolean showAddresses*/ ) {
         this.program = program;
         this.symbolInspector = symbolInspector;
+        this.decompileOptions = decompileOptions;
         // this.showLineNumbers = showLineNumbers;
         // this.showAddresses = showAddresses;
     }
@@ -92,7 +91,7 @@ public class GhidraPrinter {
 
         // TODO: undefined data? struct fields?
 
-        return COLOR_GLOBAL;
+        return decompileOptions.getGlobalColor();
     }
 
     private boolean isROString(Data data) {
@@ -118,7 +117,7 @@ public class GhidraPrinter {
         }
         else if (cu instanceof Data data && isROString(data)) {
             String value = (String) data.getValue();
-            ret.add(new EvtToken("\"" + value + "\"", COLOR_CONST));
+            ret.add(new EvtToken("\"" + value + "\"", decompileOptions.getConstantColor()));
         }   
         else {
             Symbol symbol = cu.getPrimarySymbol();
@@ -130,8 +129,8 @@ public class GhidraPrinter {
                 Namespace ns = symbol.getParentNamespace();
                 // TODO: options - off/on/sync decompiler, and also force in C macro mode with spm::
                 while (!ns.isGlobal()) {
-                    ret.add(new EvtToken(ns.getName(), COLOR_GLOBAL));
-                    ret.add(new EvtToken("::", COLOR_DEFAULT));
+                    ret.add(new EvtToken(ns.getName(), decompileOptions.getGlobalColor()));
+                    ret.add(new EvtToken("::", decompileOptions.getDefaultColor()));
                     ns = ns.getParentNamespace();
                 }
                 ret.add(new EvtToken(symbol.getName(), color));
@@ -147,16 +146,16 @@ public class GhidraPrinter {
         return switch (arg) {
             case Arg.ADDR addr -> addrToTokens(addr); // TODO: dynamic color
             case Arg.FLOAT(float value) -> Arrays.asList(
-                new EvtToken(Float.toString(value), COLOR_CONST)
+                new EvtToken(Float.toString(value), decompileOptions.getConstantColor())
             );
             case Arg.INT(int value) -> Arrays.asList(
-                new EvtToken(Integer.toString(value), COLOR_CONST)
+                new EvtToken(Integer.toString(value), decompileOptions.getConstantColor())
             );
             case Arg.Variable variable -> Arrays.asList(
                 new EvtToken(variable.typeName() + "(" + variable.id() + ")", variableToColor(variable))
             );
             case Arg.NONE() ->  Arrays.asList(
-                new EvtToken("NONE", COLOR_VAR)
+                new EvtToken("NONE", decompileOptions.getVariableColor())
             );
         };
     }
@@ -177,7 +176,7 @@ public class GhidraPrinter {
             tokens.add(new EvtToken(opcode.name(), COLOR_INSTR));
             for (Arg arg : instr.args())
             {
-                tokens.add(new EvtToken(" ", COLOR_DEFAULT));
+                tokens.add(new EvtToken(" ", decompileOptions.getDefaultColor()));
                 tokens.addAll(argToTokens(arg));
             }
 
