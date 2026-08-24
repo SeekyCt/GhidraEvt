@@ -264,8 +264,13 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
         this.script = script;
         updateOptions();
 
-		GhidraPrinter printer = new GhidraPrinter(evtPanel.getProgram(), symbolInspector, options);
-		lines = printer.getLines(address, script);
+		if (script != null) {
+			GhidraPrinter printer = new GhidraPrinter(evtPanel.getProgram(), symbolInspector, options);
+			lines = printer.getLines(address, script);
+		}
+		else {
+			lines = new ArrayList<>();
+		}
 
         addErrorLines(lines, errmsg);
 

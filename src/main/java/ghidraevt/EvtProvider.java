@@ -103,8 +103,8 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 		setConnected(isConnected);
 
 		DecompileOptions decompileOptions = new DecompileOptions();
-		initializeOptions();
 		options = new EvtOptions(decompileOptions);
+		initializeOptions();
 
 
 		controller =
@@ -130,8 +130,8 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 
 		setWindowMenuGroup("Evt Disassembler");
 		setDefaultWindowPosition(WindowPosition.RIGHT);
-		createActions(isConnected);
 		addToTool();
+		createActions(isConnected);
 
 		redecompileUpdater = new SwingUpdateManager(500, 5000, () -> doRefresh(false));
 		followUpWorkUpdater = new SwingUpdateManager(() -> doFollowUpWork());
@@ -697,8 +697,13 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 	 */
 	private void updateTitle() {
 		Address address = controller.getEvtData().getAddress();
-		Symbol symbol = program.getSymbolTable().getPrimarySymbol(address);
-		String programName = (program != null) ? program.getDomainFile().getName() : "";
+		String programName = "";
+		Symbol symbol = null;
+		if (program != null) {
+			programName = program.getDomainFile().getName();
+			if (address != null)
+				symbol = program.getSymbolTable().getPrimarySymbol(address);
+		}
 		String title = "Evt Disassembler";
 		String functionName = "No script";
 		String tabText = "Evt Disassembler";
@@ -1080,7 +1085,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 		// GoToPreviousBraceAction goToPreviousBraceAction = new GoToPreviousBraceAction();
 		// DisplayTypeCastsAction displayTypeCastsAction = new DisplayTypeCastsAction(plugin);
 
-		addLocalAction(refreshAction);
+		// addLocalAction(refreshAction);
 		// addLocalAction(displayUnreachableCodeToggle);
 		// addLocalAction(respectReadOnlyFlags);
 		// addLocalAction(selectAllAction);

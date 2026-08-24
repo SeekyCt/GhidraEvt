@@ -29,6 +29,7 @@ public class EvtController {
         EvtOptions options, EvtClipboardProvider clipboard) {
 		this.serviceProvider = serviceProvider;
 		this.callbackHandler = handler;
+		evtMgr = new EvtManager(this, options);
 		evtPanel = new EvtPanel(this, options, clipboard);
 
 		evtPanel.setHoverMode(true);

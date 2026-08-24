@@ -47,7 +47,10 @@ public class EvtData {
 	}
 
 	public Address getAddress() {
-		return location.getAddress();
+		if (location != null)
+			return location.getAddress();
+		else
+			return null;
 	}
 
 	public ProgramLocation getLocation() {
