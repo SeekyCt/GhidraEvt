@@ -24,32 +24,28 @@ import docking.widgets.fieldpanel.support.SingleRowLayout;
 import ghidra.app.util.SymbolInspector;
 import ghidra.framework.plugintool.ServiceProvider;
 import ghidra.program.model.address.Address;
-import ghidra.program.model.listing.Data;
 import jevt.Instr;
 
 public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
-    private int maxWidth;
-    private int charWidth;
-    private SymbolInspector symbolInspector;
-    private EvtPanel evtPanel;
-    private EvtOptions options;
-    private List<Instr> docroot;
-    private Field[] fieldList; // Array of fields comprising layout
-    private FontMetrics metrics;
-    private FieldHighlightFactory hlFactory;
-    private List<LayoutModelListener> listeners = new ArrayList<>();
-    private BigInteger numIndexes = BigInteger.ZERO;
-    private List<EvtLine> lines;
-    
-    private int maxLines = 30;
-    private int indentWidth = 4;
+	private int maxWidth; // Max line width in pixels
+	private int indentCharWidth; // Width of a space character in pixels
+	private SymbolInspector symbolInspector;
+	private EvtPanel evtPanel;
+	private EvtOptions options;
+	private Field[] fieldList; // Each field is a line of disassembly
+	private FontMetrics metrics;
+	private FieldHighlightFactory hlFactory;
+	private List<LayoutModelListener> listeners;
+	private BigInteger numIndexes = BigInteger.ZERO;
+	private List<EvtLine> lines;
 
-    private boolean showLineNumbers = true;
+	private int maxLines = 30; // Maximum number of times 1 line of disassembly can be wrapped
+	private int indentSize = 4; // Number of indentation characters to add per level
 
-    // private ServiceProvider serviceProvider;
+	private boolean showLineNumbers = true;
 
-	public EvtLayoutModel(EvtOptions opt, EvtPanel evtPanel,
-			FontMetrics met, FieldHighlightFactory hlFactory) {
+	public EvtLayoutModel(EvtOptions opt, EvtPanel evtPanel, FontMetrics met,
+			FieldHighlightFactory hlFactory) {
 		options = opt;
 		this.evtPanel = evtPanel;
 		metrics = met;
@@ -57,8 +53,7 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
 		listeners = new ArrayList<>();
 		buildLayouts(null, null, null, false);
 
-		EvtController controller = evtPanel.getController();
-		ServiceProvider serviceProvider = controller.getServiceProvider();
+		ServiceProvider serviceProvider = evtPanel.getController().getServiceProvider();
 		symbolInspector = new SymbolInspector(serviceProvider, evtPanel);
 	}
 
@@ -142,21 +137,18 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
 		return index.subtract(BigInteger.ONE);
 	}
 
-	public int getIndexBefore(int index) {
-		return index - 1;
-	}
-
 	Field[] getFields() {
 		return fieldList;
 	}
 
-    private EvtTextField createTextFieldForLine(EvtLine line) {
-        List<EvtToken> tokens = line.getAllTokens();
+	private EvtTextField createTextFieldForLine(EvtLine line) {
+		List<EvtToken> tokens = line.getAllTokens();
 
-        FieldElement[] elements = createFieldElementsForLine(tokens);
+		FieldElement[] elements = createFieldElementsForLine(tokens);
 
-        int indent = line.getIndent() * indentWidth * charWidth;
-		return new EvtTextField(tokens, elements, indent, line.getLineNumber(), maxWidth, maxLines, hlFactory);
+		int indent = line.getIndent() * indentSize * indentCharWidth;
+		return new EvtTextField(tokens, elements, indent, line.getLineNumber(), maxWidth, maxLines,
+			hlFactory);
 	}
 
 	private FieldElement[] createFieldElementsForLine(List<EvtToken> tokens) {
@@ -174,36 +166,35 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
 			// 	columnPosition += elements[i].length();
 			// }
 
-            AttributedString as = new AttributedString(token.getText(), token.getColor(), metrics);
-            elements[i] = new TextFieldElement(as, 0, columnPosition);
-            columnPosition += as.length();
+			AttributedString as = new AttributedString(token.getText(), token.getColor(), metrics);
+			elements[i] = new TextFieldElement(as, 0, columnPosition);
+			columnPosition += as.length();
 		}
 		return elements;
 	}
 
 	/**
-	 * Update to the current Decompiler display options
+	 * Update to the current options
 	 */
 	@SuppressWarnings("deprecation")
 	// ignoring the deprecated call for toolkit
 	private void updateOptions() {
 		// setting the metrics here will indirectly trigger the new font to be used deeper in
 		// the bowels of the FieldPanel (you can get the font from the metrics)
-		Font font = options.getDefaultFont();
-		metrics = Toolkit.getDefaultToolkit().getFontMetrics(font);
-		charWidth = metrics.stringWidth(" ");
-		maxWidth = charWidth * options.getMaxWidth();
+		metrics = Toolkit.getDefaultToolkit().getFontMetrics(options.getDefaultFont());
+		indentCharWidth = metrics.stringWidth(GhidraPrinter.INDENT_CHAR);
+		maxWidth = indentCharWidth * options.getMaxWidth();
 
 		showLineNumbers = options.isDisplayLineNumbers();
 	}
 
 	private void splitToMaxWidthLines(List<String> res, String line) {
 		int maxchar;
-		if ((maxWidth == 0) || (indentWidth == 0)) {
+		if ((maxWidth == 0) || (indentCharWidth == 0)) {
 			maxchar = 40;
 		}
 		else {
-			maxchar = maxWidth / indentWidth;
+			maxchar = maxWidth / indentCharWidth;
 		}
 		String[] toklist = line.split("[ \t]+");
 		StringBuilder buf = new StringBuilder();
@@ -249,30 +240,30 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
 		for (String element : errlines_init) {
 			splitToMaxWidthLines(errlines, element);
 		}
-        int i = 0;
+		int i = 0;
 		for (String errline : errlines) {
-            lines.add(0,new EvtLine(
-                Arrays.asList(new EvtToken(errline, GhidraPrinter.COLOR_COMMENT, null, 0)),
-                Address.NO_ADDRESS,
-                0,
-                0
-            ));
+			lines.add(0, new EvtLine(
+				Arrays.asList(new EvtToken(errline, GhidraPrinter.COLOR_COMMENT, null, 0)),
+				Address.NO_ADDRESS,
+				0,
+				0));
 		}
 	}
 
-	public void buildLayouts(EvtScript script, List<Instr> docroot, String errmsg, boolean display) {
-        this.docroot = docroot;
-        updateOptions();
+	public void buildLayouts(EvtScript script, List<Instr> docroot, String errmsg,
+			boolean display) {
+		updateOptions();
 
 		if (docroot != null) {
-			GhidraPrinter printer = new GhidraPrinter(evtPanel.getProgram(), symbolInspector, options);
+			GhidraPrinter printer =
+				new GhidraPrinter(evtPanel.getProgram(), symbolInspector, options);
 			lines = printer.getLines(script, docroot);
 		}
 		else {
 			lines = new ArrayList<>();
 		}
 
-        addErrorLines(lines, errmsg);
+		addErrorLines(lines, errmsg);
 
 		int lineCount = lines.size();
 		fieldList = new Field[lineCount]; // One field for each "C" line
@@ -286,8 +277,8 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
 		if (display) {
 			modelChanged(); // Inform the listeners that we have changed
 		}
-        
-    }
+
+	}
 
 	public void locationChanged(FieldLocation loc, Field field, Color locationColor,
 			Color parenColor) {

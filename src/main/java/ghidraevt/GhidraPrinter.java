@@ -20,20 +20,23 @@ import jevt.Opcode;
 import jevt.Arg;
 
 public class GhidraPrinter {
-    public static Color COLOR_LW    = new GColor("color.fg.ghidraevt.lw");
-    public static Color COLOR_LF    = new GColor("color.fg.ghidraevt.lf");
-    public static Color COLOR_LSW   = new GColor("color.fg.ghidraevt.lsw");
-    public static Color COLOR_LSWF  = new GColor("color.fg.ghidraevt.lswf");
-    public static Color COLOR_GW    = new GColor("color.fg.ghidraevt.gw");
-    public static Color COLOR_GF    = new GColor("color.fg.ghidraevt.gf");
-    public static Color COLOR_GSW   = new GColor("color.fg.ghidraevt.gsw");
-    public static Color COLOR_GSWF  = new GColor("color.fg.ghidraevt.gswf");
-    public static Color COLOR_UW    = new GColor("color.fg.ghidraevt.uw");
-    public static Color COLOR_UF    = new GColor("color.fg.ghidraevt.uf");
-    public static Color COLOR_INSTR = new GColor("color.fg.ghidraevt.instr");
+    public static Color COLOR_LW      = new GColor("color.fg.ghidraevt.lw");
+    public static Color COLOR_LF      = new GColor("color.fg.ghidraevt.lf");
+    public static Color COLOR_LSW     = new GColor("color.fg.ghidraevt.lsw");
+    public static Color COLOR_LSWF    = new GColor("color.fg.ghidraevt.lswf");
+    public static Color COLOR_GW      = new GColor("color.fg.ghidraevt.gw");
+    public static Color COLOR_GF      = new GColor("color.fg.ghidraevt.gf");
+    public static Color COLOR_GSW     = new GColor("color.fg.ghidraevt.gsw");
+    public static Color COLOR_GSWF    = new GColor("color.fg.ghidraevt.gswf");
+    public static Color COLOR_UW      = new GColor("color.fg.ghidraevt.uw");
+    public static Color COLOR_UF      = new GColor("color.fg.ghidraevt.uf");
+    public static Color COLOR_INSTR   = new GColor("color.fg.ghidraevt.instr");
     public static Color COLOR_COMMENT = new GColor("color.fg.ghidraevt.comment");
 
 	public static Color COLOR_EXTERNAL_FUNCTION = new GColor("color.fg.decompiler.external.function");
+
+    // A single character of indentation
+    public static String INDENT_CHAR = " ";
 
     Program program;
     SymbolInspector symbolInspector;
@@ -140,7 +143,7 @@ public class GhidraPrinter {
 
     private List<EvtToken> argToTokens(Arg arg, Address atAddr) {
         return switch (arg) {
-            case Arg.ADDR addr -> addrToTokens(addr, atAddr); // TODO: dynamic color
+            case Arg.ADDR addr -> addrToTokens(addr, atAddr);
             case Arg.FLOAT(float value) -> Arrays.asList(
                 EvtToken.arg(Float.toString(value), decompileOptions.getConstantColor(), atAddr)
             );
