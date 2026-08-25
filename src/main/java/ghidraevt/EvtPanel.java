@@ -471,7 +471,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 		EvtData oldData = this.decompileData;
 		this.decompileData = decompileData;
 		EvtScript script = decompileData.getScript();
-		if (decompileData.hasDecompileResults()) {
+		if (decompileData.hasDisassembleResults()) {
 			layoutController.buildLayouts(script, decompileData.getDocroot(), null, true);
 		}
 		else {
@@ -666,7 +666,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 
 	@Override
 	public void buttonPressed(FieldLocation location, Field field, MouseEvent ev) {
-		if (!decompileData.hasDecompileResults()) {
+		if (!decompileData.hasDisassembleResults()) {
 			return;
 		}
 
@@ -729,7 +729,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 	}
 
 	public ProgramLocation getCurrentLocation() {
-		if (!decompileData.hasDecompileResults()) {
+		if (!decompileData.hasDisassembleResults()) {
 			return null;
 		}
 		Field currentField = fieldPanel.getCurrentField();
@@ -739,7 +739,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 
 	@Override
 	public void fieldLocationChanged(FieldLocation location, Field field, EventTrigger trigger) {
-		if (!decompileData.hasDecompileResults()) {
+		if (!decompileData.hasDisassembleResults()) {
 			return;
 		}
 
@@ -769,7 +769,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 		if (clipboard != null) {
 			clipboard.selectionChanged(selection);
 		}
-		if (!decompileData.hasDecompileResults()) {
+		if (!decompileData.hasDisassembleResults()) {
 			return;
 		}
 		if (trigger != EventTrigger.API_CALL) {

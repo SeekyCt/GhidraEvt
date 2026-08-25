@@ -5,7 +5,6 @@ import java.util.List;
 import docking.widgets.fieldpanel.support.ViewerPosition;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.address.AddressSpace;
-import ghidra.program.model.listing.Data;
 import ghidra.program.model.listing.Program;
 import ghidra.program.util.ProgramLocation;
 import jevt.Instr;
@@ -28,7 +27,7 @@ public class EvtData {
 		this.viewerPosition = viewerPosition;
 	}
 
-    public boolean hasDecompileResults() {
+    public boolean hasDisassembleResults() {
 		if (evtResults == null) {
 			return false;
 		}
@@ -79,7 +78,7 @@ public class EvtData {
 	}
 
 	public boolean contains(ProgramLocation programLocation) {
-		if (!hasDecompileResults()) {
+		if (!hasDisassembleResults()) {
 			return false;
 		}
 		if (programLocation.getProgram() != getProgram()) {

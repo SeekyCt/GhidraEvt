@@ -60,7 +60,7 @@ public class EvtManager {
 	 * @param forceDecompile true forces a new decompile to be scheduled even if the current job
 	 * is the same function.
 	 */
-	EvtResults decompile(Program program, ProgramLocation location, ViewerPosition viewerPosition) {
+	EvtResults disassemble(Program program, ProgramLocation location, ViewerPosition viewerPosition) {
 	    if (location == null)
             return EvtResults.empty("No script selected.");
 

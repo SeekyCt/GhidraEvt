@@ -75,12 +75,12 @@ public class EvtController {
 	 */
 	public void display(Program program, ProgramLocation location, ViewerPosition viewerPosition) {
 
-		if (isAlreadyDecompiled(location)) {
+		if (evtPanel.containsLocation(location)) {
 			evtPanel.setLocation(location, viewerPosition);
 			return;
 		}
 
-		EvtResults results = evtMgr.decompile(program, location, viewerPosition);
+		EvtResults results = evtMgr.disassemble(program, location, viewerPosition);
 
 		setEvtData(
 			new EvtData(program, results.getScript(), location, results, null, viewerPosition)
@@ -88,26 +88,18 @@ public class EvtController {
 			
 	}
 
-	private boolean isAlreadyDecompiled(ProgramLocation location) {
-		if (!evtPanel.containsLocation(location)) {
-			return false;
-		}
-
-		return true;
-	}
-
 	public void setSelection(ProgramSelection selection) {
 		evtPanel.setSelection(selection);
 	}
 
 	/**
-	 * Sets new decompiler options and triggers a new decompile.
+	 * Sets new options and triggers a new disassemble.
 	 * 
-	 * @param decompilerOptions the options
+	 * @param options the options
 	 */
-	public void setOptions(EvtOptions decompilerOptions) {
-		evtMgr.setOptions(decompilerOptions);
-		evtPanel.optionsChanged(decompilerOptions);
+	public void setOptions(EvtOptions options) {
+		evtMgr.setOptions(options);
+		evtPanel.optionsChanged(options);
 	}
 
 	public void setMouseNavigationEnabled(boolean enabled) {
@@ -115,11 +107,11 @@ public class EvtController {
 	}
 
 //==================================================================================================
-//  Methods call by the DecompilerManager
+//  Methods call by the EvtManager
 //==================================================================================================
 
 	/**
-	 * Called by the DecompilerManager to update the currently displayed EvtData
+	 * Called by the EvtManager to update the currently displayed EvtData
 	 * 
 	 * @param EvtData the new data
 	 */
@@ -128,10 +120,6 @@ public class EvtController {
 		evtPanel.setEvtData(evtData);
 		evtPanel.setSelection(currentSelection);
 		callbackHandler.evtDataChanged(evtData);
-	}
-
-	void decompilerStatusChanged() {
-		callbackHandler.contextChanged();
 	}
 
 //==================================================================================================
@@ -143,8 +131,8 @@ public class EvtController {
 	}
 
 	/**
-	 * Always decompiles the function containing the given location before positioning the
-	 * decompilerPanel's cursor to the closest equivalent position.
+	 * Always disassembles the function containing the given location before positioning the
+	 * evtPanel's cursor to the closest equivalent position.
 	 * 
 	 * @param program the program for the given location
 	 * @param location the location containing the function to be displayed and the location in that
@@ -152,19 +140,15 @@ public class EvtController {
 	 * @param debugFile the debug file
 	 */
 	public void refreshDisplay(Program program, ProgramLocation location, File debugFile) {
-		evtMgr.decompile(program, location, null);
+		evtMgr.disassemble(program, location, null);
 	}
 
-	public boolean hasDecompileResults() {
+	public boolean hasDisassembleResults() {
 		if (currentEvtData != null) {
-			return currentEvtData.hasDecompileResults();
+			return currentEvtData.hasDisassembleResults();
 		}
 		return false;
 	}
-
-	// public ClangTokenGroup getCCodeModel() {
-	// 	return currentEvtData.getCCodeMarkup();
-	// }
 
 	public void setStatusMessage(String message) {
 		callbackHandler.setStatusMessage(message);

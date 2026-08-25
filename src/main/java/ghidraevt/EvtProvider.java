@@ -188,7 +188,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 		if (address == null) {
 			return null;
 		}
-		if (!controller.hasDecompileResults()) {
+		if (!controller.hasDisassembleResults()) {
 			return null;
 		}
 
@@ -628,9 +628,12 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 			Symbol symbol = program.getSymbolTable().getPrimarySymbol(script.getStartAddress());
 			if (symbol != null) {
 				functionName = symbol.getName();
-				title = "Disassemble: " + functionName;
-				subTitle = " (" + programName + ")";
 			}
+			else {
+				functionName = script.getStartAddress().toString();
+			}
+			title = "Disassemble: " + functionName;
+			subTitle = " (" + programName + ")";
 		}
 		
 		if (!isConnected()) {
