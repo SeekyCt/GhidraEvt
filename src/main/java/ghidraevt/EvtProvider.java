@@ -249,7 +249,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 	@Override
 	public LocationMemento getMemento() {
         ViewerPosition vp = controller.getEvtPanel().getViewerPosition();
-		return new LocationMemento(program, currentLocation);
+		return new EvtLocationMemento(program, currentLocation, vp);
 	}
 
 	@Override
