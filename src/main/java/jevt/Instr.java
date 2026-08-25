@@ -103,6 +103,14 @@ public class Instr {
         }
     }
 
+    public static int bytesSize(List<Instr> script) {
+        int length = 0;
+        for (Instr instr : script) {
+            length += instr.bytesSize();
+        }
+        return length;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
