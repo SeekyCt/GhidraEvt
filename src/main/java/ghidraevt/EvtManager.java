@@ -5,8 +5,10 @@ import java.util.List;
 
 import docking.widgets.fieldpanel.support.ViewerPosition;
 import ghidra.program.model.address.Address;
-import ghidra.program.model.listing.CodeUnit;
+import ghidra.program.model.listing.Data;
 import ghidra.program.model.listing.Program;
+import ghidra.program.model.symbol.Symbol;
+import ghidra.program.model.symbol.SymbolIterator;
 import ghidra.program.util.ProgramLocation;
 import ghidra.util.Msg;
 import jevt.BadEvtException;
@@ -32,26 +34,47 @@ public class EvtManager {
         this.options = options;
     }
 
+    Address snapToSymbol(Program program, Address address) {
+        // Try containing data first
+        Data data = program.getListing().getDataContaining(address);
+        if (data != null && data.isDefined() && (data.getAddress().getOffset() & 3) == 0)
+            return data.getAddress();
+
+        // Try last symbol if not found
+        SymbolIterator iter = program.getSymbolTable().getSymbolIterator(address, false);
+        while (iter.hasNext()) {
+            Symbol next = iter.next();
+            if ((next.getAddress().getOffset() & 3) == 0) 
+                return next.getAddress();
+        }
+
+        // Nothing to snap to
+        return address;
+    }
+
     DisassembleResults disassemble(Program program, ProgramLocation location,
-            ViewerPosition viewerPosition) {
+        ViewerPosition viewerPosition) {
+        return disassemble(program, location, viewerPosition, this.snapToSymbol);
+    }
+
+    private DisassembleResults disassemble(Program program, ProgramLocation location,
+        ViewerPosition viewerPosition, boolean snapToSymbol) {
         if (location == null)
             return DisassembleResults.empty("No script selected.");
 
-        Address address = location.getAddress();
+        Address startAddress = location.getAddress();
 
         // Align to 4 bytes
-        long offset = address.getOffset() & 3;
-        address = address.subtract(offset);
+        long offset = startAddress.getOffset() & 3;
+        startAddress = startAddress.subtract(offset);
 
         if (snapToSymbol) {
-            CodeUnit cu = program.getListing().getCodeUnitContaining(address);
-            if (cu != null && (cu.getAddress().getOffset() & 3) == 0)
-                address = cu.getAddress();
+            startAddress = snapToSymbol(program, startAddress);
         }
 
-        EvtScript script = new EvtScript(address);
+        EvtScript script = new EvtScript(startAddress);
 
-        MemoryInputStream stream = new MemoryInputStream(program, address);
+        MemoryInputStream stream = new MemoryInputStream(program, startAddress);
 
         List<Instr> docroot;
         try {
@@ -73,6 +96,14 @@ public class EvtManager {
             return DisassembleResults.fail(script,
                 "Unhandled disassembler exception: " + e.getMessage());
         }
+
+        script.setEndAddress(
+            startAddress.add(Instr.bytesSize(docroot))
+        );
+
+        // Ignore snapped script if it ends before the location
+        if (!script.contains(location.getAddress()))
+            return disassemble(program, location, viewerPosition, false);
 
         return DisassembleResults.success(script, docroot);
     }

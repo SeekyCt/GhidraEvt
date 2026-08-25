@@ -9,14 +9,34 @@ import ghidra.program.model.address.Address;
  */
 public class EvtScript {
     private final Address startAddress;
+    private Address endAddress;
     
     public EvtScript(Address startAddress) {
         this.startAddress = Objects.requireNonNull(startAddress);
+        this.endAddress = null;
     }
 
     public Address getStartAddress() {
         return startAddress;
     }
+
+    public Address getEndAddress() {
+        if (endAddress == null)
+        throw new IllegalAccessError("End address is undefined");
+        return endAddress;
+    }
+
+    public void setEndAddress(Address endAddress) {
+        if (this.endAddress != null)
+            throw new IllegalAccessError("End address already defined");
+
+        this.endAddress = endAddress;
+    }
+    
+    public boolean contains(Address address) {
+        return getStartAddress().compareTo(address) <= 0 && address.compareTo(getEndAddress()) < 0;
+    }
+
 
     @Override
     public int hashCode() {

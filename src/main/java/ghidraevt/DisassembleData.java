@@ -89,9 +89,7 @@ public class DisassembleData {
             return false;
         }
 
-        Address startAddress = script.getStartAddress();
-        return startAddress.compareTo(address) < 0 &&
-            address.subtract(startAddress) < disassembleResults.bytesSize();
+        return script.contains(address);
     }
 
     public AddressSpace getFunctionSpace() {
