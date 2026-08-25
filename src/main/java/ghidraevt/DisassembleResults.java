@@ -33,29 +33,29 @@ import jevt.Instr;
  * 
  *
  */
-public class EvtResults {
+public class DisassembleResults {
 	private EvtScript script; // Script to which results pertain
 	private String errMsg; // Error message from decompiler
 
 	private List<Instr> docroot;
 
 
-	private EvtResults(EvtScript script, List<Instr> docroot, String e) {
+	private DisassembleResults(EvtScript script, List<Instr> docroot, String e) {
 		this.script = script;
 		this.docroot = docroot;
 		this.errMsg = e;
 	}
 
-	public static EvtResults success(EvtScript script, List<Instr> docroot) {
-		return new EvtResults(script, docroot, null);
+	public static DisassembleResults success(EvtScript script, List<Instr> docroot) {
+		return new DisassembleResults(script, docroot, null);
 	}
 
-	public static EvtResults fail(EvtScript script, String message) {
-		return new EvtResults(script, null, message);
+	public static DisassembleResults fail(EvtScript script, String message) {
+		return new DisassembleResults(script, null, message);
 	}
 
-	public static EvtResults empty(String message) {
-		return new EvtResults(null, null, message);
+	public static DisassembleResults empty(String message) {
+		return new DisassembleResults(null, null, message);
 	}
 
 	/**

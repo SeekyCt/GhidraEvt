@@ -20,7 +20,7 @@ public class EvtController {
 	private EvtPanel evtPanel;
 	private EvtManager evtMgr;
 	private final EvtCallbackHandler callbackHandler;
-	private EvtData currentEvtData;
+	private DisassembleData currentDisassembleData;
 	private ProgramSelection currentSelection;
 
 	public EvtController(ServiceProvider serviceProvider, EvtCallbackHandler handler,
@@ -59,7 +59,7 @@ public class EvtController {
 	 */
 	public void clear() {
 		currentSelection = null;
-		setEvtData(new EmptyEvtData("No Function"));
+		setDisasssembleData(new EmptyDisassembleData("No Function"));
 	}
 
 	/**
@@ -80,10 +80,10 @@ public class EvtController {
 			return;
 		}
 
-		EvtResults results = evtMgr.disassemble(program, location, viewerPosition);
+		DisassembleResults results = evtMgr.disassemble(program, location, viewerPosition);
 
-		setEvtData(
-			new EvtData(program, results.getScript(), location, results, null, viewerPosition)
+		setDisasssembleData(
+			new DisassembleData(program, results.getScript(), location, results, null, viewerPosition)
 		);
 			
 	}
@@ -111,15 +111,15 @@ public class EvtController {
 //==================================================================================================
 
 	/**
-	 * Called by the EvtManager to update the currently displayed EvtData
+	 * Called by the EvtManager to update the currently displayed DisassembleData
 	 * 
-	 * @param EvtData the new data
+	 * @param DisassembleData the new data
 	 */
-	public void setEvtData(EvtData evtData) {
-		currentEvtData = evtData;
-		evtPanel.setEvtData(evtData);
+	public void setDisasssembleData(DisassembleData disassembleData) {
+		currentDisassembleData = disassembleData;
+		evtPanel.setDisassembleData(disassembleData);
 		evtPanel.setSelection(currentSelection);
-		callbackHandler.evtDataChanged(evtData);
+		callbackHandler.disassembleDataChanged(disassembleData);
 	}
 
 //==================================================================================================
@@ -144,8 +144,8 @@ public class EvtController {
 	}
 
 	public boolean hasDisassembleResults() {
-		if (currentEvtData != null) {
-			return currentEvtData.hasDisassembleResults();
+		if (currentDisassembleData != null) {
+			return currentDisassembleData.hasDisassembleResults();
 		}
 		return false;
 	}
@@ -155,21 +155,21 @@ public class EvtController {
 	}
 
 	public Program getProgram() {
-		if (currentEvtData != null) {
-			return currentEvtData.getProgram();
+		if (currentDisassembleData != null) {
+			return currentDisassembleData.getProgram();
 		}
 		return null;
 	}
 
 	public Address getAddress() {
-		if (currentEvtData != null) {
-			return currentEvtData.getScript().getStartAddress();
+		if (currentDisassembleData != null) {
+			return currentDisassembleData.getScript().getStartAddress();
 		}
 		return null;
 	}
 	public ProgramLocation getLocation() {
-		if (currentEvtData != null) {
-			return currentEvtData.getLocation();
+		if (currentDisassembleData != null) {
+			return currentDisassembleData.getLocation();
 		}
 		return null;
 	}
@@ -192,8 +192,8 @@ public class EvtController {
 		callbackHandler.goToAddress(addr, newWindow);
 	}
 
-	public EvtData getEvtData() {
-		return currentEvtData;
+	public DisassembleData getDisassembleData() {
+		return currentDisassembleData;
 	}
 
 	public void exportLocation() {

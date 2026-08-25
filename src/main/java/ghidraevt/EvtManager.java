@@ -60,9 +60,9 @@ public class EvtManager {
 	 * @param forceDecompile true forces a new decompile to be scheduled even if the current job
 	 * is the same function.
 	 */
-	EvtResults disassemble(Program program, ProgramLocation location, ViewerPosition viewerPosition) {
+	DisassembleResults disassemble(Program program, ProgramLocation location, ViewerPosition viewerPosition) {
 	    if (location == null)
-            return EvtResults.empty("No script selected.");
+            return DisassembleResults.empty("No script selected.");
 
         Address address = location.getAddress();
         if (snapToSymbol) {
@@ -84,17 +84,17 @@ public class EvtManager {
             if (e.strictOnly()) {
                 err += "\n(Triggered by Strict mode)";
             }
-            return EvtResults.fail(script, err);
+            return DisassembleResults.fail(script, err);
         }
         catch (IOException e) {
             Msg.error(this, "Disassembler failed", e);
-            return EvtResults.fail(script, "Disassembler failed: " + e.getMessage());
+            return DisassembleResults.fail(script, "Disassembler failed: " + e.getMessage());
         }
         catch (Exception e) {
             Msg.error(this, "Unhandled disassembler exception", e);
-            return EvtResults.fail(script, "Unhandled disassembler exception: " + e.getMessage());
+            return DisassembleResults.fail(script, "Unhandled disassembler exception: " + e.getMessage());
         }
 
-        return EvtResults.success(script, docroot);
+        return DisassembleResults.success(script, docroot);
 	}
 }

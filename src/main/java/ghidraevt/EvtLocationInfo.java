@@ -9,13 +9,13 @@ import ghidra.program.model.listing.Program;
 public class EvtLocationInfo {
 
 	private Address entryPoint;
-	private EvtResults results;
+	private DisassembleResults results;
 	private EvtToken token;
 	private String tokenName;
 	private int lineNumber;
 	private int charPos;
 
-	public EvtLocationInfo(Address entryPoint, EvtResults results,
+	public EvtLocationInfo(Address entryPoint, DisassembleResults results,
 			EvtToken token, int lineNumber, int charPos) {
 		this.entryPoint = entryPoint;
 		this.results = results;
@@ -40,7 +40,7 @@ public class EvtLocationInfo {
 	 * 
 	 * @return C-AST, DFG, and CFG object. null if there are no results attached to this location
 	 */
-	public EvtResults getDisassembly() {
+	public DisassembleResults getDisassembly() {
 		return results;
 	}
 

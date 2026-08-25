@@ -64,7 +64,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 
 	// private DecompilerSearchResults currentSearchResults;
 
-	private EvtData decompileData = new EmptyEvtData("No Function");
+	private DisassembleData decompileData = new EmptyDisassembleData("No Function");
 	private final EvtClipboardProvider clipboard;
 
 	private Color originalBackgroundColor;
@@ -118,7 +118,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 		add(scroller);
 
 		setPreferredSize(new Dimension(600, 400));
-		setEvtData(new EmptyEvtData("No Function"));
+		setDisassembleData(new EmptyDisassembleData("No Function"));
 
 		// if (options.isDisplayLineNumbers()) {
 		// 	addMarginProvider(lineNumbersMargin = new LineNumberDecompilerMarginProvider());
@@ -462,13 +462,13 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 	 *
 	 * @param decompileData the new data
 	 */
-	void setEvtData(EvtData decompileData) {
+	void setDisassembleData(DisassembleData decompileData) {
 		if (layoutController == null) {
 			// we've been disposed!
 			return;
 		}
 
-		EvtData oldData = this.decompileData;
+		DisassembleData oldData = this.decompileData;
 		this.decompileData = decompileData;
 		EvtScript script = decompileData.getScript();
 		if (decompileData.hasDisassembleResults()) {
@@ -500,7 +500,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 		// }
 	}
 
-	private void setLocation(EvtData oldData, EvtData newData) {
+	private void setLocation(DisassembleData oldData, DisassembleData newData) {
 		EvtScript script = oldData.getScript();
 		if (SystemUtilities.isEqual(script, newData.getScript())) {
 			return;
@@ -636,7 +636,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 	// }
 
 	public void dispose() {
-		setEvtData(new EmptyEvtData("Disposed"));
+		setDisassembleData(new EmptyDisassembleData("Disposed"));
 		layoutController = null;
 		// decompilerHoverProvider.dispose();
 		// highlighCursorUpdater.dispose();
@@ -812,7 +812,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 		}
 
 		Address entryPoint = script.getStartAddress();
-		EvtResults results = decompileData.getDecompileResults();
+		DisassembleResults results = decompileData.getDisassembleResults();
 		int lineNumber = location.getIndex().intValue();
 		int charPos = location.col;
 		EvtLocationInfo info =

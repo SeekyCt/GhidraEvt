@@ -8,7 +8,7 @@ import ghidra.util.bean.field.AnnotatedTextFieldElement;
 import utility.function.Callback;
 
 public interface EvtCallbackHandler {
-	void evtDataChanged(EvtData data);
+	void disassembleDataChanged(DisassembleData data);
 
 	void contextChanged();
 

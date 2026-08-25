@@ -71,11 +71,11 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 
 	private ViewerPosition pendingViewerPosition;
 
-	private SwingUpdateManager redecompileUpdater;
+	private SwingUpdateManager redisassembleUpdater;
 	private EvtProgramListener programListener;
 	private boolean lockDisplay;
 
-    // Follow-up work can be items that need to happen after a pending decompile is finished, such
+    // Follow-up work can be items that need to happen after a pending disassemble is finished, such
 	// as updating highlights after a variable rename
 	private SwingUpdateManager followUpWorkUpdater;
 	private Queue<Callback> followUpWork = new ConcurrentLinkedQueue<>();
@@ -133,10 +133,10 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 		addToTool();
 		createActions(isConnected);
 
-		redecompileUpdater = new SwingUpdateManager(500, 5000, () -> doRefresh(false));
+		redisassembleUpdater = new SwingUpdateManager(500, 5000, () -> doRefresh(false));
 		followUpWorkUpdater = new SwingUpdateManager(() -> doFollowUpWork());
 
-		programListener = new EvtProgramListener(controller, redecompileUpdater);
+		programListener = new EvtProgramListener(controller, redisassembleUpdater);
 		setDefaultFocusComponent(controller.getEvtPanel());
     }
 
@@ -254,8 +254,8 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 
 	@Override
 	public void setMemento(LocationMemento memento) {
-		EvtLocationMemento decompMemento = (EvtLocationMemento) memento;
-		pendingViewerPosition = decompMemento.getViewerPosition();
+		EvtLocationMemento evtMemento = (EvtLocationMemento) memento;
+		pendingViewerPosition = evtMemento.getViewerPosition();
 	}
 
 //==================================================================================================
@@ -344,7 +344,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 	public void dispose() {
 		super.dispose();
 
-		redecompileUpdater.dispose();
+		redisassembleUpdater.dispose();
 		followUpWorkUpdater.dispose();
 
 		if (clipboardService != null) {
@@ -441,14 +441,14 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 	}
 
 	/**
-	 * Re-decompile the currently displayed location
+	 * Re-disassemble the currently displayed location
 	 */
 	void refresh() {
 		controller.refreshDisplay(program, currentLocation, null);
 	}
 
 	/**
-	 * Update the options from decompilerOptions
+	 * Update the options from EvtOptions
 	 */
 	void updateOptionsAndRefresh() {
 		controller.setOptions(options);
@@ -483,11 +483,11 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 	}
 
 	boolean isBusy() {
-		return redecompileUpdater.isBusy();
+		return redisassembleUpdater.isBusy();
 	}
 
 	/**
-	 * Set the cursor location of the decompiler.
+	 * Set the cursor location of the disassemblr.
 	 *
 	 * @param lineNumber the 1-based line number
 	 * @param offset the character offset into line; the offset is from the start of the line
@@ -515,7 +515,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 	}
 
 	@Override
-	public void evtDataChanged(EvtData decompileData) {
+	public void disassembleDataChanged(DisassembleData disassembleData) {
 		updateTitle();
 		contextChanged();
 		controller.setSelection(currentSelection);
@@ -596,7 +596,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 			// initialize the new provider's cache and then set the location
 			newProvider.setLocation(currentLocation, myViewPosition);
 
-			// transfer any state after the new decompiler is initialized
+			// transfer any state after the new disassembler is initialized
 			EvtPanel myPanel = getEvtPanel();
 			EvtPanel newPanel = newProvider.getEvtPanel();
 			newProvider.doWhenNotBusy(() -> {
@@ -615,10 +615,10 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 // private methods
 //==================================================================================================
 	/**
-	 * Updates the windows title and subtitle to reflect the currently decompiled function
+	 * Updates the windows title and subtitle to reflect the currently disassembled script
 	 */
 	private void updateTitle() {
-		EvtScript script = controller.getEvtData().getScript();
+		EvtScript script = controller.getDisassembleData().getScript();
 		String programName = (program != null) ? program.getDomainFile().getName() : "";
 		String title = "Evt Disassembler";
 		String functionName = "No script";
@@ -1230,55 +1230,5 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
     //     dockingTool.addLocalAction(this, strictMode);
     //     dockingTool.addLocalAction(this, snapToSymbol);
     //     dockingTool.addLocalAction(this, game);
-    // }
-
-    // private EvtData tryDisasm(ProgramLocation location) {
-    //     if (location == null)
-    //         return EvtData.empty("No script selected.");
-
-    //     Program program = location.getProgram();
-    //     Address address = location.getAddress();
-    //     if (snapToSymbol.enabled()) {
-    //         CodeUnit cu = program.getListing().getCodeUnitContaining(address);
-    //         if (cu != null)
-    //             address = cu.getAddress();
-    //     }
-    //     Address startAddress = address;
-        
-    //     Data data = program.getListing().getDataAt(address);
-
-        
-    //     MemoryInputStream stream = new MemoryInputStream(
-    //         program.getMemory().getBlock(address),
-    //         address);
-
-    //     List<Instr> script;
-    //     try {
-    //         script = Instr.disassemble(game(), stream, strictMode.enabled());
-    //     }
-    //     catch (BadEvtException e) {
-    //         String err = "Script appears invalid: " + e.getMessage();
-    //         if (e.strictOnly()) {
-    //             err += "\n(Triggered by Strict mode)";
-    //         }
-    //         return new EvtData(program, startAddress, null, err);
-    //     }
-    //     catch (IOException e) {
-    //         Msg.error(this, "Disassembler failed", e);
-    //         return EvtData.fail(program, startAddress, "Disassembler failed: " + e.getMessage());
-    //     }
-    //     catch (Exception e) {
-    //         Msg.error(this, "Unhandled disassembler exception", e);
-    //         return EvtData.fail(program, startAddress, "Unhandled disassembler exception: " + e.getMessage());
-    //     }
-
-    //     return EvtData.success(program, startAddress, script);
-    // }
-
-    // private EvtLayoutModel layout;
-
-    // private void updateDisasm() {
-    //     EvtData data = tryDisasm(currentLocation);
-    //     layout.buildLayouts(data);
     // }
 }

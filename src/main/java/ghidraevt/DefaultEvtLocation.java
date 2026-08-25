@@ -29,7 +29,7 @@ public class DefaultEvtLocation extends ProgramLocation implements EvtLocation {
 	}
 
 	@Override
-	public EvtResults getDisassembly() {
+	public DisassembleResults getDisassembly() {
 		return info.getDisassembly();
 	}
 

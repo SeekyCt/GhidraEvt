@@ -9,37 +9,37 @@ import ghidra.program.model.listing.Program;
 import ghidra.program.util.ProgramLocation;
 import jevt.Instr;
 
-public class EvtData {
+public class DisassembleData {
 	private final Program program;
 	private final EvtScript script;
 	private final ProgramLocation location;
-	private final EvtResults evtResults;
+	private final DisassembleResults disassembleResults;
 	private final String message;
 	private final ViewerPosition viewerPosition;
 
-	public EvtData(Program program, EvtScript script, ProgramLocation location,
-			EvtResults evtResults, String errorMessage, ViewerPosition viewerPosition) {
+	public DisassembleData(Program program, EvtScript script, ProgramLocation location,
+			DisassembleResults disassembleResults, String errorMessage, ViewerPosition viewerPosition) {
 		this.program = program;
 		this.script = script;
 		this.location = location;
-		this.evtResults = evtResults;
+		this.disassembleResults = disassembleResults;
 		this.message = errorMessage;
 		this.viewerPosition = viewerPosition;
 	}
 
     public boolean hasDisassembleResults() {
-		if (evtResults == null) {
+		if (disassembleResults == null) {
 			return false;
 		}
-		return evtResults.getDocroot() != null;
+		return disassembleResults.getDocroot() != null;
 	}
 
 	public boolean isValid() {
-		return evtResults != null && evtResults.isValid();
+		return disassembleResults != null && disassembleResults.isValid();
 	}
 
-	public EvtResults getDecompileResults() {
-		return evtResults;
+	public DisassembleResults getDisassembleResults() {
+		return disassembleResults;
 	}
 
 	public Program getProgram() {
@@ -55,10 +55,10 @@ public class EvtData {
 	}
 
 	public List<Instr> getDocroot() {
-		if (evtResults == null) {
+		if (disassembleResults == null) {
 			return null;
 		}
-		return evtResults.getDocroot();
+		return disassembleResults.getDocroot();
 	}
 
 	public String getErrorMessage() {
@@ -68,8 +68,8 @@ public class EvtData {
 		if (location == null || location.getAddress() == null) {
 			return "No data";
 		}
-		if (evtResults != null) {
-			String err = evtResults.getErrorMessage();
+		if (disassembleResults != null) {
+			String err = disassembleResults.getErrorMessage();
 			if (err != null) {
 				return err;
 			}
@@ -91,7 +91,7 @@ public class EvtData {
 
 		Address startAddress = script.getStartAddress();
 		return startAddress.compareTo(address) < 0 &&
-			address.subtract(startAddress) < evtResults.bytesSize();
+			address.subtract(startAddress) < disassembleResults.bytesSize();
 	}
 
 	public AddressSpace getFunctionSpace() {
@@ -101,28 +101,4 @@ public class EvtData {
 	public ViewerPosition getViewerPosition() {
 		return viewerPosition;
 	}
-
-//     public EvtData(Program program, Data data, Address startAddress, EvtResults results, String errorMesssage) {
-//         this.program = program;
-//         this.data = data;
-//         this.startAddress = startAddress;
-//         this.results = results;
-//         this.errorMessage = errorMesssage;
-//     }
-
-//     public boolean isError() {
-//         return errorMessage != null;
-//     }
-
-//     public static EvtData success(Program program, Address startAddress, List<Instr> script) {
-//         return new EvtData(program, startAddress, script, null);
-//     }
-
-//     public static EvtData empty(String err) {
-//         return new EvtData(null, null, null, err);
-//     }
-
-//     public static EvtData fail(Program program, Address startAddress, String err) {
-//         return new EvtData(program, startAddress, null, err);
-//     }
 }
