@@ -2,7 +2,6 @@ package ghidraevt;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Toolkit;
 import java.math.BigInteger;
@@ -245,7 +244,7 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
             lines.add(0, new EvtLine(
                 Arrays.asList(new EvtToken(errline, GhidraPrinter.COLOR_COMMENT, null, 0)),
                 Address.NO_ADDRESS,
-                0,
+                i,
                 0));
         }
     }
