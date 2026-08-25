@@ -28,9 +28,10 @@ public class Instr {
 
     public static int NARGS_BYTES_SIZE = 2;
     public static int OPCODE_BYTES_SIZE = 2;
+    public static int HEADER_SIZE = NARGS_BYTES_SIZE + OPCODE_BYTES_SIZE;
 
     public int bytesSize() {
-        return NARGS_BYTES_SIZE + OPCODE_BYTES_SIZE + (Arg.bytesSize() * args.size());
+        return HEADER_SIZE + (Arg.bytesSize() * args.size());
     }
 
     public static Instr decode(Game game, DataInputStream stream, boolean strict) throws IOException, BadEvtException {

@@ -102,21 +102,21 @@ public class GhidraPrinter {
     private List<EvtToken> addrToTokens(Arg.ADDR arg, Address atAddr) {
         List<EvtToken> ret = new ArrayList<>();
 
-        Address addr = program.getAddressFactory().getDefaultAddressSpace().getAddress(arg.value());
+        Address target = program.getAddressFactory().getDefaultAddressSpace().getAddress(arg.value());
 
-        Color color = getAddrColor(addr);
+        Color color = getAddrColor(target);
 
-        EvtToken fail = new EvtToken("ERR_" + Long.toHexString(arg.value()), COLOR_EXTERNAL_FUNCTION, atAddr, Arg.bytesSize());
+        EvtToken fail = new EvtAddrToken("ERR_" + Long.toHexString(arg.value()), COLOR_EXTERNAL_FUNCTION, atAddr, Arg.bytesSize(), target);
 
-        CodeUnit cu = program.getListing().getCodeUnitAt(addr);
+        CodeUnit cu = program.getListing().getCodeUnitAt(target);
         if (cu == null) {
             Msg.warn(this, "No code unit for " + Long.toHexString(arg.value()));
             ret.add(fail);
         }
         else if (cu instanceof Data data && isROString(data)) {
             String value = (String) data.getValue();
-            ret.add(new EvtToken("\"" + value + "\"", decompileOptions.getConstantColor(), atAddr, Arg.bytesSize()));
-        }   
+            ret.add(new EvtAddrToken("\"" + value + "\"", decompileOptions.getConstantColor(), atAddr, Arg.bytesSize(), target));
+        }
         else {
             Symbol symbol = cu.getPrimarySymbol();
             if (symbol == null) {
@@ -131,10 +131,9 @@ public class GhidraPrinter {
                     ret.add(new EvtToken("::", decompileOptions.getDefaultColor(), atAddr, Arg.bytesSize()));
                     ns = ns.getParentNamespace();
                 }
-                ret.add(new EvtToken(symbol.getName(), color, atAddr, Arg.bytesSize()));
+                ret.add(new EvtAddrToken(symbol.getName(), color, atAddr, Arg.bytesSize(), target));
             }
         }
-
 
         return ret;
     }
@@ -170,7 +169,7 @@ public class GhidraPrinter {
 
             List<EvtToken> tokens = new ArrayList<>();
 
-            tokens.add(new EvtToken(opcode.name(), COLOR_INSTR, addr, instr.bytesSize()));
+            tokens.add(new EvtToken(opcode.name(), COLOR_INSTR, addr, Instr.HEADER_SIZE));
             for (Arg arg : instr.args())
             {
                 tokens.add(new EvtToken(" ", decompileOptions.getDefaultColor(), addr, 0));

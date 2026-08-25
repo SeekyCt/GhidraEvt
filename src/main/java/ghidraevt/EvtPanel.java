@@ -697,7 +697,17 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 
 		EvtTextField textField = (EvtTextField) field;
 		EvtToken token = textField.getToken(location);
-		tryGoToLabel(token, newWindow);
+
+		if (token instanceof EvtAddrToken addr) {
+			controller.goToAddress(addr.getTarget(), newWindow);
+		}
+		else
+		{
+			Address addr = token.getMinAddress();
+			controller.goToAddress(addr, newWindow);
+		}
+
+
 		// if (token instanceof ClangFuncNameToken) {
 		// 	tryGoToFunction((ClangFuncNameToken) token, newWindow);
 		// }
@@ -739,7 +749,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 	// 	}
 	// }
 
-	private void tryGoToLabel(EvtToken token, boolean newWindow) {
+	// private void tryGoToLabel(EvtToken token, boolean newWindow) {
 		// check for a goto label
 		// ClangLabelToken destination = EvtUtils.getGoToTargetToken(root, token);
 		// if (destination != null) {
@@ -747,9 +757,9 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 		// 	return;
 		// }
 
-		Address addr = token.getMinAddress();
-		controller.goToAddress(addr, newWindow);
-	}
+	// 	Address addr = token.getMinAddress();
+	// 	controller.goToAddress(addr, newWindow);
+	// }
 
 	// private void tryGoToSyntaxToken(ClangSyntaxToken token) {
 
