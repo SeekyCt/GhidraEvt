@@ -44,7 +44,6 @@ public class EvtTextField extends WrappingVerticalLayoutTextField {
         return tokenList.get(index);
     }
 
-
     /**
      * Returns the token that is completely after the token that contains the given column location.
      * In this case, 'contains' means any position <b>inside</b> of a token, but not at the
@@ -76,7 +75,7 @@ public class EvtTextField extends WrappingVerticalLayoutTextField {
 
         return tokenList.size(); // at the end; return the size, as it is used 'exclusive'ly
     }
-    
+
     int getTokenIndex(FieldLocation location) {
         int n = 0;
         for (int i = 0; i < tokenList.size(); i++) {
@@ -96,7 +95,6 @@ public class EvtTextField extends WrappingVerticalLayoutTextField {
 
         return tokenList.size() - 1; // at the end--return the last token index
     }
-
 
     FieldElement getClickedObject(FieldLocation fieldLocation) {
         return getFieldElement(fieldLocation.row, fieldLocation.col);

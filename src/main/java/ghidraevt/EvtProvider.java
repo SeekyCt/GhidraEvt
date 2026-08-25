@@ -136,7 +136,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         redisassembleUpdater = new SwingUpdateManager(500, 5000, () -> doRefresh(false));
         followUpWorkUpdater = new SwingUpdateManager(() -> doFollowUpWork());
 
-        programListener = new EvtProgramListener(controller, redisassembleUpdater);
+        programListener = new EvtProgramListener(redisassembleUpdater);
         setDefaultFocusComponent(controller.getEvtPanel());
     }
 

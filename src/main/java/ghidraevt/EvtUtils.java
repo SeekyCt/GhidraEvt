@@ -37,7 +37,6 @@ public class EvtUtils {
         return addressedToken.getMinAddress();
     }
 
-
     public static AddressSet findClosestAddressSet(Program program, AddressSpace functionSpace,
             List<EvtToken> tokenList) {
         AddressSet addressSet = new AddressSet();
@@ -111,8 +110,8 @@ public class EvtUtils {
 
     public static FieldSelection getFieldSelection(List<EvtToken> tokens) {
         FieldSelection fieldSelection = new FieldSelection();
-        for (EvtToken clangToken : tokens) {
-            EvtLine lineParent = clangToken.getLineParent();
+        for (EvtToken token : tokens) {
+            EvtLine lineParent = token.getLineParent();
             if (lineParent == null) {
                 continue;
             }
@@ -255,7 +254,8 @@ public class EvtUtils {
         return tokenList;
     }
 
-    private static void collectTokens(List<EvtToken> tokenList, List<EvtLine> lines, AddressSetView addressSet) {
+    private static void collectTokens(List<EvtToken> tokenList, List<EvtLine> lines,
+            AddressSetView addressSet) {
         for (EvtLine line : lines) {
             for (EvtToken token : line.getAllTokens()) {
                 if (intersects(token, addressSet)) {

@@ -35,9 +35,6 @@ import ghidra.util.bean.field.AnnotatedTextFieldElement;
  */
 public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocationListener,
         FieldSelectionListener, LayoutListener {
-
-    private final static Color NON_FUNCTION_BACKGROUND_COLOR_DEF = new GColor("color.bg.undefined");
-
     // Default color for specially highlighted tokens
     private final static Color SPECIAL_COLOR_DEF =
         new GColor("color.bg.decompiler.highlights.special");

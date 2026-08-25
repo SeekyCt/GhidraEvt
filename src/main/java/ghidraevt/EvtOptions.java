@@ -8,7 +8,7 @@ import ghidra.framework.options.ToolOptions;
 import ghidra.program.model.listing.Program;
 
 public class EvtOptions {
-    DecompileOptions decompileOptions;
+    private DecompileOptions decompileOptions;
 
     public EvtOptions(DecompileOptions decompileOptions) {
         this.decompileOptions = decompileOptions;
