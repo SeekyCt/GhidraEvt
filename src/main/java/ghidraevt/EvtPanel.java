@@ -80,7 +80,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 		if (clipboard != null) {
 			clipboard.setFontMetrics(metrics);
 		}
-		// hlFactory = new SearchHighlightFactory();
+		hlFactory = new SearchHighlightFactory();
 
 		layoutController = new EvtLayoutModel(options, this, metrics, hlFactory);
 		fieldPanel = new EvtFieldPanel(layoutController);
@@ -1192,36 +1192,36 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 // Inner Classes
 //==================================================================================================
 
-	// private class SearchHighlightFactory implements FieldHighlightFactory {
+	private class SearchHighlightFactory implements FieldHighlightFactory {
 
-	// 	@Override
-	// 	public Highlight[] createHighlights(Field field, String text, int cursorTextOffset) {
-	// 		if (currentSearchResults == null) {
-	// 			return new Highlight[0];
-	// 		}
+		@Override
+		public Highlight[] createHighlights(Field field, String text, int cursorTextOffset) {
+			return new Highlight[0];
+			// if (currentSearchResults == null) {
+			// }
 
-	// 		ClangTextField cField = (ClangTextField) field;
-	// 		int lineNumber = cField.getLineNumber();
-	// 		Map<Integer, List<DecompilerSearchLocation>> locationsByLine =
-	// 			currentSearchResults.getLocationsByLine();
-	// 		List<DecompilerSearchLocation> locationsOnLine = locationsByLine.get(lineNumber);
-	// 		if (locationsOnLine == null) {
-	// 			return new Highlight[0];
-	// 		}
+			// ClangTextField cField = (ClangTextField) field;
+			// int lineNumber = cField.getLineNumber();
+			// Map<Integer, List<DecompilerSearchLocation>> locationsByLine =
+			// 	currentSearchResults.getLocationsByLine();
+			// List<DecompilerSearchLocation> locationsOnLine = locationsByLine.get(lineNumber);
+			// if (locationsOnLine == null) {
+			// 	return new Highlight[0];
+			// }
 
-	// 		DecompilerSearchLocation activeLocation = currentSearchResults.getActiveLocation();
-	// 		List<Highlight> highlights = new ArrayList<>();
-	// 		for (DecompilerSearchLocation location : locationsOnLine) {
-	// 			Color c =
-	// 				location == activeLocation ? activeSearchHighlightColor : searchHighlightColor;
-	// 			int start = location.getStartIndexInclusive();
-	// 			int end = location.getEndIndexInclusive();
-	// 			highlights.add(new Highlight(start, end, c));
-	// 		}
+			// DecompilerSearchLocation activeLocation = currentSearchResults.getActiveLocation();
+			// List<Highlight> highlights = new ArrayList<>();
+			// for (DecompilerSearchLocation location : locationsOnLine) {
+			// 	Color c =
+			// 		location == activeLocation ? activeSearchHighlightColor : searchHighlightColor;
+			// 	int start = location.getStartIndexInclusive();
+			// 	int end = location.getEndIndexInclusive();
+			// 	highlights.add(new Highlight(start, end, c));
+			// }
 
-	// 		return highlights.toArray(Highlight[]::new);
-	// 	}
-	// }
+			// return highlights.toArray(Highlight[]::new);
+		}
+	}
 
 	/**
 	 * A simple class that handles the animators callback to scroll the display
