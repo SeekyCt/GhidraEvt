@@ -8,21 +8,21 @@ import ghidra.util.bean.field.AnnotatedTextFieldElement;
 import utility.function.Callback;
 
 public interface EvtCallbackHandler {
-	void disassembleDataChanged(DisassembleData data);
+    void disassembleDataChanged(DisassembleData data);
 
-	void contextChanged();
+    void contextChanged();
 
-	void setStatusMessage(String message);
+    void setStatusMessage(String message);
 
-	void locationChanged(ProgramLocation programLocation);
+    void locationChanged(ProgramLocation programLocation);
 
-	void selectionChanged(ProgramSelection programSelection);
+    void selectionChanged(ProgramSelection programSelection);
 
-	void annotationClicked(AnnotatedTextFieldElement annotation, boolean newWindow);
+    void annotationClicked(AnnotatedTextFieldElement annotation, boolean newWindow);
 
-	void goToAddress(Address addr, boolean newWindow);
+    void goToAddress(Address addr, boolean newWindow);
 
-	void exportLocation();
+    void exportLocation();
 
-	void doWhenNotBusy(Callback c);
+    void doWhenNotBusy(Callback c);
 }

@@ -9,34 +9,34 @@ import ghidra.program.util.ProgramLocation;
  */
 public interface EvtLocation {
 
-	public Address getScriptEntryPoint();
+    public Address getScriptEntryPoint();
 
-	/**
-	 * Results from the decompilation
-	 * 
-	 * @return C-AST, DFG, and CFG object. null if there are no results attached to this location
-	 */
-	public DisassembleResults getDisassembly();
+    /**
+     * Results from the decompilation
+     * 
+     * @return C-AST, DFG, and CFG object. null if there are no results attached to this location
+     */
+    public DisassembleResults getDisassembly();
 
-	/**
-	 * C text token at the current cursor location
-	 * 
-	 * @return token at this location, could be null if there are no decompiler results
-	 */
-	public EvtToken getToken();
+    /**
+     * C text token at the current cursor location
+     * 
+     * @return token at this location, could be null if there are no decompiler results
+     */
+    public EvtToken getToken();
 
-	/**
-	 * {@return the name of the token for the current location}
-	 */
-	public String getTokenName();
+    /**
+     * {@return the name of the token for the current location}
+     */
+    public String getTokenName();
 
-	/**
-	 * {@return the line number}
-	 */
-	public int getLineNumber();
+    /**
+     * {@return the line number}
+     */
+    public int getLineNumber();
 
-	/**
-	 * {@return the character position}
-	 */
-	public int getCharPos();
+    /**
+     * {@return the character position}
+     */
+    public int getCharPos();
 }

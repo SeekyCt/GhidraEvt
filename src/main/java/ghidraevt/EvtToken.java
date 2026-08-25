@@ -13,27 +13,27 @@ public class EvtToken {
     Address minAddress;
     Address maxAddress;
 
-	public EvtToken(String txt, Color color, Address minAddress, long size) {
-		this.text = txt;
-		this.color = color;
+    public EvtToken(String txt, Color color, Address minAddress, long size) {
+        this.text = txt;
+        this.color = color;
         this.minAddress = minAddress;
         if (minAddress != null)
             this.maxAddress = minAddress.add(size);
         else
             this.maxAddress = null;
-	}
+    }
 
     public static EvtToken instr(String txt, Color color, Address minAddress) {
         return new EvtToken(txt, color, minAddress, Instr.HEADER_SIZE);
-	}
+    }
 
     public static EvtToken arg(String txt, Color color, Address minAddress) {
         return new EvtToken(txt, color, minAddress, Arg.bytesSize());
-	}
+    }
 
     public static EvtToken syntax(String txt, Color color, Address minAddress) {
         return new EvtToken(txt, color, minAddress, 0);
-	}
+    }
 
     public String getText() {
         return text;
@@ -51,11 +51,11 @@ public class EvtToken {
         return lineParent;
     }
 
-	public Address getMinAddress() {
-		return minAddress;
-	}
+    public Address getMinAddress() {
+        return minAddress;
+    }
 
     public Address getMaxAddress() {
-		return maxAddress;
-	}
+        return maxAddress;
+    }
 }

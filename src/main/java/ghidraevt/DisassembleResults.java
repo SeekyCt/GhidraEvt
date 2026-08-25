@@ -34,86 +34,86 @@ import jevt.Instr;
  *
  */
 public class DisassembleResults {
-	private EvtScript script; // Script to which results pertain
-	private String errMsg; // Error message from decompiler
+    private EvtScript script; // Script to which results pertain
+    private String errMsg; // Error message from decompiler
 
-	private List<Instr> docroot;
+    private List<Instr> docroot;
 
 
-	private DisassembleResults(EvtScript script, List<Instr> docroot, String e) {
-		this.script = script;
-		this.docroot = docroot;
-		this.errMsg = e;
-	}
+    private DisassembleResults(EvtScript script, List<Instr> docroot, String e) {
+        this.script = script;
+        this.docroot = docroot;
+        this.errMsg = e;
+    }
 
-	public static DisassembleResults success(EvtScript script, List<Instr> docroot) {
-		return new DisassembleResults(script, docroot, null);
-	}
+    public static DisassembleResults success(EvtScript script, List<Instr> docroot) {
+        return new DisassembleResults(script, docroot, null);
+    }
 
-	public static DisassembleResults fail(EvtScript script, String message) {
-		return new DisassembleResults(script, null, message);
-	}
+    public static DisassembleResults fail(EvtScript script, String message) {
+        return new DisassembleResults(script, null, message);
+    }
 
-	public static DisassembleResults empty(String message) {
-		return new DisassembleResults(null, null, message);
-	}
+    public static DisassembleResults empty(String message) {
+        return new DisassembleResults(null, null, message);
+    }
 
-	/**
-	 * Returns true if the decompilation producing these
-	 * results completed without aborting.  If it was
-	 * aborted, there will be no real results in this
-	 * object, and an error message should be available via
-	 * getErrorMessage.
-	 * @return true if the decompilation completed.
-	 */
-	public boolean decompileCompleted() {
-		return docroot != null;
-	}
+    /**
+     * Returns true if the decompilation producing these
+     * results completed without aborting.  If it was
+     * aborted, there will be no real results in this
+     * object, and an error message should be available via
+     * getErrorMessage.
+     * @return true if the decompilation completed.
+     */
+    public boolean decompileCompleted() {
+        return docroot != null;
+    }
 
-	public EvtScript getScript() {
-		return script;
-	}
+    public EvtScript getScript() {
+        return script;
+    }
 
-	/** 
-	 * Returns true if the decompile completed normally
-	 * @return true if the decompile completed normally
-	 */
-	public boolean isValid() {
-		return errMsg == null;
-	}
+    /** 
+     * Returns true if the decompile completed normally
+     * @return true if the decompile completed normally
+     */
+    public boolean isValid() {
+        return errMsg == null;
+    }
 
-	/**
-	 * Return any error message associated with the
-	 * decompilation producing these results.  Generally,
-	 * there will only be an error if the decompilation was
-	 * aborted for some reason, but there could conceivably
-	 * be warnings obtainable via this method, even if the
-	 * decompilation did complete.
-	 * @return any error message associated with these results
-	 */
-	public String getErrorMessage() {
-		return errMsg;
-	}
+    /**
+     * Return any error message associated with the
+     * decompilation producing these results.  Generally,
+     * there will only be an error if the decompilation was
+     * aborted for some reason, but there could conceivably
+     * be warnings obtainable via this method, even if the
+     * decompilation did complete.
+     * @return any error message associated with these results
+     */
+    public String getErrorMessage() {
+        return errMsg;
+    }
 
-	/**
-	 * Get the marked up C code associated with these
-	 * decompilation results. If there was an error, or
-	 * code generation was turned off, return null
-	 * @return the resulting root of C markup
-	 */
-	// public List<Instr> getCCodeMarkup() {
-	// 	return script;
-	// }
+    /**
+     * Get the marked up C code associated with these
+     * decompilation results. If there was an error, or
+     * code generation was turned off, return null
+     * @return the resulting root of C markup
+     */
+    // public List<Instr> getCCodeMarkup() {
+    //     return script;
+    // }
 
-	public List<Instr> getDocroot() {
-		return docroot;
-	}
+    public List<Instr> getDocroot() {
+        return docroot;
+    }
 
-	public int bytesSize() {
-		int length = 0;
-		for (Instr instr : docroot) {
-			length += instr.bytesSize();
-		}
-		return length;
-	}
+    public int bytesSize() {
+        int length = 0;
+        for (Instr instr : docroot) {
+            length += instr.bytesSize();
+        }
+        return length;
+    }
 }

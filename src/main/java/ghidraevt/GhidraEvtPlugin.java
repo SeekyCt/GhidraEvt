@@ -62,43 +62,43 @@ import ghidra.util.task.SwingUpdateManager;
     shortDescription = "Script disassembler window.",
     description = "Super Paper Mario evt script disassembly integration.",
 
-	servicesRequired = {
-		GoToService.class, NavigationHistoryService.class, ClipboardService.class,
-		DataTypeManagerService.class /*, ProgramManager.class */
-	},
-	eventsConsumed = {
-		ProgramActivatedPluginEvent.class, ProgramOpenedPluginEvent.class,
-		ProgramLocationPluginEvent.class, ProgramSelectionPluginEvent.class,
-		ProgramClosedPluginEvent.class
-	})
+    servicesRequired = {
+        GoToService.class, NavigationHistoryService.class, ClipboardService.class,
+        DataTypeManagerService.class /*, ProgramManager.class */
+    },
+    eventsConsumed = {
+        ProgramActivatedPluginEvent.class, ProgramOpenedPluginEvent.class,
+        ProgramLocationPluginEvent.class, ProgramSelectionPluginEvent.class,
+        ProgramClosedPluginEvent.class
+    })
 
 //@formatter:on
 // TODO: ProgramPlugin can clean up
 public class GhidraEvtPlugin extends Plugin {
-	public static final String OPTIONS_TITLE = "Evt Disassembler";
+    public static final String OPTIONS_TITLE = "Evt Disassembler";
 
-	private EvtProvider connectedProvider;
-	private List<EvtProvider> disconnectedProviders;
+    private EvtProvider connectedProvider;
+    private List<EvtProvider> disconnectedProviders;
 
-	private Program currentProgram;
-	private ProgramLocation currentLocation;
-	private ProgramSelection currentSelection;
+    private Program currentProgram;
+    private ProgramLocation currentLocation;
+    private ProgramSelection currentSelection;
 
-	/**
-	 * Delay location changes to allow location events to settle down. This happens when a
-	 * readDataState occurs when a tool is restored or when switching program tabs.
-	 */
-	SwingUpdateManager delayedLocationUpdateMgr = new SwingUpdateManager(200, 200, () -> {
-		if (currentLocation == null) {
-			return;
-		}
+    /**
+     * Delay location changes to allow location events to settle down. This happens when a
+     * readDataState occurs when a tool is restored or when switching program tabs.
+     */
+    SwingUpdateManager delayedLocationUpdateMgr = new SwingUpdateManager(200, 200, () -> {
+        if (currentLocation == null) {
+            return;
+        }
 
-		Program locationProgram = currentLocation.getProgram();
-		if (locationProgram.isClosed()) {
-			return; // not sure if this can happen
-		}
-		connectedProvider.setLocation(currentLocation, null);
-	});
+        Program locationProgram = currentLocation.getProgram();
+        if (locationProgram.isClosed()) {
+            return; // not sure if this can happen
+        }
+        connectedProvider.setLocation(currentLocation, null);
+    });
 
     /**
      * Plugin constructor.
@@ -109,194 +109,194 @@ public class GhidraEvtPlugin extends Plugin {
     public GhidraEvtPlugin(PluginTool tool) throws IOException {
         super(tool);
 
-		disconnectedProviders = new ArrayList<>();
+        disconnectedProviders = new ArrayList<>();
         connectedProvider = new EvtProvider(this, true);
     }
 
-	@Override
-	protected void init() {
+    @Override
+    protected void init() {
         super.init();
 
-		ClipboardService clipboardService = tool.getService(ClipboardService.class);
-		if (clipboardService != null) {
-			connectedProvider.setClipboardService(clipboardService);
-			for (EvtProvider provider : disconnectedProviders) {
-				provider.setClipboardService(clipboardService);
-			}
-		}
+        ClipboardService clipboardService = tool.getService(ClipboardService.class);
+        if (clipboardService != null) {
+            connectedProvider.setClipboardService(clipboardService);
+            for (EvtProvider provider : disconnectedProviders) {
+                provider.setClipboardService(clipboardService);
+            }
+        }
     }
 
-	@Override
-	public void writeDataState(SaveState saveState) {
-		if (connectedProvider != null) {
-			connectedProvider.writeDataState(saveState);
-		}
-		saveState.putInt("Num Disconnected", disconnectedProviders.size());
-		int i = 0;
-		for (EvtProvider provider : disconnectedProviders) {
-			SaveState providerSaveState = new SaveState();
-			DomainFile df = provider.getProgram().getDomainFile();
-			if (df.getParent() == null) {
-				continue; // not contained within project
-			}
-			String programPathname = df.getPathname();
-			providerSaveState.putString("Program Path", programPathname);
-			provider.writeDataState(providerSaveState);
-			String elementName = "Provider" + i;
-			saveState.putXmlElement(elementName, providerSaveState.saveToXml());
-			i++;
-		}
-	}
+    @Override
+    public void writeDataState(SaveState saveState) {
+        if (connectedProvider != null) {
+            connectedProvider.writeDataState(saveState);
+        }
+        saveState.putInt("Num Disconnected", disconnectedProviders.size());
+        int i = 0;
+        for (EvtProvider provider : disconnectedProviders) {
+            SaveState providerSaveState = new SaveState();
+            DomainFile df = provider.getProgram().getDomainFile();
+            if (df.getParent() == null) {
+                continue; // not contained within project
+            }
+            String programPathname = df.getPathname();
+            providerSaveState.putString("Program Path", programPathname);
+            provider.writeDataState(providerSaveState);
+            String elementName = "Provider" + i;
+            saveState.putXmlElement(elementName, providerSaveState.saveToXml());
+            i++;
+        }
+    }
 
-	@Override
-	public void readDataState(SaveState saveState) {
-		ProgramManager programManagerService = tool.getService(ProgramManager.class);
+    @Override
+    public void readDataState(SaveState saveState) {
+        ProgramManager programManagerService = tool.getService(ProgramManager.class);
 
-		if (connectedProvider != null) {
-			connectedProvider.readDataState(saveState);
-		}
-		int numDisconnected = saveState.getInt("Num Disconnected", 0);
-		for (int i = 0; i < numDisconnected; i++) {
-			Element xmlElement = saveState.getXmlElement("Provider" + i);
-			SaveState providerSaveState = new SaveState(xmlElement);
-			String programPath = providerSaveState.getString("Program Path", "");
-			DomainFile file = tool.getProject().getProjectData().getFile(programPath);
-			if (file == null) {
-				continue;
-			}
-			Program program = programManagerService.openProgram(file);
-			if (program != null) {
-				EvtProvider provider = createNewDisconnectedProvider();
-				provider.doSetProgram(program);
-				provider.readDataState(providerSaveState);
-			}
-		}
-	}
+        if (connectedProvider != null) {
+            connectedProvider.readDataState(saveState);
+        }
+        int numDisconnected = saveState.getInt("Num Disconnected", 0);
+        for (int i = 0; i < numDisconnected; i++) {
+            Element xmlElement = saveState.getXmlElement("Provider" + i);
+            SaveState providerSaveState = new SaveState(xmlElement);
+            String programPath = providerSaveState.getString("Program Path", "");
+            DomainFile file = tool.getProject().getProjectData().getFile(programPath);
+            if (file == null) {
+                continue;
+            }
+            Program program = programManagerService.openProgram(file);
+            if (program != null) {
+                EvtProvider provider = createNewDisconnectedProvider();
+                provider.doSetProgram(program);
+                provider.readDataState(providerSaveState);
+            }
+        }
+    }
 
-	EvtProvider createNewDisconnectedProvider() {
-		EvtProvider provider = new EvtProvider(this, false);
-		provider.setClipboardService(tool.getService(ClipboardService.class));
-		disconnectedProviders.add(provider);
-		tool.showComponentProvider(provider, true);
-		return provider;
-	}
+    EvtProvider createNewDisconnectedProvider() {
+        EvtProvider provider = new EvtProvider(this, false);
+        provider.setClipboardService(tool.getService(ClipboardService.class));
+        disconnectedProviders.add(provider);
+        tool.showComponentProvider(provider, true);
+        return provider;
+    }
 
-	@Override
-	public void dispose() {
+    @Override
+    public void dispose() {
 
-		currentProgram = null;
+        currentProgram = null;
 
-		if (connectedProvider != null) {
-			removeProvider(connectedProvider);
-		}
-		for (EvtProvider provider : disconnectedProviders) {
-			removeProvider(provider);
-		}
-		disconnectedProviders.clear();
+        if (connectedProvider != null) {
+            removeProvider(connectedProvider);
+        }
+        for (EvtProvider provider : disconnectedProviders) {
+            removeProvider(provider);
+        }
+        disconnectedProviders.clear();
 
-	}
+    }
 
-	void exportLocation(Program program, ProgramLocation location) {
-		GoToService service = tool.getService(GoToService.class);
-		if (service != null) {
-			service.goTo(location, program);
-		}
-	}
+    void exportLocation(Program program, ProgramLocation location) {
+        GoToService service = tool.getService(GoToService.class);
+        if (service != null) {
+            service.goTo(location, program);
+        }
+    }
 
-	void updateSelection(EvtProvider provider, Program selProgram,
-			ProgramSelection selection) {
-		if (provider == connectedProvider) {
-			firePluginEvent(new ProgramSelectionPluginEvent(name, selection, selProgram));
-		}
-	}
+    void updateSelection(EvtProvider provider, Program selProgram,
+            ProgramSelection selection) {
+        if (provider == connectedProvider) {
+            firePluginEvent(new ProgramSelectionPluginEvent(name, selection, selProgram));
+        }
+    }
 
-	void closeProvider(EvtProvider provider) {
-		if (provider == connectedProvider) {
-			tool.showComponentProvider(provider, false);
-		}
-		else {
-			disconnectedProviders.remove(provider);
-			removeProvider(provider);
-		}
-	}
+    void closeProvider(EvtProvider provider) {
+        if (provider == connectedProvider) {
+            tool.showComponentProvider(provider, false);
+        }
+        else {
+            disconnectedProviders.remove(provider);
+            removeProvider(provider);
+        }
+    }
 
-	void locationChanged(EvtProvider provider, ProgramLocation location) {
-		if (provider.shouldSendEvents()) {
-			firePluginEvent(new ProgramLocationPluginEvent(name, location, location.getProgram()));
-		}
-	}
+    void locationChanged(EvtProvider provider, ProgramLocation location) {
+        if (provider.shouldSendEvents()) {
+            firePluginEvent(new ProgramLocationPluginEvent(name, location, location.getProgram()));
+        }
+    }
 
-	void selectionChanged(EvtProvider provider, ProgramSelection selection) {
-		if (provider.shouldSendEvents()) {
-			firePluginEvent(new ProgramSelectionPluginEvent(name, selection, currentProgram));
-		}
-	}
+    void selectionChanged(EvtProvider provider, ProgramSelection selection) {
+        if (provider.shouldSendEvents()) {
+            firePluginEvent(new ProgramSelectionPluginEvent(name, selection, currentProgram));
+        }
+    }
 
-	// void handleTokenRenamed(ClangToken tokenAtCursor, String newName) {
-	// 	connectedProvider.handleTokenRenamed(tokenAtCursor, newName);
-	// 	for (EvtProvider provider : disconnectedProviders) {
-	// 		provider.handleTokenRenamed(tokenAtCursor, newName);
-	// 	}
-	// }
+    // void handleTokenRenamed(ClangToken tokenAtCursor, String newName) {
+    //     connectedProvider.handleTokenRenamed(tokenAtCursor, newName);
+    //     for (EvtProvider provider : disconnectedProviders) {
+    //         provider.handleTokenRenamed(tokenAtCursor, newName);
+    //     }
+    // }
 
-	private void removeProvider(EvtProvider provider) {
-		tool.removeComponentProvider(provider);
-		provider.dispose();
-	}
+    private void removeProvider(EvtProvider provider) {
+        tool.removeComponentProvider(provider);
+        provider.dispose();
+    }
 
-	@Override
-	public void processEvent(PluginEvent event) {
-		if (event instanceof ProgramClosedPluginEvent) {
-			Program program = ((ProgramClosedPluginEvent) event).getProgram();
-			programClosed(program);
-			return;
-		}
-		if (connectedProvider == null) {
-			return;
-		}
+    @Override
+    public void processEvent(PluginEvent event) {
+        if (event instanceof ProgramClosedPluginEvent) {
+            Program program = ((ProgramClosedPluginEvent) event).getProgram();
+            programClosed(program);
+            return;
+        }
+        if (connectedProvider == null) {
+            return;
+        }
 
-		if (event instanceof ProgramActivatedPluginEvent) {
-			currentProgram = ((ProgramActivatedPluginEvent) event).getActiveProgram();
-			connectedProvider.doSetProgram(currentProgram);
-		}
-		else if (event instanceof ProgramLocationPluginEvent) {
-			ProgramLocation location = ((ProgramLocationPluginEvent) event).getLocation();
-			Address address = location.getAddress();
-			if (address.isExternalAddress()) {
-				return;
-			}
-			// if (currentProgram != null) {
-			// 	Listing listing = currentProgram.getListing();
-			// 	CodeUnit codeUnit = listing.getCodeUnitContaining(address);
-			// 	if (codeUnit instanceof Data) {
-			// 		return;
-			// 	}
-			// }
-			currentLocation = location;
-			// Delay location change to allow immediate location changes to settle down.  This 
-			// happens when switching program tabs in code browser which produces multiple location
-			// changes
-			delayedLocationUpdateMgr.updateLater();
-		}
-		else if (event instanceof ProgramSelectionPluginEvent) {
-			currentSelection = ((ProgramSelectionPluginEvent) event).getSelection();
-			connectedProvider.setSelection(currentSelection);
-		}
+        if (event instanceof ProgramActivatedPluginEvent) {
+            currentProgram = ((ProgramActivatedPluginEvent) event).getActiveProgram();
+            connectedProvider.doSetProgram(currentProgram);
+        }
+        else if (event instanceof ProgramLocationPluginEvent) {
+            ProgramLocation location = ((ProgramLocationPluginEvent) event).getLocation();
+            Address address = location.getAddress();
+            if (address.isExternalAddress()) {
+                return;
+            }
+            // if (currentProgram != null) {
+            //     Listing listing = currentProgram.getListing();
+            //     CodeUnit codeUnit = listing.getCodeUnitContaining(address);
+            //     if (codeUnit instanceof Data) {
+            //         return;
+            //     }
+            // }
+            currentLocation = location;
+            // Delay location change to allow immediate location changes to settle down.  This 
+            // happens when switching program tabs in code browser which produces multiple location
+            // changes
+            delayedLocationUpdateMgr.updateLater();
+        }
+        else if (event instanceof ProgramSelectionPluginEvent) {
+            currentSelection = ((ProgramSelectionPluginEvent) event).getSelection();
+            connectedProvider.setSelection(currentSelection);
+        }
 
-	}
+    }
 
-	private void programClosed(Program closedProgram) {
-		Iterator<EvtProvider> iterator = disconnectedProviders.iterator();
-		while (iterator.hasNext()) {
-			EvtProvider provider = iterator.next();
-			if (provider.getProgram() == closedProgram) {
-				iterator.remove();
-				removeProvider(provider);
-			}
-		}
-	}
+    private void programClosed(Program closedProgram) {
+        Iterator<EvtProvider> iterator = disconnectedProviders.iterator();
+        while (iterator.hasNext()) {
+            EvtProvider provider = iterator.next();
+            if (provider.getProgram() == closedProgram) {
+                iterator.remove();
+                removeProvider(provider);
+            }
+        }
+    }
 
-	public ProgramLocation getCurrentLocation() {
-		return currentLocation;
-	}
+    public ProgramLocation getCurrentLocation() {
+        return currentLocation;
+    }
 }

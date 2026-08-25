@@ -33,7 +33,7 @@ public class GhidraPrinter {
     public static Color COLOR_INSTR   = new GColor("color.fg.ghidraevt.instr");
     public static Color COLOR_COMMENT = new GColor("color.fg.ghidraevt.comment");
 
-	public static Color COLOR_EXTERNAL_FUNCTION = new GColor("color.fg.decompiler.external.function");
+    public static Color COLOR_EXTERNAL_FUNCTION = new GColor("color.fg.decompiler.external.function");
 
     // A single character of indentation
     public static String INDENT_CHAR = " ";
@@ -66,22 +66,22 @@ public class GhidraPrinter {
         };
     }
 
-	private Color getFunctionColor(Function function) {
-		Symbol symbol = function.getSymbol();
+    private Color getFunctionColor(Function function) {
+        Symbol symbol = function.getSymbol();
 
-		if (function.isExternal()) {
-			return COLOR_EXTERNAL_FUNCTION;
-		}
+        if (function.isExternal()) {
+            return COLOR_EXTERNAL_FUNCTION;
+        }
 
-		if (function.isThunk()) {
-			Function thunkedFunction = function.getThunkedFunction(true);
-			if (thunkedFunction.isExternal()) {
-				return COLOR_EXTERNAL_FUNCTION;
-			}
-		}
+        if (function.isThunk()) {
+            Function thunkedFunction = function.getThunkedFunction(true);
+            if (thunkedFunction.isExternal()) {
+                return COLOR_EXTERNAL_FUNCTION;
+            }
+        }
 
-		return symbolInspector.getColor(symbol);
-	}
+        return symbolInspector.getColor(symbol);
+    }
     
     
     private Color getAddrColor(Address addr) {

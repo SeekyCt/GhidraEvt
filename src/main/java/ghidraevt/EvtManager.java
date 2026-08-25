@@ -28,40 +28,40 @@ import jevt.Instr;
  */
 public class EvtManager {
 
-	private EvtController decompilerController;
-	private EvtOptions options;
+    private EvtController decompilerController;
+    private EvtOptions options;
 
-	// TODO: settings
-	private boolean snapToSymbol = true;
-	private Game game = Game.SPM;
-	private boolean strictMode = false;
+    // TODO: settings
+    private boolean snapToSymbol = true;
+    private Game game = Game.SPM;
+    private boolean strictMode = false;
 
-	public EvtManager(EvtController decompilerController, EvtOptions options) {
-		this.decompilerController = decompilerController;
-		this.options = options;
-	}
-
-	/**
-	 * Set the decompiler options for future decompiles.
-	 */
-	void setOptions(EvtOptions options) {
-		this.options = options;
+    public EvtManager(EvtController decompilerController, EvtOptions options) {
+        this.decompilerController = decompilerController;
+        this.options = options;
     }
 
-	/**
-	 * Requests a new decompile be scheduled.  If a current decompile is already in progress,
-	 * the new request is checked to see if represents the same function. If so, only the
-	 * location of the current decompile is updated and the current decompile is allowed to continue.
-	 * Otherwise a new DecompileRunnable is created and scheduled to run using the updateManager.
-	 * When the updateMangers runs, it will stop any current decompiles and begin the new decompile.
-	 * @param program The program containing the function to be decompiled.
-	 * @param location the location in the program to be decompiled and positioned to.
-	 * @param debugFile if non-null, creates decompile debug output to this file.
-	 * @param forceDecompile true forces a new decompile to be scheduled even if the current job
-	 * is the same function.
-	 */
-	DisassembleResults disassemble(Program program, ProgramLocation location, ViewerPosition viewerPosition) {
-	    if (location == null)
+    /**
+     * Set the decompiler options for future decompiles.
+     */
+    void setOptions(EvtOptions options) {
+        this.options = options;
+    }
+
+    /**
+     * Requests a new decompile be scheduled.  If a current decompile is already in progress,
+     * the new request is checked to see if represents the same function. If so, only the
+     * location of the current decompile is updated and the current decompile is allowed to continue.
+     * Otherwise a new DecompileRunnable is created and scheduled to run using the updateManager.
+     * When the updateMangers runs, it will stop any current decompiles and begin the new decompile.
+     * @param program The program containing the function to be decompiled.
+     * @param location the location in the program to be decompiled and positioned to.
+     * @param debugFile if non-null, creates decompile debug output to this file.
+     * @param forceDecompile true forces a new decompile to be scheduled even if the current job
+     * is the same function.
+     */
+    DisassembleResults disassemble(Program program, ProgramLocation location, ViewerPosition viewerPosition) {
+        if (location == null)
             return DisassembleResults.empty("No script selected.");
 
         Address address = location.getAddress();
@@ -72,7 +72,7 @@ public class EvtManager {
         }
         EvtScript script = new EvtScript(address);
 
-		MemoryBlock block = program.getMemory().getBlock(address);
+        MemoryBlock block = program.getMemory().getBlock(address);
         MemoryInputStream stream = new MemoryInputStream(program, address);
 
         List<Instr> docroot;
@@ -96,5 +96,5 @@ public class EvtManager {
         }
 
         return DisassembleResults.success(script, docroot);
-	}
+    }
 }
