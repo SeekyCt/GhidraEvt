@@ -7,7 +7,8 @@ import ghidra.app.context.RestrictedAddressSetContext;
 import ghidra.framework.plugintool.PluginTool;
 import ghidra.program.model.address.Address;
 
-public class EvtActionContext extends NavigatableActionContext implements RestrictedAddressSetContext {
+public class EvtActionContext extends NavigatableActionContext
+		implements RestrictedAddressSetContext {
 	private final Address scriptEntryPoint;
 	private final int lineNumber;
 
@@ -22,7 +23,7 @@ public class EvtActionContext extends NavigatableActionContext implements Restri
 	 * is usually the case when the user clicks somewhere where a token is not present, e.g., the
 	 * margin. In these cases, the line number should be that under the mouse cursor.
 	 * 
-	 * @param provider the decompiler provider producing the context
+	 * @param provider the provider producing the context
 	 * @param scriptEntryPoint the current function's entry, if applicable
 	 * @param lineNumber non-zero to specify the line number
 	 */
@@ -38,9 +39,8 @@ public class EvtActionContext extends NavigatableActionContext implements Restri
 	/**
 	 * Construct a context using the current token's line number
 	 * 
-	 * @param provider the decompiler provider producing the context
+	 * @param provider the provider producing the context
 	 * @param functionEntryPoint the current function's entry, if applicable
-	 * @param isDecompiling true if the decompiler is still working
 	 */
 	public EvtActionContext(EvtProvider provider, Address scriptEntryPoint) {
 		this(provider, scriptEntryPoint, 0);
@@ -80,8 +80,8 @@ public class EvtActionContext extends NavigatableActionContext implements Restri
 	 * 
 	 * <p>
 	 * If the current token's line number is desired, regardless of the user's mouse position, then
-	 * use {@code context.}{@link #getTokenAtCursor()}{@code .}{@link ClangToken#getLineParent()
-	 * getLineParent()}{@code .}{@link ClangLine#getLineNumber() getLineNumber()}.
+	 * use {@code context.}{@link #getTokenAtCursor()}{@code .}{@link EvtToken#getLineParent()
+	 * getLineParent()}{@code .}{@link EvtLine#getLineNumber() getLineNumber()}.
 	 * 
 	 * @return the line number
 	 */
@@ -100,14 +100,6 @@ public class EvtActionContext extends NavigatableActionContext implements Restri
 	public Address getAddress() {
 		return getComponentProvider().getController().getAddress();
 	}
-
-	// public HighFunction getHighFunction() {
-	// 	return getComponentProvider().getController().getHighFunction();
-	// }
-
-	// public ClangTokenGroup getCCodeModel() {
-	// 	return getComponentProvider().getController().getCCodeModel();
-	// }
 
 	public void setStatusMessage(String msg) {
 		getComponentProvider().getController().setStatusMessage(msg);

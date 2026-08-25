@@ -15,5 +15,4 @@ public class EvtAddrToken extends EvtToken {
     public Address getTarget() {
         return target;
     }
-    
 }

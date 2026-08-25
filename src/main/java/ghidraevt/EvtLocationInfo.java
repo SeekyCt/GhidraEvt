@@ -40,7 +40,7 @@ public class EvtLocationInfo {
 	 * 
 	 * @return C-AST, DFG, and CFG object. null if there are no results attached to this location
 	 */
-	public EvtResults getDecompile() {
+	public EvtResults getDisassembly() {
 		return results;
 	}
 

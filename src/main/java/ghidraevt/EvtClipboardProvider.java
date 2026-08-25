@@ -27,14 +27,13 @@ import ghidra.app.util.ClipboardType;
 import ghidra.program.model.listing.Program;
 import ghidra.program.util.ProgramLocation;
 import ghidra.program.util.ProgramSelection;
-import ghidra.util.Msg;
 import ghidra.util.task.TaskMonitor;
 
 public class EvtClipboardProvider extends ByteCopier
-        implements ClipboardContentProviderService {
-
+		implements ClipboardContentProviderService {
 	// private static final PaintContext PAINT_CONTEXT = new PaintContext();
-	private static final ClipboardType TEXT_TYPE = new ClipboardType(DataFlavor.stringFlavor, "Text");
+	private static final ClipboardType TEXT_TYPE =
+		new ClipboardType(DataFlavor.stringFlavor, "Text");
 	private static final List<ClipboardType> COPY_TYPES = Arrays.asList(TEXT_TYPE);
 
 	private EvtProvider provider;
@@ -99,13 +98,6 @@ public class EvtClipboardProvider extends ByteCopier
 		if (token == null) {
 			return null;
 		}
-
-		// if (token instanceof ClangFuncNameToken functionToken) {
-		// 	Function function = DecompilerUtils.getFunction(currentProgram, functionToken);
-		// 	if (function != null) {
-		// 		return function.getName();
-		// 	}
-		// }
 
 		String text = token.getText();
 		return text;
@@ -254,9 +246,9 @@ public class EvtClipboardProvider extends ByteCopier
 		}
 	}
 
-//==================================================================================================
-// Unsupported Operations
-//==================================================================================================
+	//==================================================================================================
+	// Unsupported Operations
+	//==================================================================================================
 
 	@Override
 	public boolean enablePaste() {

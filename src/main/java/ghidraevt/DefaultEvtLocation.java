@@ -8,14 +8,13 @@ import ghidra.program.model.listing.Program;
 import ghidra.program.util.ProgramLocation;
 
 /**
- * The default location handed out when the user clicks inside of the Decompiler.
+ * The default location handed out when the user clicks inside of the disassembler.
  */
 public class DefaultEvtLocation extends ProgramLocation implements EvtLocation {
 
 	private EvtLocationInfo info;
 
-	public DefaultEvtLocation(Program program, Address address,
-			EvtLocationInfo info) {
+	public DefaultEvtLocation(Program program, Address address, EvtLocationInfo info) {
 		super(program, address);
 		this.info = info;
 	}
@@ -31,8 +30,8 @@ public class DefaultEvtLocation extends ProgramLocation implements EvtLocation {
 	}
 
 	@Override
-	public EvtResults getDecompile() {
-		return info.getDecompile();
+	public EvtResults getDisassembly() {
+		return info.getDisassembly();
 	}
 
 	@Override
@@ -93,5 +92,4 @@ public class DefaultEvtLocation extends ProgramLocation implements EvtLocation {
 		DefaultEvtLocation other = (DefaultEvtLocation) obj;
 		return Objects.equals(info, other.info);
 	}
-
 }
