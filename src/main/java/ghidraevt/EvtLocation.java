@@ -9,7 +9,7 @@ import ghidra.program.util.ProgramLocation;
  */
 public interface EvtLocation {
 
-	public Address getFunctionEntryPoint();
+	public Address getScriptEntryPoint();
 
 	/**
 	 * Results from the decompilation

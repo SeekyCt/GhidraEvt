@@ -11,7 +11,6 @@ import ghidra.program.util.ProgramLocation;
  * The default location handed out when the user clicks inside of the disassembler.
  */
 public class DefaultEvtLocation extends ProgramLocation implements EvtLocation {
-
 	private EvtLocationInfo info;
 
 	public DefaultEvtLocation(Program program, Address address, EvtLocationInfo info) {
@@ -25,8 +24,8 @@ public class DefaultEvtLocation extends ProgramLocation implements EvtLocation {
 	}
 
 	@Override
-	public Address getFunctionEntryPoint() {
-		return info.getFunctionEntryPoint();
+	public Address getScriptEntryPoint() {
+		return info.getScriptEntryPoint();
 	}
 
 	@Override

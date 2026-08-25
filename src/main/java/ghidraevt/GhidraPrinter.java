@@ -106,7 +106,7 @@ public class GhidraPrinter {
 
         Color color = getAddrColor(target);
 
-        EvtToken fail = new EvtAddrToken("ERR_" + Long.toHexString(arg.value()), COLOR_EXTERNAL_FUNCTION, atAddr, Arg.bytesSize(), target);
+        EvtToken fail = new EvtAddrToken("ERR_" + Long.toHexString(arg.value()), COLOR_EXTERNAL_FUNCTION, atAddr, target);
 
         CodeUnit cu = program.getListing().getCodeUnitAt(target);
         if (cu == null) {
@@ -115,7 +115,7 @@ public class GhidraPrinter {
         }
         else if (cu instanceof Data data && isROString(data)) {
             String value = (String) data.getValue();
-            ret.add(new EvtAddrToken("\"" + value + "\"", decompileOptions.getConstantColor(), atAddr, Arg.bytesSize(), target));
+            ret.add(new EvtAddrToken("\"" + value + "\"", decompileOptions.getConstantColor(), atAddr, target));
         }
         else {
             Symbol symbol = cu.getPrimarySymbol();
@@ -127,11 +127,11 @@ public class GhidraPrinter {
                 Namespace ns = symbol.getParentNamespace();
                 // TODO: options - off/on/sync decompiler, and also force in C macro mode with spm::
                 while (!ns.isGlobal()) {
-                    ret.add(new EvtToken(ns.getName(), decompileOptions.getGlobalColor(), atAddr, Arg.bytesSize()));
-                    ret.add(new EvtToken("::", decompileOptions.getDefaultColor(), atAddr, Arg.bytesSize()));
+                    ret.add(EvtToken.arg(ns.getName(), decompileOptions.getGlobalColor(), atAddr));
+                    ret.add(EvtToken.arg("::", decompileOptions.getDefaultColor(), atAddr));
                     ns = ns.getParentNamespace();
                 }
-                ret.add(new EvtAddrToken(symbol.getName(), color, atAddr, Arg.bytesSize(), target));
+                ret.add(new EvtAddrToken(symbol.getName(), color, atAddr, target));
             }
         }
 
@@ -142,16 +142,16 @@ public class GhidraPrinter {
         return switch (arg) {
             case Arg.ADDR addr -> addrToTokens(addr, atAddr); // TODO: dynamic color
             case Arg.FLOAT(float value) -> Arrays.asList(
-                new EvtToken(Float.toString(value), decompileOptions.getConstantColor(), atAddr, Arg.bytesSize())
+                EvtToken.arg(Float.toString(value), decompileOptions.getConstantColor(), atAddr)
             );
             case Arg.INT(int value) -> Arrays.asList(
-                new EvtToken(Integer.toString(value), decompileOptions.getConstantColor(), atAddr, Arg.bytesSize())
+                EvtToken.arg(Integer.toString(value), decompileOptions.getConstantColor(), atAddr)
             );
             case Arg.Variable variable -> Arrays.asList(
-                new EvtToken(variable.typeName() + "(" + variable.id() + ")", variableToColor(variable), atAddr, Arg.bytesSize())
+                EvtToken.arg(variable.typeName() + "(" + variable.id() + ")", variableToColor(variable), atAddr)
             );
             case Arg.NONE() ->  Arrays.asList(
-                new EvtToken("NONE", decompileOptions.getVariableColor(), atAddr, Arg.bytesSize())
+                EvtToken.arg("NONE", decompileOptions.getVariableColor(), atAddr)
             );
         };
     }
@@ -169,10 +169,10 @@ public class GhidraPrinter {
 
             List<EvtToken> tokens = new ArrayList<>();
 
-            tokens.add(new EvtToken(opcode.name(), COLOR_INSTR, addr, Instr.HEADER_SIZE));
+            tokens.add(EvtToken.instr(opcode.name(), COLOR_INSTR, addr));
             for (Arg arg : instr.args())
             {
-                tokens.add(new EvtToken(" ", decompileOptions.getDefaultColor(), addr, 0));
+                tokens.add(EvtToken.syntax(" ", decompileOptions.getDefaultColor(), addr));
                 tokens.addAll(argToTokens(arg, addr));
             }
 

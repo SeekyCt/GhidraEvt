@@ -31,7 +31,7 @@ public class EvtLocationInfo {
 	public EvtLocationInfo() {
 	}
 
-	public Address getFunctionEntryPoint() {
+	public Address getScriptEntryPoint() {
 		return entryPoint;
 	}
 
