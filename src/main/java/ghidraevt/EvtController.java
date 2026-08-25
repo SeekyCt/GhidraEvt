@@ -150,10 +150,6 @@ public class EvtController {
         return false;
     }
 
-    public void setStatusMessage(String message) {
-        callbackHandler.setStatusMessage(message);
-    }
-
     public Program getProgram() {
         if (currentDisassembleData != null) {
             return currentDisassembleData.getProgram();

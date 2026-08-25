@@ -101,10 +101,6 @@ public class EvtActionContext extends NavigatableActionContext
         return getComponentProvider().getController().getAddress();
     }
 
-    public void setStatusMessage(String msg) {
-        getComponentProvider().getController().setStatusMessage(msg);
-    }
-
     @Override
     public boolean hasSelection() {
         EvtProvider provider = getComponentProvider();

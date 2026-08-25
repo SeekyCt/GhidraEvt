@@ -510,11 +510,6 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 //==================================================================================================
 
     @Override
-    public void setStatusMessage(String message) {
-        tool.setStatusInfo(message);
-    }
-
-    @Override
     public void disassembleDataChanged(DisassembleData disassembleData) {
         updateTitle();
         contextChanged();
