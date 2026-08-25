@@ -551,58 +551,6 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 	}
 
 	@Override
-	public void goToLabel(String symbolName, boolean newWindow) {
-
-		GoToService service = tool.getService(GoToService.class);
-		if (service == null) {
-			return;
-		}
-
-		SymbolIterator symbolIterator = program.getSymbolTable().getSymbols(symbolName);
-		if (!symbolIterator.hasNext()) {
-			tool.setStatusInfo(symbolName + " not found.");
-			return;
-		}
-
-		Navigatable navigatable = this;
-		if (newWindow) {
-			EvtProvider newProvider = plugin.createNewDisconnectedProvider();
-			navigatable = newProvider;
-		}
-
-		QueryData queryData = new QueryData(symbolName, true);
-		service.goToQuery(navigatable, null, queryData, null, null);
-	}
-
-	@Override
-	public void goToScalar(long value, boolean newWindow) {
-
-		GoToService service = tool.getService(GoToService.class);
-		if (service == null) {
-			return;
-		}
-
-		try {
-			// try space/overlay which contains function
-			AddressSpace space = controller.getAddress().getAddressSpace();
-			goToAddress(space.getAddress(value), newWindow);
-			return;
-		}
-		catch (AddressOutOfBoundsException e) {
-			// ignore
-		}
-		try {
-			AddressSpace space = controller.getAddress().getAddressSpace();
-			space.getAddress(value);
-			goToAddress(program.getAddressFactory().getDefaultAddressSpace().getAddress(value),
-				newWindow);
-		}
-		catch (AddressOutOfBoundsException e) {
-			tool.setStatusInfo("Invalid address: " + value);
-		}
-	}
-
-	@Override
 	public void goToAddress(Address address, boolean newWindow) {
 
 		GoToService service = tool.getService(GoToService.class);
@@ -617,32 +565,6 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 		}
 
 		service.goTo(navigatable, new ProgramLocation(program, address), program);
-	}
-
-	@Override
-	public void goToFunction(Function function, boolean newWindow) {
-
-		GoToService service = tool.getService(GoToService.class);
-		if (service == null) {
-			return;
-		}
-
-		Navigatable navigatable = this;
-		if (newWindow) {
-			EvtProvider newProvider = plugin.createNewDisconnectedProvider();
-			navigatable = newProvider;
-		}
-
-		if (function.isExternal()) {
-			Symbol symbol = function.getSymbol();
-			ExternalManager externalManager = program.getExternalManager();
-			ExternalLocation externalLocation = externalManager.getExternalLocation(symbol);
-			service.goToExternalLocation(navigatable, externalLocation, true);
-		}
-		else {
-			Address address = function.getEntryPoint();
-			service.goTo(navigatable, new ProgramLocation(program, address), program);
-		}
 	}
 
 	@Override

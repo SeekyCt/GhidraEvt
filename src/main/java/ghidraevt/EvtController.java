@@ -13,11 +13,9 @@ import ghidra.util.bean.field.AnnotatedTextFieldElement;
 import utility.function.Callback;
 
 /**
- * Coordinates the interactions between the EvtProvider, EvtPanel, and the
- * EvtManager
+ * Coordinates the interactions between the EvtProvider, EvtPanel, and the EvtManager
 */
 public class EvtController {
-
 	private ServiceProvider serviceProvider;
 	private EvtPanel evtPanel;
 	private EvtManager evtMgr;
@@ -65,14 +63,14 @@ public class EvtController {
 	}
 
 	/**
-	 * Shows the function containing the given location in the evtPanel. Also, positions the
+	 * Shows the script containing the given location in the evtPanel. Also, positions the
 	 * evtPanel's cursor to the closest equivalent position. If the evtPanel is already displaying
-	 * the function, then only the cursor is repositioned. To force a re-decompile use
+	 * the function, then only the cursor is repositioned. To force a re-disassemble use
 	 * {@link #refreshDisplay(Program, ProgramLocation, File)}.
 	 *
 	 * @param program the program for the given location
-	 * @param location the location containing the function to be displayed and the location in that
-	 *            function to position the cursor.
+	 * @param location the location containing the script to be displayed and the location in that
+	 *            script to position the cursor.
 	 * @param viewerPosition the viewer position
 	 */
 	public void display(Program program, ProgramLocation location, ViewerPosition viewerPosition) {
@@ -206,24 +204,8 @@ public class EvtController {
 		callbackHandler.annotationClicked(annotation, newWindow);
 	}
 
-	void goToFunction(Function function, boolean newWindow) {
-		Function thunkedFunction = function.getThunkedFunction(true);
-		if (thunkedFunction != null) {
-			function = thunkedFunction;
-		}
-		callbackHandler.goToFunction(function, newWindow);
-	}
-
-	void goToLabel(String labelName, boolean newWindow) {
-		callbackHandler.goToLabel(labelName, newWindow);
-	}
-
 	void goToAddress(Address addr, boolean newWindow) {
 		callbackHandler.goToAddress(addr, newWindow);
-	}
-
-	void goToScalar(long value, boolean newWindow) {
-		callbackHandler.goToScalar(value, newWindow);
 	}
 
 	public EvtData getEvtData() {

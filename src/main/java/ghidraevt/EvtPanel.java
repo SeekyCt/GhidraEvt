@@ -706,23 +706,6 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 			Address addr = token.getMinAddress();
 			controller.goToAddress(addr, newWindow);
 		}
-
-
-		// if (token instanceof ClangFuncNameToken) {
-		// 	tryGoToFunction((ClangFuncNameToken) token, newWindow);
-		// }
-		// else if (token instanceof ClangLabelToken) {
-		// 	tryGoToLabel((ClangLabelToken) token, newWindow);
-		// }
-		// else if (token instanceof ClangVariableToken) {
-		// 	tryGoToVarnode((ClangVariableToken) token, newWindow);
-		// }
-		// else if (token instanceof ClangCommentToken) {
-		// 	tryGoToComment(location, event, textField, newWindow);
-		// }
-		// else if (token instanceof ClangSyntaxToken) {
-		// 	tryGoToSyntaxToken((ClangSyntaxToken) token);
-		// }
 	}
 
 	// private void tryGoToComment(FieldLocation location, MouseEvent event, ClangTextField textField,
@@ -739,102 +722,6 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 	// 	String text = textField.getText();
 	// 	String word = StringUtilities.findWord(text, location.col);
 	// 	tryGoToScalar(word, newWindow);
-	// }
-
-	// private void tryGoToFunction(ClangFuncNameToken functionToken, boolean newWindow) {
-	// 	Function function = EvtUtils.getFunction(controller.getProgram(), functionToken);
-	// 	if (function != null) {
-	// 		controller.goToFunction(function, newWindow);
-	// 		return;
-	// 	}
-	// }
-
-	// private void tryGoToLabel(EvtToken token, boolean newWindow) {
-		// check for a goto label
-		// ClangLabelToken destination = EvtUtils.getGoToTargetToken(root, token);
-		// if (destination != null) {
-		// 	goToToken(destination);
-		// 	return;
-		// }
-
-	// 	Address addr = token.getMinAddress();
-	// 	controller.goToAddress(addr, newWindow);
-	// }
-
-	// private void tryGoToSyntaxToken(ClangSyntaxToken token) {
-
-	// 	if (EvtUtils.isBrace(token)) {
-	// 		ClangSyntaxToken otherBrace = EvtUtils.getMatchingBrace(token);
-	// 		if (otherBrace != null) {
-	// 			goToToken(otherBrace);
-	// 		}
-	// 	}
-	// }
-
-	// private void tryGoToVarnode(ClangVariableToken token, boolean newWindow) {
-	// 	Varnode vn = token.getVarnode();
-	// 	if (vn == null) {
-	// 		PcodeOp op = token.getPcodeOp();
-	// 		if (op == null) {
-	// 			return;
-	// 		}
-	// 		int operation = op.getOpcode();
-	// 		if (!(operation == PcodeOp.PTRSUB || operation == PcodeOp.PTRADD)) {
-	// 			return;
-	// 		}
-	// 		vn = op.getInput(1);
-	// 		if (vn == null) {
-	// 			return;
-	// 		}
-
-	// 	}
-	// 	HighVariable highVar = vn.getHigh();
-	// 	if (highVar instanceof HighGlobal) {
-	// 		vn = highVar.getRepresentative();
-	// 	}
-	// 	if (vn.isAddress()) {
-	// 		Address addr = vn.getAddress();
-	// 		if (addr.isMemoryAddress()) {
-	// 			controller.goToAddress(vn.getAddress(), newWindow);
-	// 		}
-	// 	}
-	// 	else if (vn.isConstant()) {
-	// 		controller.goToScalar(vn.getOffset(), newWindow);
-	// 	}
-	// }
-
-	// private void tryGoToScalar(String text, boolean newWindow) {
-	// 	if (text.startsWith("0x")) {
-	// 		text = text.substring(2);
-	// 	}
-	// 	else if (text.startsWith("(") && text.endsWith(")")) {
-	// 		int commaIx = text.indexOf(",0x");
-	// 		if (commaIx < 2) {
-	// 			return;
-	// 		}
-	// 		String spaceName = text.substring(1, commaIx);
-	// 		String offsetStr = text.substring(commaIx + 3, text.length() - 1);
-	// 		try {
-	// 			AddressSpace space =
-	// 				decompileData.getProgram().getAddressFactory().getAddressSpace(spaceName);
-	// 			if (space == null) {
-	// 				return;
-	// 			}
-	// 			Address addr = space.getAddress(NumericUtilities.parseHexLong(offsetStr), true);
-	// 			controller.goToAddress(addr, newWindow);
-	// 		}
-	// 		catch (AddressOutOfBoundsException e) {
-	// 			// give-up
-	// 		}
-	// 		return;
-	// 	}
-	// 	try {
-	// 		long value = NumericUtilities.parseHexLong(text);
-	// 		controller.goToScalar(value, newWindow);
-	// 	}
-	// 	catch (NumberFormatException e) {
-	// 		return; // give up
-	// 	}
 	// }
 
 	Program getProgram() {
