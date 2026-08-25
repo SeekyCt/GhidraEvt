@@ -36,9 +36,9 @@ public class EvtLocationInfo {
     }
 
     /**
-     * Results from the decompilation
+     * Results from the disassembly
      * 
-     * @return C-AST, DFG, and CFG object. null if there are no results attached to this location
+     * @return Results object. null if there are no results attached to this location
      */
     public DisassembleResults getDisassembly() {
         return results;
@@ -47,7 +47,7 @@ public class EvtLocationInfo {
     /**
      * C text token at the current cursor location
      * 
-     * @return token at this location, could be null if there are no decompiler results
+     * @return token at this location, could be null if there are no disassembly results
      */
     public EvtToken getToken() {
         return token;
@@ -109,14 +109,14 @@ public class EvtLocationInfo {
     }
 
     public void saveState(SaveState saveState) {
-        saveState.putString("_FUNCTION_ENTRY", entryPoint.toString());
+        saveState.putString("_SCRIPT_ENTRY", entryPoint.toString());
         saveState.putString("_TOKEN_TEXT", tokenName);
         saveState.putInt("_LINE_NUM", lineNumber);
         saveState.putInt("_CHAR_POS", charPos);
     }
 
     public void restoreState(Program program1, SaveState obj) {
-        String addrStr = obj.getString("_FUNCTION_ENTRY", "0");
+        String addrStr = obj.getString("_SCRIPT_ENTRY", "0");
         entryPoint = program1.parseAddress(addrStr)[0];
         tokenName = obj.getString("_TOKEN_TEXT", "");
         lineNumber = obj.getInt("_LINE_NUM", 0);

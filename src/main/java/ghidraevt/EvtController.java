@@ -24,10 +24,10 @@ public class EvtController {
     private ProgramSelection currentSelection;
 
     public EvtController(ServiceProvider serviceProvider, EvtCallbackHandler handler,
-        EvtOptions options, EvtClipboardProvider clipboard) {
+            EvtOptions options, EvtClipboardProvider clipboard) {
         this.serviceProvider = serviceProvider;
         this.callbackHandler = handler;
-        evtMgr = new EvtManager(this, options);
+        evtMgr = new EvtManager(options);
         evtPanel = new EvtPanel(this, options, clipboard);
 
         evtPanel.setHoverMode(true);
@@ -83,9 +83,9 @@ public class EvtController {
         DisassembleResults results = evtMgr.disassemble(program, location, viewerPosition);
 
         setDisasssembleData(
-            new DisassembleData(program, results.getScript(), location, results, null, viewerPosition)
-        );
-            
+            new DisassembleData(program, results.getScript(), location, results, null,
+                viewerPosition));
+
     }
 
     public void setSelection(ProgramSelection selection) {
@@ -167,6 +167,7 @@ public class EvtController {
         }
         return null;
     }
+
     public ProgramLocation getLocation() {
         if (currentDisassembleData != null) {
             return currentDisassembleData.getLocation();

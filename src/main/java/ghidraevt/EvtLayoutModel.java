@@ -1,6 +1,5 @@
 package ghidraevt;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Toolkit;
@@ -18,7 +17,6 @@ import docking.widgets.fieldpanel.field.TextFieldElement;
 import docking.widgets.fieldpanel.listener.IndexMapper;
 import docking.widgets.fieldpanel.listener.LayoutModelListener;
 import docking.widgets.fieldpanel.support.FieldHighlightFactory;
-import docking.widgets.fieldpanel.support.FieldLocation;
 import docking.widgets.fieldpanel.support.SingleRowLayout;
 import ghidra.app.util.SymbolInspector;
 import ghidra.framework.plugintool.ServiceProvider;
@@ -265,7 +263,7 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
         addErrorLines(lines, errmsg);
 
         int lineCount = lines.size();
-        fieldList = new Field[lineCount]; // One field for each "C" line
+        fieldList = new Field[lineCount];
         numIndexes = BigInteger.valueOf(lineCount);
 
         for (int i = 0; i < lineCount; ++i) {
@@ -277,11 +275,6 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
             modelChanged(); // Inform the listeners that we have changed
         }
 
-    }
-
-    public void locationChanged(FieldLocation loc, Field field, Color locationColor,
-            Color parenColor) {
-        // Highlighting is now handled through the decompiler panel's highlight controller.
     }
 
     @Override
