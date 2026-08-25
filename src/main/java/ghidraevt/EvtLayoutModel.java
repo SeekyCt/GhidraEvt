@@ -33,7 +33,7 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
     private SymbolInspector symbolInspector;
     private EvtPanel evtPanel;
     private EvtOptions options;
-    private List<Instr> script;
+    private List<Instr> docroot;
     private Field[] fieldList; // Array of fields comprising layout
     private FontMetrics metrics;
     private FieldHighlightFactory hlFactory;
@@ -260,13 +260,13 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
 		}
 	}
 
-	public void buildLayouts(Address address, List<Instr> script, String errmsg, boolean display) {
-        this.script = script;
+	public void buildLayouts(EvtScript script, List<Instr> docroot, String errmsg, boolean display) {
+        this.docroot = docroot;
         updateOptions();
 
-		if (script != null) {
+		if (docroot != null) {
 			GhidraPrinter printer = new GhidraPrinter(evtPanel.getProgram(), symbolInspector, options);
-			lines = printer.getLines(address, script);
+			lines = printer.getLines(script, docroot);
 		}
 		else {
 			lines = new ArrayList<>();

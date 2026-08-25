@@ -156,12 +156,12 @@ public class GhidraPrinter {
         };
     }
 
-    public List<EvtLine> getLines(Address startAddress, List<Instr> script) {
+    public List<EvtLine> getLines(EvtScript script, List<Instr> docroot) {
         List<EvtLine> ret = new ArrayList<>();
         int indent = 0;
         int line = 1;
-        Address addr = startAddress;
-        for (Instr instr : script) {
+        Address addr = script.getStartAddress();
+        for (Instr instr : docroot) {
             Opcode opcode = instr.opcode();
 
             // Unindent for this line

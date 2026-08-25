@@ -70,31 +70,31 @@ public class EvtManager {
             if (cu != null)
                 address = cu.getAddress();
         }
-        Address startAddress = address;
+        EvtScript script = new EvtScript(address);
 
 		MemoryBlock block = program.getMemory().getBlock(address);
         MemoryInputStream stream = new MemoryInputStream(program, address);
 
-        List<Instr> script;
+        List<Instr> docroot;
         try {
-            script = Instr.disassemble(game, stream, strictMode);
+            docroot = Instr.disassemble(game, stream, strictMode);
         }
         catch (BadEvtException e) {
             String err = "Script appears invalid: " + e.getMessage();
             if (e.strictOnly()) {
                 err += "\n(Triggered by Strict mode)";
             }
-            return EvtResults.fail(startAddress, err);
+            return EvtResults.fail(script, err);
         }
         catch (IOException e) {
             Msg.error(this, "Disassembler failed", e);
-            return EvtResults.fail(startAddress, "Disassembler failed: " + e.getMessage());
+            return EvtResults.fail(script, "Disassembler failed: " + e.getMessage());
         }
         catch (Exception e) {
             Msg.error(this, "Unhandled disassembler exception", e);
-            return EvtResults.fail(startAddress, "Unhandled disassembler exception: " + e.getMessage());
+            return EvtResults.fail(script, "Unhandled disassembler exception: " + e.getMessage());
         }
 
-        return EvtResults.success(startAddress, script);
+        return EvtResults.success(script, docroot);
 	}
 }

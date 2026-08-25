@@ -34,24 +34,24 @@ import jevt.Instr;
  *
  */
 public class EvtResults {
-	private Address address; // Function to which results pertain
+	private EvtScript script; // Script to which results pertain
 	private String errMsg; // Error message from decompiler
 
-	private List<Instr> script;
+	private List<Instr> docroot;
 
 
-	private EvtResults(Address address, List<Instr> script, String e) {
-		this.address = address;
+	private EvtResults(EvtScript script, List<Instr> docroot, String e) {
 		this.script = script;
+		this.docroot = docroot;
 		this.errMsg = e;
 	}
 
-	public static EvtResults success(Address address, List<Instr> script) {
-		return new EvtResults(address, script, null);
+	public static EvtResults success(EvtScript script, List<Instr> docroot) {
+		return new EvtResults(script, docroot, null);
 	}
 
-	public static EvtResults fail(Address address, String message) {
-		return new EvtResults(address, null, message);
+	public static EvtResults fail(EvtScript script, String message) {
+		return new EvtResults(script, null, message);
 	}
 
 	public static EvtResults empty(String message) {
@@ -67,11 +67,11 @@ public class EvtResults {
 	 * @return true if the decompilation completed.
 	 */
 	public boolean decompileCompleted() {
-		return script != null;
+		return docroot != null;
 	}
 
-	public Address getAddress() {
-		return address;
+	public EvtScript getScript() {
+		return script;
 	}
 
 	/** 
@@ -105,13 +105,13 @@ public class EvtResults {
 	// 	return script;
 	// }
 
-	public List<Instr> getScript() {
-		return script;
+	public List<Instr> getDocroot() {
+		return docroot;
 	}
 
 	public int bytesSize() {
 		int length = 0;
-		for (Instr instr : script) {
+		for (Instr instr : docroot) {
 			length += instr.bytesSize();
 		}
 		return length;

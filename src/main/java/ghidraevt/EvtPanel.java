@@ -470,9 +470,9 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 
 		EvtData oldData = this.decompileData;
 		this.decompileData = decompileData;
-		Address address = decompileData.getAddress();
+		EvtScript script = decompileData.getScript();
 		if (decompileData.hasDecompileResults()) {
-			layoutController.buildLayouts(address, decompileData.getScript(), null, true);
+			layoutController.buildLayouts(script, decompileData.getDocroot(), null, true);
 		}
 		else {
 			layoutController.buildLayouts(null, null, decompileData.getErrorMessage(), true);
@@ -501,8 +501,8 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 	}
 
 	private void setLocation(EvtData oldData, EvtData newData) {
-		Address address = oldData.getAddress();
-		if (SystemUtilities.isEqual(address, newData.getAddress())) {
+		EvtScript script = oldData.getScript();
+		if (SystemUtilities.isEqual(script, newData.getScript())) {
 			return;
 		}
 
@@ -919,11 +919,12 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 			address = EvtUtils.findAddressBefore(layoutController.getFields(), token);
 		}
 
-		Address entryPoint = decompileData.getAddress();
+		EvtScript script = decompileData.getScript();
 		if (address == null) {
-			address = entryPoint;
+			address = script.getStartAddress();
 		}
 
+		Address entryPoint = script.getStartAddress();
 		EvtResults results = decompileData.getDecompileResults();
 		int lineNumber = location.getIndex().intValue();
 		int charPos = location.col;

@@ -85,7 +85,7 @@ public class EvtController {
 		EvtResults results = evtMgr.decompile(program, location, viewerPosition);
 
 		setEvtData(
-			new EvtData(program, location, results, null, viewerPosition)
+			new EvtData(program, results.getScript(), location, results, null, viewerPosition)
 		);
 			
 	}
@@ -181,7 +181,7 @@ public class EvtController {
 
 	public Address getAddress() {
 		if (currentEvtData != null) {
-			return currentEvtData.getAddress();
+			return currentEvtData.getScript().getStartAddress();
 		}
 		return null;
 	}

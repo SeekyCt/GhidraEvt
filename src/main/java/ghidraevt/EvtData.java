@@ -12,26 +12,27 @@ import jevt.Instr;
 
 public class EvtData {
 	private final Program program;
+	private final EvtScript script;
 	private final ProgramLocation location;
 	private final EvtResults evtResults;
 	private final String message;
 	private final ViewerPosition viewerPosition;
 
-	public EvtData(Program program, ProgramLocation location,
+	public EvtData(Program program, EvtScript script, ProgramLocation location,
 			EvtResults evtResults, String errorMessage, ViewerPosition viewerPosition) {
 		this.program = program;
+		this.script = script;
 		this.location = location;
 		this.evtResults = evtResults;
 		this.message = errorMessage;
 		this.viewerPosition = viewerPosition;
 	}
 
-
     public boolean hasDecompileResults() {
 		if (evtResults == null) {
 			return false;
 		}
-		return evtResults.getScript() != null;
+		return evtResults.getDocroot() != null;
 	}
 
 	public boolean isValid() {
@@ -46,22 +47,19 @@ public class EvtData {
 		return program;
 	}
 
-	public Address getAddress() {
-		if (location != null)
-			return location.getAddress();
-		else
-			return null;
+	public EvtScript getScript() {
+		return script;
 	}
 
 	public ProgramLocation getLocation() {
 		return location;
 	}
 
-	public List<Instr> getScript() {
+	public List<Instr> getDocroot() {
 		if (evtResults == null) {
 			return null;
 		}
-		return evtResults.getScript();
+		return evtResults.getDocroot();
 	}
 
 	public String getErrorMessage() {
@@ -92,7 +90,7 @@ public class EvtData {
 			return false;
 		}
 
-		Address startAddress = location.getAddress();
+		Address startAddress = script.getStartAddress();
 		return startAddress.compareTo(address) < 0 &&
 			address.subtract(startAddress) < evtResults.bytesSize();
 	}

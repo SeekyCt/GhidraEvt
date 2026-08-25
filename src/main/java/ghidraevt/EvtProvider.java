@@ -696,23 +696,21 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 	 * Updates the windows title and subtitle to reflect the currently decompiled function
 	 */
 	private void updateTitle() {
-		Address address = controller.getEvtData().getAddress();
-		String programName = "";
-		Symbol symbol = null;
-		if (program != null) {
-			programName = program.getDomainFile().getName();
-			if (address != null)
-				symbol = program.getSymbolTable().getPrimarySymbol(address);
-		}
+		EvtScript script = controller.getEvtData().getScript();
+		String programName = (program != null) ? program.getDomainFile().getName() : "";
 		String title = "Evt Disassembler";
 		String functionName = "No script";
 		String tabText = "Evt Disassembler";
 		String subTitle = "";
-		if (symbol != null) {
-			functionName = symbol.getName();
-			title = "Disassemble: " + functionName;
-			subTitle = " (" + programName + ")";
+		if (script != null && program != null) {
+			Symbol symbol = program.getSymbolTable().getPrimarySymbol(script.getStartAddress());
+			if (symbol != null) {
+				functionName = symbol.getName();
+				title = "Disassemble: " + functionName;
+				subTitle = " (" + programName + ")";
+			}
 		}
+		
 		if (!isConnected()) {
 			title = "[" + title + "]";
 			tabText = "[" + functionName + "]";
