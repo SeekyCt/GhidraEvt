@@ -38,11 +38,17 @@ public class EvtManager {
             return DisassembleResults.empty("No script selected.");
 
         Address address = location.getAddress();
+
+        // Align to 4 bytes
+        long offset = address.getOffset() & 3;
+        address = address.subtract(offset);
+
         if (snapToSymbol) {
             CodeUnit cu = program.getListing().getCodeUnitContaining(address);
-            if (cu != null)
+            if (cu != null && (cu.getAddress().getOffset() & 3) == 0)
                 address = cu.getAddress();
         }
+
         EvtScript script = new EvtScript(address);
 
         MemoryInputStream stream = new MemoryInputStream(program, address);
