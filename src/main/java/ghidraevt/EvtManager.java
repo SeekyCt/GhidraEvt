@@ -1,5 +1,6 @@
 package ghidraevt;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.util.List;
 
@@ -25,6 +26,7 @@ public class EvtManager {
     private boolean snapToSymbol = true;
     private Game game = Game.SPM;
     private boolean strictMode = false;
+    private boolean stopOnNextSymbol = true;
 
     public EvtManager(EvtOptions options) {
         this.options = options;
@@ -34,7 +36,7 @@ public class EvtManager {
         this.options = options;
     }
 
-    Address snapToSymbol(Program program, Address address) {
+    private Address snapToSymbol(Program program, Address address) {
         // Try containing data first
         Data data = program.getListing().getDataContaining(address);
         if (data != null && data.isDefined() && (data.getAddress().getOffset() & 3) == 0)
@@ -50,6 +52,14 @@ public class EvtManager {
 
         // Nothing to snap to
         return address;
+    }
+
+    private Symbol nextSymbol(Program program, Address address) {
+        SymbolIterator iter = program.getSymbolTable().getSymbolIterator(address.add(1), true);
+        if (iter.hasNext())
+            return iter.next();
+        else
+            return null;
     }
 
     DisassembleResults disassemble(Program program, ProgramLocation location,
@@ -74,7 +84,14 @@ public class EvtManager {
 
         EvtScript script = new EvtScript(startAddress);
 
-        MemoryInputStream stream = new MemoryInputStream(program, startAddress);
+        MemoryInputStream stream;
+        if (stopOnNextSymbol) {
+            Symbol next = nextSymbol(program, startAddress);
+            stream = new MemoryInputStream(program, startAddress, next.getAddress());
+        }
+        else {
+            stream = new MemoryInputStream(program, startAddress);
+        }
 
         List<Instr> docroot;
         try {
@@ -86,6 +103,9 @@ public class EvtManager {
                 err += "\n(Triggered by Strict mode)";
             }
             return DisassembleResults.fail(script, err);
+        }
+        catch (EOFException e) {
+            return DisassembleResults.fail(script, "Disassembler failed: reached start of next symbol");
         }
         catch (IOException e) {
             Msg.error(this, "Disassembler failed", e);
