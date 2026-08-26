@@ -14,6 +14,10 @@ public class EvtOptions {
         this.decompileOptions = decompileOptions;
     }
 
+    public DecompileOptions getDecompileOptions() {
+        return decompileOptions;
+    }
+
     public void registerOptions(ToolOptions fieldOptions, ToolOptions opt, Program program) {
 
         decompileOptions.grabFromToolAndProgram(fieldOptions, opt, program);

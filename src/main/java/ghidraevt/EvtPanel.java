@@ -21,6 +21,8 @@ import docking.widgets.fieldpanel.listener.*;
 import docking.widgets.fieldpanel.support.*;
 import docking.widgets.indexedscrollpane.IndexedScrollPane;
 import generic.theme.GColor;
+import ghidra.app.decompiler.component.margin.DecompilerMarginProvider;
+import ghidra.app.decompiler.component.margin.LineNumberDecompilerMarginProvider;
 import ghidra.app.decompiler.component.margin.VerticalLayoutPixelIndexMap;
 import ghidra.app.util.viewer.util.ScrollpaneAlignedHorizontalLayout;
 import ghidra.program.model.address.*;
@@ -41,13 +43,13 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 
     private final EvtController controller;
     private final EvtOptions options;
-    // private LineNumberDecompilerMarginProvider lineNumbersMargin;
+    private LineNumberDecompilerMarginProvider lineNumbersMargin;
 
     private final EvtFieldPanel fieldPanel;
     private EvtLayoutModel layoutController;
     private final IndexedScrollPane scroller;
 
-    // private final List<DecompilerMarginProvider> marginProviders = new ArrayList<>();
+    private final List<DecompilerMarginProvider> marginProviders = new ArrayList<>();
     private final VerticalLayoutPixelIndexMap pixmap = new VerticalLayoutPixelIndexMap();
 
     private FieldHighlightFactory hlFactory;
@@ -94,9 +96,9 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
         fieldPanel.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
-                // for (DecompilerMarginProvider provider : marginProviders) {
-                //     provider.getComponent().invalidate();
-                // }
+                for (DecompilerMarginProvider provider : marginProviders) {
+                    provider.getComponent().invalidate();
+                }
                 validate();
             }
         });
@@ -117,9 +119,9 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
         setPreferredSize(new Dimension(600, 400));
         setDisassembleData(new EmptyDisassembleData("No Function"));
 
-        // if (options.isDisplayLineNumbers()) {
-        //     addMarginProvider(lineNumbersMargin = new LineNumberDecompilerMarginProvider());
-        // }
+        if (options.isDisplayLineNumbers()) {
+            addMarginProvider(lineNumbersMargin = new LineNumberDecompilerMarginProvider());
+        }
     }
 
     public EvtController getController() {
@@ -784,9 +786,9 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
     @Override
     public void layoutsChanged(List<AnchoredLayout> layouts) {
         pixmap.layoutsChanged(layouts);
-        // for (DecompilerMarginProvider element : marginProviders) {
-        //     element.setProgram(getProgram(), layoutController, pixmap);
-        // }
+        for (DecompilerMarginProvider element : marginProviders) {
+            element.setProgram(getProgram(), layoutController, pixmap);
+        }
     }
 
     private ProgramLocation getProgramLocation(Field field, FieldLocation location) {
@@ -1028,34 +1030,34 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 
         // highlightController.setHighlightColor(currentVariableHighlightColor);
 
-        // if (options.isDisplayLineNumbers()) {
-        //     if (lineNumbersMargin == null) {
-        //         addMarginProvider(lineNumbersMargin = new LineNumberDecompilerMarginProvider());
-        //     }
-        // }
-        // else {
-        //     if (lineNumbersMargin != null) {
-        //         removeMarginProvider(lineNumbersMargin);
-        //         lineNumbersMargin = null;
-        //     }
-        // }
+        if (options.isDisplayLineNumbers()) {
+            if (lineNumbersMargin == null) {
+                addMarginProvider(lineNumbersMargin = new LineNumberDecompilerMarginProvider());
+            }
+        }
+        else {
+            if (lineNumbersMargin != null) {
+                removeMarginProvider(lineNumbersMargin);
+                lineNumbersMargin = null;
+            }
+        }
 
-        // for (DecompilerMarginProvider element : marginProviders) {
-        //     element.setOptions(options);
-        // }
+        for (DecompilerMarginProvider element : marginProviders) {
+            element.setOptions(options.getDecompileOptions());
+        }
     }
 
-    // public void addMarginProvider(DecompilerMarginProvider provider) {
-    //     marginProviders.add(0, provider);
-    //     provider.setOptions(options);
-    //     provider.setProgram(getProgram(), layoutController, pixmap);
-    //     buildPanels();
-    // }
+    public void addMarginProvider(DecompilerMarginProvider provider) {
+        marginProviders.add(0, provider);
+        provider.setOptions(options.getDecompileOptions());
+        provider.setProgram(getProgram(), layoutController, pixmap);
+        buildPanels();
+    }
 
-    // public void removeMarginProvider(DecompilerMarginProvider provider) {
-    //     marginProviders.remove(provider);
-    //     buildPanels();
-    // }
+    public void removeMarginProvider(DecompilerMarginProvider provider) {
+        marginProviders.remove(provider);
+        buildPanels();
+    }
 
     @Override
     public synchronized void addFocusListener(FocusListener l) {
@@ -1077,9 +1079,9 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 
     private JComponent buildLeftComponent() {
         JPanel leftPanel = new JPanel(new ScrollpaneAlignedHorizontalLayout(scroller));
-        // for (DecompilerMarginProvider marginProvider : marginProviders) {
-        //     leftPanel.add(marginProvider.getComponent());
-        // }
+        for (DecompilerMarginProvider marginProvider : marginProviders) {
+            leftPanel.add(marginProvider.getComponent());
+        }
         return leftPanel;
     }
 
