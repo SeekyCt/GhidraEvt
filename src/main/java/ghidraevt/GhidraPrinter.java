@@ -32,6 +32,7 @@ public class GhidraPrinter {
     public static Color COLOR_UF      = new GColor("color.fg.ghidraevt.uf");
     public static Color COLOR_INSTR   = new GColor("color.fg.ghidraevt.instr");
     public static Color COLOR_COMMENT = new GColor("color.fg.ghidraevt.comment");
+    public static Color COLOR_HEADER  = new GColor("color.fg.ghidraevt.header");
 
     public static Color COLOR_EXTERNAL_FUNCTION = new GColor("color.fg.decompiler.external.function");
 
@@ -102,6 +103,30 @@ public class GhidraPrinter {
         );
     }
 
+    private List<EvtToken> symbolToTokens(Address atAddr, Color color, Address target) {
+        Symbol symbol = program.getSymbolTable().getPrimarySymbol(target);
+        if (symbol == null) {
+            Msg.warn(this, "No symbol for " + target);
+            return Arrays.asList(addrFailToken(atAddr, target));
+        }
+        else  {
+            Namespace ns = symbol.getParentNamespace();
+            List<EvtToken> ret = new ArrayList<>();
+            // TODO: options - off/on/sync decompiler, and also force in C macro mode with spm::
+            while (!ns.isGlobal()) {
+                ret.add(EvtToken.arg(ns.getName(), decompileOptions.getGlobalColor(), atAddr));
+                ret.add(EvtToken.arg("::", decompileOptions.getDefaultColor(), atAddr));
+                ns = ns.getParentNamespace();
+            }
+            ret.add(new EvtAddrToken(symbol.getName(), color, atAddr, target));
+            return ret;
+        }
+    }
+
+    private EvtToken addrFailToken(Address atAddr, Address target) {
+        return new EvtAddrToken("ERR_" + target, COLOR_EXTERNAL_FUNCTION, atAddr, target);
+    }
+
     private List<EvtToken> addrToTokens(Arg.ADDR arg, Address atAddr) {
         List<EvtToken> ret = new ArrayList<>();
 
@@ -109,33 +134,17 @@ public class GhidraPrinter {
 
         Color color = getAddrColor(target);
 
-        EvtToken fail = new EvtAddrToken("ERR_" + Long.toHexString(arg.value()), COLOR_EXTERNAL_FUNCTION, atAddr, target);
-
         CodeUnit cu = program.getListing().getCodeUnitAt(target);
         if (cu == null) {
             Msg.warn(this, "No code unit for " + Long.toHexString(arg.value()));
-            ret.add(fail);
+            ret.add(addrFailToken(atAddr, target));
         }
         else if (cu instanceof Data data && isROString(data)) {
             String value = (String) data.getValue();
             ret.add(new EvtAddrToken("\"" + value + "\"", decompileOptions.getConstantColor(), atAddr, target));
         }
         else {
-            Symbol symbol = cu.getPrimarySymbol();
-            if (symbol == null) {
-                Msg.warn(this, "No symbol for " + Long.toHexString(arg.value()));
-                ret.add(fail);
-            }
-            else  {
-                Namespace ns = symbol.getParentNamespace();
-                // TODO: options - off/on/sync decompiler, and also force in C macro mode with spm::
-                while (!ns.isGlobal()) {
-                    ret.add(EvtToken.arg(ns.getName(), decompileOptions.getGlobalColor(), atAddr));
-                    ret.add(EvtToken.arg("::", decompileOptions.getDefaultColor(), atAddr));
-                    ns = ns.getParentNamespace();
-                }
-                ret.add(new EvtAddrToken(symbol.getName(), color, atAddr, target));
-            }
+            ret.addAll(symbolToTokens(atAddr, color, target));
         }
 
         return ret;
@@ -158,12 +167,21 @@ public class GhidraPrinter {
             );
         };
     }
-
+    
+    private static final String HEADER_DECORATION = "==========";
     public List<EvtLine> getLines(EvtScript script, List<Instr> docroot) {
         List<EvtLine> ret = new ArrayList<>();
         int indent = 0;
         int line = 1;
         Address addr = script.getStartAddress();
+
+        // Header
+        List<EvtToken> header = new ArrayList<>();
+        header.add(EvtToken.syntax(HEADER_DECORATION + " ", decompileOptions.getDefaultColor(), addr));
+        header.addAll(symbolToTokens(addr, COLOR_HEADER, addr));
+        header.add(EvtToken.syntax(" " + HEADER_DECORATION, decompileOptions.getDefaultColor(), addr));
+        ret.add(new EvtLine(header, addr, line, indent));
+
         for (Instr instr : docroot) {
             Opcode opcode = instr.opcode();
 
