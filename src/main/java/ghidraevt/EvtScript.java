@@ -22,7 +22,7 @@ public class EvtScript {
 
     public Address getEndAddress() {
         if (endAddress == null)
-        throw new IllegalAccessError("End address is undefined");
+            throw new IllegalAccessError("End address is undefined");
         return endAddress;
     }
 

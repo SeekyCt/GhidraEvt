@@ -29,15 +29,8 @@ import ghidra.framework.options.SaveState;
 import ghidra.framework.options.ToolOptions;
 import ghidra.framework.plugintool.NavigatableComponentProviderAdapter;
 import ghidra.program.model.address.Address;
-import ghidra.program.model.address.AddressOutOfBoundsException;
-import ghidra.program.model.address.AddressSpace;
-import ghidra.program.model.listing.Data;
-import ghidra.program.model.listing.Function;
 import ghidra.program.model.listing.Program;
-import ghidra.program.model.symbol.ExternalLocation;
-import ghidra.program.model.symbol.ExternalManager;
 import ghidra.program.model.symbol.Symbol;
-import ghidra.program.model.symbol.SymbolIterator;
 import ghidra.program.util.ProgramLocation;
 import ghidra.program.util.ProgramSelection;
 import ghidra.util.Swing;
@@ -46,10 +39,6 @@ import ghidra.util.task.SwingUpdateManager;
 
 import resources.Icons;
 import utility.function.Callback;
-
-import jevt.BadEvtException;
-import jevt.Game;
-import jevt.Instr;
 
 // DecompilerHighlightService?
 
