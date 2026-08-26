@@ -185,4 +185,12 @@ public enum Opcode {
             default -> 0;
         };
     }
+
+    public String niceName() {
+        return this.name().toLowerCase();
+    }
+
+    public String macroName() {
+        return this.name();
+    }
 }

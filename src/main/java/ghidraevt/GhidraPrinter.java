@@ -190,10 +190,13 @@ public class GhidraPrinter {
 
             List<EvtToken> tokens = new ArrayList<>();
 
-            tokens.add(EvtToken.instr(opcode.name(), COLOR_INSTR, addr));
+            tokens.add(EvtToken.instr(opcode.niceName(), COLOR_INSTR, addr));
+            boolean first = true;
             for (Arg arg : instr.args())
             {
-                tokens.add(EvtToken.syntax(" ", decompileOptions.getDefaultColor(), addr));
+                String sep = first ? " " : ", ";
+                first = false; 
+                tokens.add(EvtToken.syntax(sep, decompileOptions.getDefaultColor(), addr));
                 tokens.addAll(argToTokens(arg, addr));
             }
 
