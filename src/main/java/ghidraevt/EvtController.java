@@ -157,9 +157,9 @@ public class EvtController {
         return null;
     }
 
-    public Address getAddress() {
+    public EvtScript getScript() {
         if (currentDisassembleData != null) {
-            return currentDisassembleData.getScript().getStartAddress();
+            return currentDisassembleData.getScript();
         }
         return null;
     }

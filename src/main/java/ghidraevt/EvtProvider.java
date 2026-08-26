@@ -184,17 +184,18 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         if (program == null) {
             return null;
         }
-        Address address = controller.getAddress();
-        if (address == null) {
+        EvtScript script = controller.getScript();
+        if (script == null) {
             return null;
         }
         if (!controller.hasDisassembleResults()) {
             return null;
         }
 
+		Address entryPoint = script.getStartAddress();
         int lineNumber =
             event != null ? getEvtPanel().getLineNumber(event.getY()) : 0;
-        return new EvtActionContext(this, address, lineNumber);
+        return new EvtActionContext(this, entryPoint, lineNumber);
     }
 
     @Override

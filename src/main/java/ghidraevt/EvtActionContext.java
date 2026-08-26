@@ -97,8 +97,8 @@ public class EvtActionContext extends NavigatableActionContext
         return getComponentProvider().getEvtPanel();
     }
 
-    public Address getAddress() {
-        return getComponentProvider().getController().getAddress();
+    public EvtScript getScript() {
+        return getComponentProvider().getController().getScript();
     }
 
     @Override
