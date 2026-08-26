@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 
 import org.jdom2.Element;
 
@@ -44,6 +45,7 @@ import ghidra.framework.plugintool.util.PluginStatus;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.listing.CodeUnit;
 import ghidra.program.model.listing.Data;
+import ghidra.program.model.listing.Instruction;
 import ghidra.program.model.listing.Listing;
 import ghidra.program.model.listing.Program;
 import ghidra.program.util.ProgramLocation;
@@ -265,13 +267,13 @@ public class GhidraEvtPlugin extends Plugin {
             if (address.isExternalAddress()) {
                 return;
             }
-            // if (currentProgram != null) {
-            //     Listing listing = currentProgram.getListing();
-            //     CodeUnit codeUnit = listing.getCodeUnitContaining(address);
-            //     if (codeUnit instanceof Data) {
-            //         return;
-            //     }
-            // }
+            if (currentProgram != null) {
+                Listing listing = currentProgram.getListing();
+                CodeUnit codeUnit = listing.getCodeUnitContaining(address);
+                if (codeUnit instanceof Instruction) {
+                    return;
+                }
+            }
             currentLocation = location;
             // Delay location change to allow immediate location changes to settle down.  This 
             // happens when switching program tabs in code browser which produces multiple location
