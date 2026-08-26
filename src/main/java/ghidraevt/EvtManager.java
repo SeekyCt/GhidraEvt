@@ -2,12 +2,15 @@ package ghidraevt;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import docking.widgets.fieldpanel.support.ViewerPosition;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.listing.Data;
 import ghidra.program.model.listing.Program;
+import ghidra.program.model.mem.MemBuffer;
+import ghidra.program.model.mem.MemoryBufferImpl;
 import ghidra.program.model.symbol.Symbol;
 import ghidra.program.model.symbol.SymbolIterator;
 import ghidra.program.util.ProgramLocation;
@@ -84,14 +87,15 @@ public class EvtManager {
 
         EvtScript script = new EvtScript(startAddress);
 
-        MemoryInputStream stream;
+        int sizeLimit = Integer.MAX_VALUE;
         if (stopOnNextSymbol) {
             Symbol next = nextSymbol(program, startAddress);
-            stream = new MemoryInputStream(program, startAddress, next != null ? next.getAddress() : null);
+            if (next != null)
+                sizeLimit = (int) next.getAddress().subtract(startAddress);
         }
-        else {
-            stream = new MemoryInputStream(program, startAddress);
-        }
+
+        MemBuffer test = new MemoryBufferImpl(program.getMemory(), startAddress);
+        InputStream stream = test.getInputStream(0, sizeLimit);
 
         List<Instr> docroot;
         try {
