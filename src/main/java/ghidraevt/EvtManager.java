@@ -87,7 +87,7 @@ public class EvtManager {
         MemoryInputStream stream;
         if (stopOnNextSymbol) {
             Symbol next = nextSymbol(program, startAddress);
-            stream = new MemoryInputStream(program, startAddress, next.getAddress());
+            stream = new MemoryInputStream(program, startAddress, next != null ? next.getAddress() : null);
         }
         else {
             stream = new MemoryInputStream(program, startAddress);
