@@ -692,11 +692,8 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         String symbolGroup = "1 - Symbol Group";
         int subGroupPosition = 0;
 
-        RenameFunctionAction renameFunctionAction = new RenameFunctionAction();
-        setGroupInfo(renameFunctionAction, symbolGroup, subGroupPosition++);
-
-        // RenameGlobalAction renameGlobalAction = new RenameGlobalAction();
-        // setGroupInfo(renameGlobalAction, variableGroup, subGroupPosition++);
+        RenameSymbolAction renameSymbolAction = new RenameSymbolAction();
+        setGroupInfo(renameSymbolAction, symbolGroup, subGroupPosition++);
 
         // RenameFieldAction renameFieldAction = new RenameFieldAction();
         // setGroupInfo(renameFieldAction, variableGroup, subGroupPosition++);
@@ -899,8 +896,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         // addLocalAction(overrideSigAction);
         // addLocalAction(editOverrideSigAction);
         // addLocalAction(deleteSigAction);
-        addLocalAction(renameFunctionAction);
-        // addLocalAction(renameLabelAction);
+        addLocalAction(renameSymbolAction);
         // addLocalAction(removeLabelAction);
         // addLocalAction(debugFunctionAction);
         // addLocalAction(displayTypeCastsAction);

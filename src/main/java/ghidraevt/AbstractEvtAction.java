@@ -3,12 +3,15 @@ package ghidraevt;
 import docking.ActionContext;
 import docking.action.DockingAction;
 import docking.action.KeyBindingType;
+import ghidra.app.plugin.core.decompile.DecompilerActionContext;
 import ghidra.app.util.datatype.DataTypeSelectionDialog;
 import ghidra.framework.plugintool.PluginTool;
+import ghidra.program.model.address.Address;
 import ghidra.program.model.data.*;
 import ghidra.program.model.listing.*;
 import ghidra.program.model.pcode.*;
 import ghidra.program.model.symbol.*;
+import ghidra.util.UndefinedFunction;
 import ghidra.util.data.DataTypeParser.AllowedDataTypes;
 
 /**
@@ -114,23 +117,16 @@ public abstract class AbstractEvtAction extends DockingAction {
 		return chooserDialog.getUserChosenDataType();
 	}
 
-	/**
-	 * Get the function corresponding to the specified decompiler context token.
-	 * 
-	 * @param context decompiler action context
-	 * @return the function associated with the current context token or null if none identified.
-	 */
-	protected Function getFunction(EvtActionContext context) {
+	protected Symbol getSymbolHighlighted(EvtActionContext context) {
 		EvtToken token = context.getTokenAtCursor();
-
-		Function f = null;
 		if (token instanceof EvtAddrToken addr) {
-			f = context.getProgram().getFunctionManager().getFunctionAt(addr.getTarget());
+			Program program = context.getProgram();
+			SymbolTable symbolTable = program.getSymbolTable();
+			return symbolTable.getPrimarySymbol(addr.getTarget());
 		}
-		while (f != null && f.isThunk() && f.getSymbol().getSource() == SourceType.DEFAULT) {
-			f = f.getThunkedFunction(false);
+		else {
+			return null;
 		}
-		return f;
 	}
 
 	/**
