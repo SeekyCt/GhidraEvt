@@ -50,6 +50,12 @@ import ghidra.program.util.ProgramLocation;
 import ghidra.program.util.ProgramSelection;
 import ghidra.util.Msg;
 import ghidra.util.task.SwingUpdateManager;
+import ghidraevt.component.EvtProvider;
+import ghidraevt.component.hover.EvtHoverService;
+import ghidraevt.component.hover.FunctionSignatureEvtHover;
+import ghidraevt.component.hover.ReferenceEvtHover;
+import ghidraevt.component.hover.ScalarValueEvtHover;
+import ghidraevt.token.EvtToken;
 
 /**
  * Provide class-level documentation that describes what this plugin does.
@@ -188,7 +194,7 @@ public class GhidraEvtPlugin extends Plugin {
         }
     }
 
-    EvtProvider createNewDisconnectedProvider() {
+    public EvtProvider createNewDisconnectedProvider() {
         EvtProvider provider = new EvtProvider(this, false);
         provider.setClipboardService(tool.getService(ClipboardService.class));
         disconnectedProviders.add(provider);
@@ -211,21 +217,21 @@ public class GhidraEvtPlugin extends Plugin {
 
     }
 
-    void exportLocation(Program program, ProgramLocation location) {
+    public void exportLocation(Program program, ProgramLocation location) {
         GoToService service = tool.getService(GoToService.class);
         if (service != null) {
             service.goTo(location, program);
         }
     }
 
-    void updateSelection(EvtProvider provider, Program selProgram,
+    public void updateSelection(EvtProvider provider, Program selProgram,
             ProgramSelection selection) {
         if (provider == connectedProvider) {
             firePluginEvent(new ProgramSelectionPluginEvent(name, selection, selProgram));
         }
     }
 
-    void closeProvider(EvtProvider provider) {
+    public void closeProvider(EvtProvider provider) {
         if (provider == connectedProvider) {
             tool.showComponentProvider(provider, false);
         }
@@ -235,19 +241,19 @@ public class GhidraEvtPlugin extends Plugin {
         }
     }
 
-    void locationChanged(EvtProvider provider, ProgramLocation location) {
+    public void locationChanged(EvtProvider provider, ProgramLocation location) {
         if (provider.shouldSendEvents()) {
             firePluginEvent(new ProgramLocationPluginEvent(name, location, location.getProgram()));
         }
     }
 
-    void selectionChanged(EvtProvider provider, ProgramSelection selection) {
+    public void selectionChanged(EvtProvider provider, ProgramSelection selection) {
         if (provider.shouldSendEvents()) {
             firePluginEvent(new ProgramSelectionPluginEvent(name, selection, currentProgram));
         }
     }
 
-    void handleTokenRenamed(EvtToken tokenAtCursor, String newName) {
+    public void handleTokenRenamed(EvtToken tokenAtCursor, String newName) {
         connectedProvider.handleTokenRenamed(tokenAtCursor, newName);
         for (EvtProvider provider : disconnectedProviders) {
             provider.handleTokenRenamed(tokenAtCursor, newName);
