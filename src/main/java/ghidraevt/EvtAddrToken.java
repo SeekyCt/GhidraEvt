@@ -8,8 +8,8 @@ import jevt.Arg;
 public class EvtAddrToken extends EvtToken {
     private Address target;
 
-    public EvtAddrToken(String txt, Color color, Address minAddress, Address target) {
-        super(txt, color, minAddress, Arg.bytesSize());
+    public EvtAddrToken(String txt, Color color, Address minAddress, Address target, long size) {
+        super(txt, color, minAddress, size);
         this.target = target;
     }
 

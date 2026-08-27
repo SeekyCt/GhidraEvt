@@ -20,7 +20,9 @@ public class EvtUtils {
             return false;
         }
         Address maxAddress = token.getMaxAddress();
-        maxAddress = maxAddress == null ? minAddress : maxAddress;
+        if (maxAddress == null) {
+            return false;
+        }
         return addressSet.intersects(minAddress, maxAddress);
     }
 

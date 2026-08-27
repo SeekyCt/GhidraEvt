@@ -104,28 +104,28 @@ public class GhidraPrinter {
         );
     }
 
-    private List<EvtToken> symbolToTokens(Address atAddr, Color color, Address target) {
+    private List<EvtToken> symbolToTokens(Address atAddr, Color color, Address target, long size) {
         Symbol symbol = program.getSymbolTable().getPrimarySymbol(target);
         if (symbol == null) {
             Msg.warn(this, "No symbol for " + target);
-            return Arrays.asList(addrFailToken(atAddr, target));
+            return Arrays.asList(addrFailToken(atAddr, target, size));
         }
         else  {
             Namespace ns = symbol.getParentNamespace();
             List<EvtToken> ret = new ArrayList<>();
             // TODO: options - off/on/sync decompiler, and also force in C macro mode with spm::
             while (!ns.isGlobal()) {
-                ret.add(EvtToken.arg(ns.getName(), decompileOptions.getGlobalColor(), atAddr));
-                ret.add(EvtToken.arg("::", decompileOptions.getDefaultColor(), atAddr));
+                ret.add(new EvtToken(ns.getName(), decompileOptions.getGlobalColor(), atAddr, size));
+                ret.add(new EvtToken("::", decompileOptions.getDefaultColor(), atAddr, size));
                 ns = ns.getParentNamespace();
             }
-            ret.add(new EvtAddrToken(symbol.getName(), color, atAddr, target));
+            ret.add(new EvtAddrToken(symbol.getName(), color, atAddr, target, size));
             return ret;
         }
     }
 
-    private EvtToken addrFailToken(Address atAddr, Address target) {
-        return new EvtAddrToken("ERR_" + target, COLOR_EXTERNAL_FUNCTION, atAddr, target);
+    private EvtToken addrFailToken(Address atAddr, Address target, long size) {
+        return new EvtAddrToken("ERR_" + target, COLOR_EXTERNAL_FUNCTION, atAddr, target, size);
     }
 
     private List<EvtToken> addrToTokens(Arg.ADDR arg, Address atAddr) {
@@ -138,14 +138,14 @@ public class GhidraPrinter {
         CodeUnit cu = program.getListing().getCodeUnitAt(target);
         if (cu == null) {
             Msg.warn(this, "No code unit for " + Long.toHexString(arg.value()));
-            ret.add(addrFailToken(atAddr, target));
+            ret.add(addrFailToken(atAddr, target, Arg.bytesSize()));
         }
         else if (cu instanceof Data data && isROString(data)) {
             String value = (String) data.getValue();
-            ret.add(new EvtAddrToken("\"" + value + "\"", decompileOptions.getConstantColor(), atAddr, target));
+            ret.add(new EvtAddrToken("\"" + value + "\"", decompileOptions.getConstantColor(), atAddr, target, Arg.bytesSize()));
         }
         else {
-            ret.addAll(symbolToTokens(atAddr, color, target));
+            ret.addAll(symbolToTokens(atAddr, color, target, Arg.bytesSize()));
         }
 
         return ret;
@@ -191,7 +191,7 @@ public class GhidraPrinter {
         // Header
         List<EvtToken> header = new ArrayList<>();
         header.add(EvtToken.syntax(HEADER_DECORATION + " ", decompileOptions.getDefaultColor(), addr));
-        header.addAll(symbolToTokens(addr, COLOR_HEADER, addr));
+        header.addAll(symbolToTokens(addr, COLOR_HEADER, addr, 0));
         header.add(EvtToken.syntax(" " + HEADER_DECORATION, decompileOptions.getDefaultColor(), addr));
         ret.add(new EvtLine(header, addr, line, indent));
 

@@ -17,7 +17,7 @@ public class EvtToken {
         this.text = txt;
         this.color = color;
         this.minAddress = minAddress;
-        if (minAddress != null)
+        if (minAddress != null && size > 0)
             this.maxAddress = minAddress.add(size);
         else
             this.maxAddress = null;
