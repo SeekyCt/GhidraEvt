@@ -247,12 +247,12 @@ public class GhidraEvtPlugin extends Plugin {
         }
     }
 
-    // void handleTokenRenamed(ClangToken tokenAtCursor, String newName) {
-    //     connectedProvider.handleTokenRenamed(tokenAtCursor, newName);
-    //     for (EvtProvider provider : disconnectedProviders) {
-    //         provider.handleTokenRenamed(tokenAtCursor, newName);
-    //     }
-    // }
+    void handleTokenRenamed(EvtToken tokenAtCursor, String newName) {
+        connectedProvider.handleTokenRenamed(tokenAtCursor, newName);
+        for (EvtProvider provider : disconnectedProviders) {
+            provider.handleTokenRenamed(tokenAtCursor, newName);
+        }
+    }
 
     private void removeProvider(EvtProvider provider) {
         tool.removeComponentProvider(provider);

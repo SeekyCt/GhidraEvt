@@ -11,6 +11,7 @@ import docking.ActionContext;
 import docking.WindowPosition;
 import docking.action.DockingAction;
 import docking.action.MenuData;
+import docking.action.ToolBarData;
 import docking.widgets.fieldpanel.support.FieldLocation;
 import docking.widgets.fieldpanel.support.ViewerPosition;
 import ghidra.GhidraOptions;
@@ -44,6 +45,8 @@ import utility.function.Callback;
 
 public class EvtProvider extends NavigatableComponentProviderAdapter
         implements OptionsChangeListener, EvtCallbackHandler {
+	private static final Icon REFRESH_ICON = Icons.REFRESH_ICON;
+
     private final GhidraEvtPlugin plugin;
     private ClipboardService clipboardService;
     private EvtClipboardProvider clipboardProvider;
@@ -663,87 +666,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         //     }
         // };
         // refreshAction.setToolBarData(new ToolBarData(REFRESH_ICON, "A" /* first on toolbar */));
-        // refreshAction.setDescription("Push at any time to trigger a re-decompile");
-        // refreshAction
-        //         .setHelpLocation(new HelpLocation(HelpTopics.DECOMPILER, "ToolBarRedecompile")); // just use the default
-
-        // displayUnreachableCodeToggle = new ToggleDockingAction("Toggle Unreachable Code", owner) {
-        //     @Override
-        //     public void actionPerformed(ActionContext context) {
-        //         boolean isSelected = this.isSelected();
-
-        //         // Set the option based on the button state
-        //         decompilerOptions.setEliminateUnreachable(!isSelected);
-
-        //         updateOptionsAndRefresh();
-        //     }
-
-        //     @Override
-        //     public void setSelected(boolean isSelected) {
-        //         super.setSelected(isSelected);
-
-        //         // Update the icon to have a slash or not
-        //         if (!isSelected) {
-        //             displayUnreachableCodeToggle
-        //                     .setToolBarData(new ToolBarData(TOGGLE_UNREACHABLE_CODE_ICON, "A"));
-        //         }
-        //         else {
-        //             displayUnreachableCodeToggle.setToolBarData(
-        //                 new ToolBarData(TOGGLE_UNREACHABLE_CODE_DISABLED_ICON, "A"));
-        //         }
-        //     }
-
-        //     @Override
-        //     public boolean isEnabledForContext(ActionContext context) {
-        //         DecompileData decompileData = controller.getEvtData();
-        //         if (decompileData == null) {
-        //             return false;
-        //         }
-        //         return decompileData.hasDecompileResults();
-        //     }
-        // };
-        // displayUnreachableCodeToggle.setDescription("Toggle off to eliminate unreachable code");
-        // displayUnreachableCodeToggle.setHelpLocation(
-        //     new HelpLocation(HelpTopics.DECOMPILER, "ToolBarEliminateUnreachableCode"));
-
-        // respectReadOnlyFlags = new ToggleDockingAction("Toggle Respecting Read-only Flags", owner) {
-        //     @Override
-        //     public void actionPerformed(ActionContext context) {
-        //         boolean isSelected = this.isSelected();
-
-        //         // Set the option based on the button state
-        //         decompilerOptions.setRespectReadOnly(!isSelected);
-
-        //         updateOptionsAndRefresh();
-        //     }
-
-        //     @Override
-        //     public void setSelected(boolean isSelected) {
-        //         super.setSelected(isSelected);
-
-        //         // Update the icon to have a slash or not
-        //         if (!isSelected) {
-        //             respectReadOnlyFlags
-        //                     .setToolBarData(new ToolBarData(TOGGLE_READ_ONLY_ICON, "A"));
-        //         }
-        //         else {
-        //             respectReadOnlyFlags
-        //                     .setToolBarData(new ToolBarData(TOGGLE_READ_ONLY_DISABLED_ICON, "A"));
-        //         }
-        //     }
-
-        //     @Override
-        //     public boolean isEnabledForContext(ActionContext context) {
-        //         DecompileData decompileData = controller.getEvtData();
-        //         if (decompileData == null) {
-        //             return false;
-        //         }
-        //         return decompileData.hasDecompileResults();
-        //     }
-        // };
-        // respectReadOnlyFlags.setDescription("Toggle off to respect readonly flags set on memory");
-        // respectReadOnlyFlags
-        //         .setHelpLocation(new HelpLocation(HelpTopics.DECOMPILER, "ToolBarRespectReadOnly"));
+        // refreshAction.setDescription("Push at any time to trigger a re-disassemble");
 
         // Set the selected state and icon for the above two toggle icons
         refreshToggleButtons();
@@ -764,41 +687,13 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         //
 
         //
-        // Function
+        // Symbols
         //
-        // String functionGroup = "1 - Function Group";
-        // int subGroupPosition = 0;
+        String symbolGroup = "1 - Symbol Group";
+        int subGroupPosition = 0;
 
-        // SpecifyCPrototypeAction specifyCProtoAction = new SpecifyCPrototypeAction();
-        // setGroupInfo(specifyCProtoAction, functionGroup, subGroupPosition++);
-
-        // OverridePrototypeAction overrideSigAction = new OverridePrototypeAction();
-        // setGroupInfo(overrideSigAction, functionGroup, subGroupPosition++);
-
-        // EditPrototypeOverrideAction editOverrideSigAction = new EditPrototypeOverrideAction();
-        // setGroupInfo(editOverrideSigAction, functionGroup, subGroupPosition++);
-
-        // DeletePrototypeOverrideAction deleteSigAction = new DeletePrototypeOverrideAction();
-        // setGroupInfo(deleteSigAction, functionGroup, subGroupPosition++);
-
-        // RenameFunctionAction renameFunctionAction = new RenameFunctionAction();
-        // setGroupInfo(renameFunctionAction, functionGroup, subGroupPosition++);
-
-        // // not function actions, but they fit nicely in this group
-        // RenameLabelAction renameLabelAction = new RenameLabelAction();
-        // setGroupInfo(renameLabelAction, functionGroup, subGroupPosition++);
-
-        // RemoveLabelAction removeLabelAction = new RemoveLabelAction();
-        // setGroupInfo(removeLabelAction, functionGroup, subGroupPosition++);
-
-        //
-        // Variables
-        //
-        // String variableGroup = "2 - Variable Group";
-        // subGroupPosition = 0; // reset for the next group
-
-        // RenameLocalAction renameLocalAction = new RenameLocalAction();
-        // setGroupInfo(renameLocalAction, variableGroup, subGroupPosition++);
+        RenameFunctionAction renameFunctionAction = new RenameFunctionAction();
+        setGroupInfo(renameFunctionAction, symbolGroup, subGroupPosition++);
 
         // RenameGlobalAction renameGlobalAction = new RenameGlobalAction();
         // setGroupInfo(renameGlobalAction, variableGroup, subGroupPosition++);
@@ -812,27 +707,11 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         // ForceUnionAction forceUnionAction = new ForceUnionAction();
         // setGroupInfo(forceUnionAction, variableGroup, subGroupPosition++);
 
-        // RetypeLocalAction retypeLocalAction = new RetypeLocalAction();
-        // setGroupInfo(retypeLocalAction, variableGroup, subGroupPosition++);
-
-        // CreatePointerRelative createRelativeAction = new CreatePointerRelative();
-        // setGroupInfo(createRelativeAction, variableGroup, subGroupPosition++);
-
         // RetypeGlobalAction retypeGlobalAction = new RetypeGlobalAction();
         // setGroupInfo(retypeGlobalAction, variableGroup, subGroupPosition++);
 
-        // RetypeReturnAction retypeReturnAction = new RetypeReturnAction();
-        // setGroupInfo(retypeReturnAction, variableGroup, subGroupPosition++);
-
         // RetypeFieldAction retypeFieldAction = new RetypeFieldAction();
         // setGroupInfo(retypeFieldAction, variableGroup, subGroupPosition++);
-
-        // IsolateVariableAction isolateVarAction = new IsolateVariableAction();
-        // setGroupInfo(isolateVarAction, variableGroup, subGroupPosition++);
-
-        // DecompilerStructureVariableAction decompilerCreateStructureAction =
-        //     new DecompilerStructureVariableAction(owner, tool, controller);
-        // setGroupInfo(decompilerCreateStructureAction, variableGroup, subGroupPosition++);
 
         // EditDataTypeAction editDataTypeAction = new EditDataTypeAction();
         // setGroupInfo(editDataTypeAction, variableGroup, subGroupPosition++);
@@ -846,20 +725,6 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         //
         // ListingStructureVariableAction listingCreateStructureAction =
         //     new ListingStructureVariableAction(owner, tool, controller);
-
-        //
-        // Commit
-        //
-        // String commitGroup = "3 - Commit Group";
-        // subGroupPosition = 0; // reset for the next group
-
-        // CommitParamsAction lockProtoAction = new CommitParamsAction();
-        // setGroupInfo(lockProtoAction, commitGroup, subGroupPosition++);
-
-        // CommitLocalsAction lockLocalAction = new CommitLocalsAction();
-        // setGroupInfo(lockLocalAction, commitGroup, subGroupPosition++);
-
-        // subGroupPosition = 0; // reset for the next group
 
         //
         // Highlight
@@ -986,12 +851,8 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         //
         // These actions are not in the popup menu
         //
-        // DebugDecompilerAction debugFunctionAction = new DebugDecompilerAction(controller);
         // ExportToCAction convertAction = new ExportToCAction();
         // CloneDecompilerAction cloneDecompilerAction = new CloneDecompilerAction();
-        // GoToNextBraceAction goToNextBraceAction = new GoToNextBraceAction();
-        // GoToPreviousBraceAction goToPreviousBraceAction = new GoToPreviousBraceAction();
-        // DisplayTypeCastsAction displayTypeCastsAction = new DisplayTypeCastsAction(plugin);
 
         // addLocalAction(refreshAction);
         // addLocalAction(displayUnreachableCodeToggle);
@@ -1038,7 +899,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         // addLocalAction(overrideSigAction);
         // addLocalAction(editOverrideSigAction);
         // addLocalAction(deleteSigAction);
-        // addLocalAction(renameFunctionAction);
+        addLocalAction(renameFunctionAction);
         // addLocalAction(renameLabelAction);
         // addLocalAction(removeLabelAction);
         // addLocalAction(debugFunctionAction);
@@ -1128,6 +989,14 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
     public void setHighlightProvider(ListingHighlightProvider highlightProvider, Program p) {
         // currently unsupported
     }
+
+	public void tokenRenamed(EvtToken tokenAtCursor, String newName) {
+		plugin.handleTokenRenamed(tokenAtCursor, newName);
+	}
+
+	void handleTokenRenamed(EvtToken tokenAtCursor, String newName) {
+		controller.getEvtPanel().tokenRenamed(tokenAtCursor, newName);
+	}
 
     // private static class EvtHighlightFactory implements FieldHighlightFactory {
     //     @Override
