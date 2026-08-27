@@ -239,11 +239,12 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
         }
         int i = 0;
         for (String errline : errlines) {
-            lines.add(0, new EvtLine(
+            lines.add(i, new EvtLine(
                 Arrays.asList(new EvtToken(errline, GhidraPrinter.COLOR_COMMENT, null, 0)),
                 Address.NO_ADDRESS,
                 i,
                 0));
+            i++;
         }
     }
 
