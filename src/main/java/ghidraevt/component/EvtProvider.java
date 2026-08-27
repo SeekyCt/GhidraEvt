@@ -40,6 +40,7 @@ import ghidra.util.task.SwingUpdateManager;
 import ghidraevt.GhidraEvtPlugin;
 import ghidraevt.action.EvtActionContext;
 import ghidraevt.action.RenameSymbolAction;
+import ghidraevt.action.SelectAllAction;
 import ghidraevt.location.EvtLocation;
 import ghidraevt.location.EvtLocationMemento;
 import ghidraevt.token.EvtToken;
@@ -77,7 +78,6 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
     private SwingUpdateManager followUpWorkUpdater;
     private Queue<Callback> followUpWork = new ConcurrentLinkedQueue<>();
     // private OverlayMessagePainter overlayPainter = new OverlayMessagePainter();
-    private DockingAction refreshAction;
 
     // only used by disconnected providers
     private boolean allowOutgoingEvents = false;
@@ -652,26 +652,26 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
     private void createActions(boolean isConnected) {
         String owner = plugin.getName();
 
-        // SelectAllAction selectAllAction =
-        //     new SelectAllAction(owner, controller.getEvtPanel());
+        SelectAllAction selectAllAction =
+            new SelectAllAction(owner, controller.getEvtPanel());
 
-        // DockingAction refreshAction = new DockingAction("Refresh", owner) {
-        //     @Override
-        //     public void actionPerformed(ActionContext context) {
-        //         refresh();
-        //     }
+        DockingAction refreshAction = new DockingAction("Refresh", owner) {
+            @Override
+            public void actionPerformed(ActionContext context) {
+                refresh();
+            }
 
-        //     @Override
-        //     public boolean isEnabledForContext(ActionContext context) {
-        //         EvtData decompileData = controller.getEvtData();
-        //         if (decompileData == null) {
-        //             return false;
-        //         }
-        //         return decompileData.hasDecompileResults();
-        //     }
-        // };
-        // refreshAction.setToolBarData(new ToolBarData(REFRESH_ICON, "A" /* first on toolbar */));
-        // refreshAction.setDescription("Push at any time to trigger a re-disassemble");
+            @Override
+            public boolean isEnabledForContext(ActionContext context) {
+                DisassembleData decompileData = controller.getDisassembleData();
+                if (decompileData == null) {
+                    return false;
+                }
+                return decompileData.hasDisassembleResults();
+            }
+        };
+        refreshAction.setToolBarData(new ToolBarData(REFRESH_ICON, "A" /* first on toolbar */));
+        refreshAction.setDescription("Push at any time to trigger a re-disassemble");
 
         // Set the selected state and icon for the above two toggle icons
         refreshToggleButtons();
@@ -856,10 +856,9 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         // ExportToCAction convertAction = new ExportToCAction();
         // CloneDecompilerAction cloneDecompilerAction = new CloneDecompilerAction();
 
-        // addLocalAction(refreshAction);
-        // addLocalAction(displayUnreachableCodeToggle);
-        // addLocalAction(respectReadOnlyFlags);
-        // addLocalAction(selectAllAction);
+        addLocalAction(selectAllAction);
+        addLocalAction(refreshAction);
+        addLocalAction(renameSymbolAction);
         // addLocalAction(defUseHighlightAction);
         // addLocalAction(forwardSliceAction);
         // addLocalAction(backwardSliceAction);
@@ -901,7 +900,6 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         // addLocalAction(overrideSigAction);
         // addLocalAction(editOverrideSigAction);
         // addLocalAction(deleteSigAction);
-        addLocalAction(renameSymbolAction);
         // addLocalAction(removeLabelAction);
         // addLocalAction(debugFunctionAction);
         // addLocalAction(displayTypeCastsAction);
