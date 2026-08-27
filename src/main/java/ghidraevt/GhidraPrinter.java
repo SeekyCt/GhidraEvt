@@ -196,6 +196,7 @@ public class GhidraPrinter {
         ret.add(new EvtLine(header, addr, line, indent));
 
         for (Instr instr : docroot) {
+            Address lineAddr = addr;
             Opcode opcode = instr.opcode();
 
             // Unindent for this line
@@ -204,6 +205,8 @@ public class GhidraPrinter {
             List<EvtToken> tokens = new ArrayList<>();
 
             tokens.add(EvtToken.instr(opcode.niceName(), COLOR_INSTR, addr));
+            addr = addr.add(Instr.HEADER_SIZE);
+
             boolean first = true;
             for (Arg arg : instr.args())
             {
@@ -211,14 +214,13 @@ public class GhidraPrinter {
                 first = false; 
                 tokens.add(EvtToken.syntax(sep, decompileOptions.getDefaultColor(), addr));
                 tokens.addAll(argToTokens(arg, addr));
+                addr = addr.add(Arg.bytesSize());
             }
 
-            ret.add(new EvtLine(tokens, addr, line, indent));
+            ret.add(new EvtLine(tokens, lineAddr, line++, indent));
 
             // Indent for next line
             indent += opcode.indent();
-            line += 1;
-            addr = addr.add(instr.bytesSize());
         }
 
         return ret;
