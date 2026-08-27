@@ -24,6 +24,7 @@ import jevt.Instr;
  */
 public class EvtManager {
 
+    private EvtController controller;
     private EvtOptions options;
 
     private boolean snapToSymbol = true;
@@ -31,7 +32,8 @@ public class EvtManager {
     private boolean strictMode = false;
     private boolean stopOnNextSymbol = true;
 
-    public EvtManager(EvtOptions options) {
+    public EvtManager(EvtController controller, EvtOptions options) {
+        this.controller = controller;
         this.options = options;
     }
 
@@ -65,12 +67,15 @@ public class EvtManager {
             return null;
     }
 
-    DisassembleResults disassemble(Program program, ProgramLocation location,
+    void disassemble(Program program, ProgramLocation location,
         ViewerPosition viewerPosition) {
-        return disassemble(program, location, viewerPosition, this.snapToSymbol);
+        DisassembleResults results = doDisassemble(program, location, viewerPosition, this.snapToSymbol);
+        controller.setDisasssembleData(new DisassembleData(
+            program, results.getScript(), location, results, null, viewerPosition
+        ));
     }
 
-    private DisassembleResults disassemble(Program program, ProgramLocation location,
+    private DisassembleResults doDisassemble(Program program, ProgramLocation location,
         ViewerPosition viewerPosition, boolean snapToSymbol) {
         if (location == null)
             return DisassembleResults.empty("No script selected.");
@@ -127,7 +132,7 @@ public class EvtManager {
 
         // Ignore snapped script if it ends before the location
         if (!script.contains(location.getAddress()))
-            return disassemble(program, location, viewerPosition, false);
+            return doDisassemble(program, location, viewerPosition, false);
 
         return DisassembleResults.success(script, docroot);
     }

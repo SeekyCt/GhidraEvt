@@ -27,7 +27,7 @@ public class EvtController {
             EvtOptions options, EvtClipboardProvider clipboard) {
         this.serviceProvider = serviceProvider;
         this.callbackHandler = handler;
-        evtMgr = new EvtManager(options);
+        evtMgr = new EvtManager(this, options);
         evtPanel = new EvtPanel(this, options, clipboard);
 
         evtPanel.setHoverMode(true);
@@ -80,12 +80,7 @@ public class EvtController {
             return;
         }
 
-        DisassembleResults results = evtMgr.disassemble(program, location, viewerPosition);
-
-        setDisasssembleData(
-            new DisassembleData(program, results.getScript(), location, results, null,
-                viewerPosition));
-
+        evtMgr.disassemble(program, location, viewerPosition);
     }
 
     public void setSelection(ProgramSelection selection) {
