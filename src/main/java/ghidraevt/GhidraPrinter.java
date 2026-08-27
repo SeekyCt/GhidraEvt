@@ -20,6 +20,8 @@ import jevt.Instr;
 import jevt.Opcode;
 import jevt.Arg;
 
+import ghidra.app.decompiler.component.DecompilerUtils;
+
 public class GhidraPrinter {
     public static Color COLOR_LW      = new GColor("color.fg.ghidraevt.lw");
     public static Color COLOR_LF      = new GColor("color.fg.ghidraevt.lf");
@@ -195,8 +197,9 @@ public class GhidraPrinter {
         header.add(EvtToken.syntax(" " + HEADER_DECORATION, decompileOptions.getDefaultColor(), addr));
         ret.add(new EvtLine(header, addr, line, indent));
 
+        Address lineAddr = addr;
         for (Instr instr : docroot) {
-            Address lineAddr = addr;
+            lineAddr = addr;
             Opcode opcode = instr.opcode();
 
             // Unindent for this line
@@ -222,6 +225,8 @@ public class GhidraPrinter {
             // Indent for next line
             indent += opcode.indent();
         }
+
+        ret.add(new EvtLine(Arrays.asList(new EvtToken("", decompileOptions.getDefaultColor(), lineAddr, 0)), addr, line, indent));
 
         return ret;
     }
