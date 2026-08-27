@@ -59,7 +59,7 @@ public class EvtController {
      */
     public void clear() {
         currentSelection = null;
-        setDisasssembleData(new EmptyDisassembleData("No Function"));
+        setDisasssembleData(new EmptyDisassembleData("No Script"));
     }
 
     /**

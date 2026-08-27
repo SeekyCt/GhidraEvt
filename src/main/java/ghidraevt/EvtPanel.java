@@ -63,7 +63,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 
     // private DecompilerSearchResults currentSearchResults;
 
-    private DisassembleData decompileData = new EmptyDisassembleData("No Function");
+    private DisassembleData decompileData = new EmptyDisassembleData("No Script");
     private final EvtClipboardProvider clipboard;
 
     private Color originalBackgroundColor;
@@ -117,7 +117,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
         add(scroller);
 
         setPreferredSize(new Dimension(600, 400));
-        setDisassembleData(new EmptyDisassembleData("No Function"));
+        setDisassembleData(new EmptyDisassembleData("No Script"));
 
         if (options.isDisplayLineNumbers()) {
             addMarginProvider(lineNumbersMargin = new LineNumberDecompilerMarginProvider());
