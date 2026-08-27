@@ -31,6 +31,10 @@ public class EvtToken {
         return new EvtToken(txt, color, minAddress, Arg.bytesSize());
     }
 
+    public static EvtToken argScalar(String txt, Color color, Address minAddress, long value, boolean signed) {
+        return new EvtScalarToken(txt, color, minAddress, value, signed);
+    }
+
     public static EvtToken syntax(String txt, Color color, Address minAddress) {
         return new EvtToken(txt, color, minAddress, 0);
     }

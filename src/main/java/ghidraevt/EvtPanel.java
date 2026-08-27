@@ -69,7 +69,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
     private Color originalBackgroundColor;
     private boolean navigationEnabled = true;
 
-    // private DecompilerHoverProvider decompilerHoverProvider;
+    private EvtHoverProvider decompilerHoverProvider;
 
     EvtPanel(EvtController controller, EvtOptions options, EvtClipboardProvider clipboard) {
         this.controller = controller;
@@ -105,7 +105,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 
         setBackground(options.getBackgroundColor());
 
-        // decompilerHoverProvider = new DecompilerHoverProvider();
+        decompilerHoverProvider = new EvtHoverProvider();
 
         activeSearchHighlightColor = options.getActiveSearchHighlightColor();
         searchHighlightColor = options.getSearchHighlightColor();
@@ -479,7 +479,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 
         setLocation(oldData, decompileData);
 
-        // decompilerHoverProvider.setProgram(decompileData.getProgram());
+        decompilerHoverProvider.setProgram(decompileData.getProgram());
 
         // give user notice when seeing the decompile of a non-function
         setBackground(originalBackgroundColor);
@@ -619,25 +619,25 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
         fieldPanel.setSelection(fieldSelection);
     }
 
-    // public void setDecompilerHoverProvider(DecompilerHoverProvider provider) {
-    //     if (provider == null) {
-    //         throw new IllegalArgumentException("Cannot set the hover handler to null!");
-    //     }
+    public void setDecompilerHoverProvider(EvtHoverProvider provider) {
+        if (provider == null) {
+            throw new IllegalArgumentException("Cannot set the hover handler to null!");
+        }
 
-    //     if (decompilerHoverProvider != null) {
-    //         if (decompilerHoverProvider.isShowing()) {
-    //             decompilerHoverProvider.closeHover();
-    //         }
-    //         decompilerHoverProvider.initializeListingHoverHandler(provider);
-    //         decompilerHoverProvider.dispose();
-    //     }
-    //     decompilerHoverProvider = provider;
-    // }
+        if (decompilerHoverProvider != null) {
+            if (decompilerHoverProvider.isShowing()) {
+                decompilerHoverProvider.closeHover();
+            }
+            decompilerHoverProvider.initializeListingHoverHandler(provider);
+            decompilerHoverProvider.dispose();
+        }
+        decompilerHoverProvider = provider;
+    }
 
     public void dispose() {
         setDisassembleData(new EmptyDisassembleData("Disposed"));
         layoutController = null;
-        // decompilerHoverProvider.dispose();
+        decompilerHoverProvider.dispose();
         // highlighCursorUpdater.dispose();
         // highlightController.dispose();
         // highlightersById.clear();
@@ -962,27 +962,27 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
         return options;
     }
 
-    // public void addHoverService(DecompilerHoverService hoverService) {
-    //     decompilerHoverProvider.addHoverService(hoverService);
-    // }
-
-    // public void removeHoverService(DecompilerHoverService hoverService) {
-    //     decompilerHoverProvider.removeHoverService(hoverService);
-    // }
-
-    public void setHoverMode(boolean enabled) {
-        // decompilerHoverProvider.setHoverEnabled(enabled);
-        // if (enabled) {
-        //     fieldPanel.setHoverProvider(decompilerHoverProvider);
-        // }
-        // else {
-        //     fieldPanel.setHoverProvider(null);
-        // }
+    public void addHoverService(EvtHoverService hoverService) {
+        decompilerHoverProvider.addHoverService(hoverService);
     }
 
-    // public boolean isHoverShowing() {
-    //     return decompilerHoverProvider.isShowing();
-    // }
+    public void removeHoverService(EvtHoverService hoverService) {
+        decompilerHoverProvider.removeHoverService(hoverService);
+    }
+
+    public void setHoverMode(boolean enabled) {
+        decompilerHoverProvider.setHoverEnabled(enabled);
+        if (enabled) {
+            fieldPanel.setHoverProvider(decompilerHoverProvider);
+        }
+        else {
+            fieldPanel.setHoverProvider(null);
+        }
+    }
+
+    public boolean isHoverShowing() {
+        return decompilerHoverProvider.isShowing();
+    }
 
     public List<EvtToken> findTokensByName(String name) {
         List<EvtToken> tokens = new ArrayList<>();

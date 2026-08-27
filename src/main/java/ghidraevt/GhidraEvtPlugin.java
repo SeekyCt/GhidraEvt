@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Function;
 
 import org.jdom2.Element;
 
@@ -44,7 +43,6 @@ import ghidra.framework.plugintool.PluginTool;
 import ghidra.framework.plugintool.util.PluginStatus;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.listing.CodeUnit;
-import ghidra.program.model.listing.Data;
 import ghidra.program.model.listing.Instruction;
 import ghidra.program.model.listing.Listing;
 import ghidra.program.model.listing.Program;
@@ -68,11 +66,15 @@ import ghidra.util.task.SwingUpdateManager;
         GoToService.class, NavigationHistoryService.class, ClipboardService.class,
         DataTypeManagerService.class /*, ProgramManager.class */
     },
+    servicesProvided = {
+        EvtHoverService.class,
+    },
     eventsConsumed = {
         ProgramActivatedPluginEvent.class, ProgramOpenedPluginEvent.class,
         ProgramLocationPluginEvent.class, ProgramSelectionPluginEvent.class,
         ProgramClosedPluginEvent.class
-    })
+    }
+)
 
 //@formatter:on
 // TODO: ProgramPlugin can clean up
@@ -85,6 +87,10 @@ public class GhidraEvtPlugin extends Plugin {
     private Program currentProgram;
     private ProgramLocation currentLocation;
     private ProgramSelection currentSelection;
+
+    private FunctionSignatureEvtHover functionNameHoverService;
+    private ScalarValueEvtHover scalarValueHoverService;
+    private ReferenceEvtHover referenceHoverService;
 
     /**
      * Delay location changes to allow location events to settle down. This happens when a
@@ -113,6 +119,13 @@ public class GhidraEvtPlugin extends Plugin {
 
         disconnectedProviders = new ArrayList<>();
         connectedProvider = new EvtProvider(this, true);
+
+		functionNameHoverService = new FunctionSignatureEvtHover(tool);
+		registerServiceProvided(EvtHoverService.class, functionNameHoverService);
+        scalarValueHoverService = new ScalarValueEvtHover(tool);
+        registerServiceProvided(EvtHoverService.class, scalarValueHoverService);
+        referenceHoverService = new ReferenceEvtHover(tool);
+        registerServiceProvided(EvtHoverService.class, referenceHoverService);
     }
 
     @Override
@@ -301,4 +314,26 @@ public class GhidraEvtPlugin extends Plugin {
     public ProgramLocation getCurrentLocation() {
         return currentLocation;
     }
+
+	@Override
+	public void serviceAdded(Class<?> interfaceClass, Object service) {
+		if (interfaceClass == EvtHoverService.class) {
+			EvtHoverService hoverService = (EvtHoverService) service;
+			connectedProvider.getEvtPanel().addHoverService(hoverService);
+			for (EvtProvider provider : disconnectedProviders) {
+				provider.getEvtPanel().addHoverService(hoverService);
+			}
+		}
+	}
+
+	@Override
+	public void serviceRemoved(Class<?> interfaceClass, Object service) {
+		if (interfaceClass == EvtHoverService.class) {
+			EvtHoverService hoverService = (EvtHoverService) service;
+			connectedProvider.getEvtPanel().removeHoverService(hoverService);
+			for (EvtProvider provider : disconnectedProviders) {
+				provider.getEvtPanel().removeHoverService(hoverService);
+			}
+		}
+	}
 }

@@ -11,6 +11,7 @@ import ghidra.program.model.listing.CodeUnit;
 import ghidra.program.model.listing.Data;
 import ghidra.program.model.listing.Function;
 import ghidra.program.model.listing.Program;
+import ghidra.program.model.scalar.Scalar;
 import ghidra.program.model.symbol.Namespace;
 import ghidra.program.model.symbol.Symbol;
 import ghidra.util.Msg;
@@ -153,18 +154,30 @@ public class GhidraPrinter {
     private List<EvtToken> argToTokens(Arg arg, Address atAddr) {
         return switch (arg) {
             case Arg.ADDR addr -> addrToTokens(addr, atAddr);
-            case Arg.FLOAT(float value) -> Arrays.asList(
-                EvtToken.arg(Float.toString(value), decompileOptions.getConstantColor(), atAddr)
-            );
-            case Arg.INT(int value) -> Arrays.asList(
-                EvtToken.arg(Integer.toString(value), decompileOptions.getConstantColor(), atAddr)
-            );
-            case Arg.Variable variable -> Arrays.asList(
-                EvtToken.arg(variable.typeName() + "(" + variable.id() + ")", variableToColor(variable), atAddr)
-            );
-            case Arg.NONE() ->  Arrays.asList(
-                EvtToken.arg("NONE", decompileOptions.getVariableColor(), atAddr)
-            );
+            case Arg.FLOAT(float value) -> Arrays.asList(EvtToken.argScalar(
+                Float.toString(value),
+                decompileOptions.getConstantColor(),
+                atAddr,
+                Float.floatToRawIntBits(value),
+                true
+            ));
+            case Arg.INT(int value) -> Arrays.asList(EvtToken.argScalar(
+                Integer.toString(value),
+                decompileOptions.getConstantColor(),
+                atAddr,
+                value,
+                true
+            ));
+            case Arg.Variable variable -> Arrays.asList(EvtToken.arg(
+                variable.typeName() + "(" + variable.id() + ")",
+                variableToColor(variable),
+                atAddr
+            ));
+            case Arg.NONE() ->  Arrays.asList(EvtToken.arg(
+                "NONE",
+                decompileOptions.getVariableColor(),
+                atAddr
+            ));
         };
     }
     
