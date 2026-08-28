@@ -57,6 +57,7 @@ import ghidra.util.Swing;
 import ghidra.util.bean.field.AnnotatedTextFieldElement;
 import ghidra.util.task.SwingUpdateManager;
 import ghidraevt.GhidraEvtPlugin;
+import ghidraevt.action.EditDataTypeAction;
 import ghidraevt.action.EvtActionContext;
 import ghidraevt.action.RenameSymbolAction;
 import ghidraevt.action.RetypeGlobalAction;
@@ -723,21 +724,8 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         RetypeGlobalAction retypeGlobalAction = new RetypeGlobalAction();
         setGroupInfo(retypeGlobalAction, symbolGroup, subGroupPosition++);
 
-        // RetypeFieldAction retypeFieldAction = new RetypeFieldAction();
-        // setGroupInfo(retypeFieldAction, variableGroup, subGroupPosition++);
-
-        // EditDataTypeAction editDataTypeAction = new EditDataTypeAction();
-        // setGroupInfo(editDataTypeAction, variableGroup, subGroupPosition++);
-
-        // // shows the quick editor dialog
-        // EditFieldAction editFieldAction = new EditFieldAction();
-        // setGroupInfo(editFieldAction, variableGroup, subGroupPosition++);
-
-        //
-        // Listing action for Creating Structure on a Variable
-        //
-        // ListingStructureVariableAction listingCreateStructureAction =
-        //     new ListingStructureVariableAction(owner, tool, controller);
+        EditDataTypeAction editDataTypeAction = new EditDataTypeAction();
+        setGroupInfo(editDataTypeAction, symbolGroup, subGroupPosition++);
 
         //
         // Highlight
@@ -870,18 +858,13 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         addLocalAction(selectAllAction);
         addLocalAction(refreshAction);
         addLocalAction(renameSymbolAction);
+        addLocalAction(retypeGlobalAction);
+        addLocalAction(editDataTypeAction);
         // addLocalAction(defUseHighlightAction);
         // addLocalAction(forwardSliceAction);
         // addLocalAction(backwardSliceAction);
         // addLocalAction(forwardSliceToOpsAction);
         // addLocalAction(backwardSliceToOpsAction);
-        // addLocalAction(lockProtoAction);
-        // addLocalAction(lockLocalAction);
-        // addLocalAction(renameLocalAction);
-        // addLocalAction(renameGlobalAction);
-        // addLocalAction(renameFieldAction);
-        // addLocalAction(renameBitFieldAction);
-        // addLocalAction(forceUnionAction);
         // addLocalAction(setSecondaryHighlightAction);
         // addLocalAction(setSecondaryHighlightColorChooserAction);
         // addLocalAction(removeSecondaryHighlightAction);
@@ -895,25 +878,8 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         // addLocalAction(convertHexAction);
         // addLocalAction(convertOctAction);
         // addLocalAction(convertCharAction);
-        // addLocalAction(setEquateAction);
-        // addLocalAction(removeEquateAction);
-        // addLocalAction(retypeLocalAction);
-        // addLocalAction(createRelativeAction);
-        addLocalAction(retypeGlobalAction);
         // addLocalAction(retypeReturnAction);
         // addLocalAction(retypeFieldAction);
-        // addLocalAction(isolateVarAction);
-        // addLocalAction(decompilerCreateStructureAction);
-        // tool.addAction(listingCreateStructureAction);
-        // addLocalAction(editDataTypeAction);
-        // addLocalAction(editFieldAction);
-        // addLocalAction(specifyCProtoAction);
-        // addLocalAction(overrideSigAction);
-        // addLocalAction(editOverrideSigAction);
-        // addLocalAction(deleteSigAction);
-        // addLocalAction(removeLabelAction);
-        // addLocalAction(debugFunctionAction);
-        // addLocalAction(displayTypeCastsAction);
         // addLocalAction(convertAction);
         // addLocalAction(findAction);
         // addLocalAction(findReferencesAction);
