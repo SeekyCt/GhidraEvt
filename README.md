@@ -16,7 +16,7 @@ See the [Issues](https://github.com/SeekyCt/GhidraEvt/issues) tab for an idea of
 3. In the main Ghidra window, open `File > Install Extensions` and tick `GhidraEvt`
 4. Restart Ghidra
 5. Open a project, and you should be prompted to configure plugins
-    - If not, the same GUI can be opened through `File > Configure > Miscellaneous`
+    - If not, the same GUI can be opened through `File > Configure > GhidraEvt`
 6. Tick the `GhidraEvt` plugin
 7. You should now be able to open the script disassembly view through `Window > Evt Disassembler`
     - Selecting a data address in the listing view will automatically attempt to disassemble it and update the window

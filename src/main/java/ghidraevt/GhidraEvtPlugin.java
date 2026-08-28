@@ -67,7 +67,7 @@ import ghidraevt.token.EvtToken;
 //@formatter:off
 @PluginInfo(
     status = PluginStatus.STABLE,
-    packageName = "GhidraEvt",
+    packageName = GhidraEvtPluginPackage.NAME,
     category = PluginCategoryNames.COMMON,
     shortDescription = "Script disassembler window.",
     description = "Super Paper Mario evt script disassembly integration.",
