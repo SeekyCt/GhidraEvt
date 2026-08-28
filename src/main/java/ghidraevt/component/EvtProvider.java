@@ -59,6 +59,7 @@ import ghidra.util.task.SwingUpdateManager;
 import ghidraevt.GhidraEvtPlugin;
 import ghidraevt.action.EvtActionContext;
 import ghidraevt.action.RenameSymbolAction;
+import ghidraevt.action.RetypeGlobalAction;
 import ghidraevt.action.SelectAllAction;
 import ghidraevt.location.EvtLocation;
 import ghidraevt.location.EvtLocationMemento;
@@ -719,17 +720,8 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         RenameSymbolAction renameSymbolAction = new RenameSymbolAction();
         setGroupInfo(renameSymbolAction, symbolGroup, subGroupPosition++);
 
-        // RenameFieldAction renameFieldAction = new RenameFieldAction();
-        // setGroupInfo(renameFieldAction, variableGroup, subGroupPosition++);
-
-        // RenameBitFieldAction renameBitFieldAction = new RenameBitFieldAction();
-        // setGroupInfo(renameBitFieldAction, variableGroup, subGroupPosition++);
-
-        // ForceUnionAction forceUnionAction = new ForceUnionAction();
-        // setGroupInfo(forceUnionAction, variableGroup, subGroupPosition++);
-
-        // RetypeGlobalAction retypeGlobalAction = new RetypeGlobalAction();
-        // setGroupInfo(retypeGlobalAction, variableGroup, subGroupPosition++);
+        RetypeGlobalAction retypeGlobalAction = new RetypeGlobalAction();
+        setGroupInfo(retypeGlobalAction, symbolGroup, subGroupPosition++);
 
         // RetypeFieldAction retypeFieldAction = new RetypeFieldAction();
         // setGroupInfo(retypeFieldAction, variableGroup, subGroupPosition++);
@@ -907,7 +899,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         // addLocalAction(removeEquateAction);
         // addLocalAction(retypeLocalAction);
         // addLocalAction(createRelativeAction);
-        // addLocalAction(retypeGlobalAction);
+        addLocalAction(retypeGlobalAction);
         // addLocalAction(retypeReturnAction);
         // addLocalAction(retypeFieldAction);
         // addLocalAction(isolateVarAction);

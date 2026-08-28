@@ -131,9 +131,14 @@ public abstract class AbstractEvtAction extends DockingAction {
 
 	protected static DataType chooseDataType(PluginTool tool, Program program,
 			DataType currentDataType) {
+		return chooseDataType(tool, program, currentDataType, AllowedDataTypes.FIXED_LENGTH);
+	}
+
+	protected static DataType chooseDataType(PluginTool tool, Program program,
+			DataType currentDataType, AllowedDataTypes allowed) {
 		DataTypeManager dataTypeManager = program.getDataTypeManager();
 		DataTypeSelectionDialog chooserDialog = new DataTypeSelectionDialog(tool, dataTypeManager,
-			Integer.MAX_VALUE, AllowedDataTypes.FIXED_LENGTH);
+			Integer.MAX_VALUE, allowed);
 		chooserDialog.setInitialDataType(currentDataType);
 		tool.showDialog(chooserDialog);
 		return chooserDialog.getUserChosenDataType();
