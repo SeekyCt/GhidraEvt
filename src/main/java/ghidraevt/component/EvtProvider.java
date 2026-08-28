@@ -57,6 +57,7 @@ import ghidra.util.Swing;
 import ghidra.util.bean.field.AnnotatedTextFieldElement;
 import ghidra.util.task.SwingUpdateManager;
 import ghidraevt.GhidraEvtPlugin;
+import ghidraevt.action.CloneAction;
 import ghidraevt.action.EditDataTypeAction;
 import ghidraevt.action.EvtActionContext;
 import ghidraevt.action.RenameSymbolAction;
@@ -771,6 +772,9 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         // NextHighlightedTokenAction nextHighlightedTokenAction = new NextHighlightedTokenAction();
         // setGroupInfo(nextHighlightedTokenAction, highlightGroup, subGroupPosition++);
 
+        //
+        // Convert
+        //
         // String convertGroup = "7 - Convert Group";
         // subGroupPosition = 0;
         // RemoveEquateAction removeEquateAction = new RemoveEquateAction();
@@ -853,7 +857,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         // These actions are not in the popup menu
         //
         // ExportToCAction convertAction = new ExportToCAction();
-        // CloneDecompilerAction cloneDecompilerAction = new CloneDecompilerAction();
+        CloneAction cloneDecompilerAction = new CloneAction();
 
         addLocalAction(selectAllAction);
         addLocalAction(refreshAction);
@@ -878,13 +882,11 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         // addLocalAction(convertHexAction);
         // addLocalAction(convertOctAction);
         // addLocalAction(convertCharAction);
-        // addLocalAction(retypeReturnAction);
-        // addLocalAction(retypeFieldAction);
         // addLocalAction(convertAction);
         // addLocalAction(findAction);
         // addLocalAction(findReferencesAction);
         // addLocalAction(propertiesAction);
-        // addLocalAction(cloneDecompilerAction);
+        addLocalAction(cloneDecompilerAction);
         // addLocalAction(goToNextBraceAction);
         // addLocalAction(goToPreviousBraceAction);
     }
