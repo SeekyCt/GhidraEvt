@@ -250,7 +250,7 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
         }
     }
 
-    private void addErrorLines(List<EvtLine> lines, String errmsg) { // Add indicated error message to display
+    private void addErrorLines(EvtScript script, List<EvtLine> lines, String errmsg) { // Add indicated error message to display
         if (errmsg == null) {
             return; // No error message to add
         }
@@ -262,7 +262,7 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
         int i = 0;
         for (String errline : errlines) {
             lines.add(i, new EvtLine(
-                Arrays.asList(new EvtToken(errline, GhidraPrinter.COLOR_COMMENT, null, 0)),
+                Arrays.asList(new EvtToken(script, errline, GhidraPrinter.COLOR_COMMENT, null, 0)),
                 Address.NO_ADDRESS,
                 i,
                 0));
@@ -283,7 +283,7 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
             lines = new ArrayList<>();
         }
 
-        addErrorLines(lines, errmsg);
+        addErrorLines(script, lines, errmsg);
 
         int lineCount = lines.size();
         fieldList = new Field[lineCount];

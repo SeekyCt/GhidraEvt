@@ -22,41 +22,80 @@ package ghidraevt.token;
 import java.awt.Color;
 
 import ghidra.program.model.address.Address;
+import ghidraevt.component.EvtScript;
 import jevt.Arg;
 import jevt.Instr;
 
 public class EvtToken {
+    private EvtScript script;
     private String text;
     private Color color;
     private EvtLine lineParent;
-    Address minAddress;
-    Address maxAddress;
+    private Address minAddress;
+    private Address maxAddress;
 
-    public EvtToken(String txt, Color color, Address minAddress, long size) {
+    private Color highlight; // Color to highlight with or null if no highlight
+	private boolean matchingToken;
+
+    public EvtToken(EvtScript script, String txt, Color color, Address minAddress, long size) {
+        this.script = script;
         this.text = txt;
         this.color = color;
         this.minAddress = minAddress;
+        this.highlight = null;
         if (minAddress != null && size > 0)
             this.maxAddress = minAddress.add(size);
         else
             this.maxAddress = null;
     }
 
-    public static EvtToken instr(String txt, Color color, Address minAddress) {
-        return new EvtToken(txt, color, minAddress, Instr.HEADER_SIZE);
+    public static EvtToken instr(EvtScript script, String txt, Color color, Address minAddress) {
+        return new EvtToken(script, txt, color, minAddress, Instr.HEADER_SIZE);
     }
 
-    public static EvtToken arg(String txt, Color color, Address minAddress) {
-        return new EvtToken(txt, color, minAddress, Arg.bytesSize());
+    public static EvtToken arg(EvtScript script, String txt, Color color, Address minAddress) {
+        return new EvtToken(script, txt, color, minAddress, Arg.bytesSize());
     }
 
-    public static EvtToken argScalar(String txt, Color color, Address minAddress, long value, boolean signed) {
-        return new EvtScalarToken(txt, color, minAddress, value, signed);
+    public static EvtToken argScalar(EvtScript script, String txt, Color color, Address minAddress, long value, boolean signed) {
+        return new EvtScalarToken(script, txt, color, minAddress, value, signed);
     }
 
-    public static EvtToken syntax(String txt, Color color, Address minAddress) {
-        return new EvtToken(txt, color, minAddress, 0);
+    public static EvtToken syntax(EvtScript script, String txt, Color color, Address minAddress) {
+        return new EvtToken(script, txt, color, minAddress, 0);
     }
+
+    public EvtScript getScript() {
+        return script;
+    }
+
+	public void setHighlight(Color val) {
+		highlight = val;
+	}
+
+	/**
+	 * Get the background highlight color used to render this token, or null if not highlighted
+	 * @return the Color or null
+	 */
+	public Color getHighlight() {
+		return highlight;
+	}
+
+	/**
+	 * Set whether or not additional "matching" highlighting is applied to this token.
+	 * Currently this means a bounding box is drawn around the token.
+	 * @param matchingToken is true to enable highlighting, false to disable
+	 */
+	public void setMatchingToken(boolean matchingToken) {
+		this.matchingToken = matchingToken;
+	}
+
+	/**
+	 * @return true if this token should be displayed with "matching" highlighting
+	 */
+	public boolean isMatchingToken() {
+		return matchingToken;
+	}
 
     public String getText() {
         return text;

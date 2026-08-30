@@ -24,6 +24,7 @@ import java.awt.event.*;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.List;
+import java.util.function.Supplier;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -40,6 +41,7 @@ import docking.widgets.fieldpanel.listener.*;
 import docking.widgets.fieldpanel.support.*;
 import docking.widgets.indexedscrollpane.IndexedScrollPane;
 import generic.theme.GColor;
+import ghidra.app.decompiler.component.TokenHighlightColors;
 import ghidra.app.decompiler.component.margin.DecompilerMarginProvider;
 import ghidra.app.decompiler.component.margin.LineNumberDecompilerMarginProvider;
 import ghidra.app.decompiler.component.margin.VerticalLayoutPixelIndexMap;
@@ -50,6 +52,9 @@ import ghidra.program.util.ProgramLocation;
 import ghidra.program.util.ProgramSelection;
 import ghidra.util.*;
 import ghidra.util.bean.field.AnnotatedTextFieldElement;
+import ghidra.util.task.SwingUpdateManager;
+import ghidraevt.action.EvtSearchLocation;
+import ghidraevt.action.EvtSearchResults;
 import ghidraevt.component.hover.EvtHoverProvider;
 import ghidraevt.component.hover.EvtHoverService;
 import ghidraevt.location.DefaultEvtLocation;
@@ -63,7 +68,7 @@ import ghidraevt.token.EvtToken;
  * Class to handle the display of a decompiled function
  */
 public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocationListener,
-        FieldSelectionListener, LayoutListener {
+        FieldSelectionListener, EvtHighlightListener, LayoutListener {
     // Default color for specially highlighted tokens
     private final static Color SPECIAL_COLOR_DEF =
         new GColor("color.bg.decompiler.highlights.special");
@@ -80,7 +85,18 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
     private final VerticalLayoutPixelIndexMap pixmap = new VerticalLayoutPixelIndexMap();
 
     private FieldHighlightFactory hlFactory;
+	private EvtHighlightController highlightController;
+	private Map<String, EvtHighlighter> highlightersById = new HashMap<>();
+	private PendingHighlightUpdate pendingHighlightUpdate;
+	private SwingUpdateManager highlighCursorUpdater = new SwingUpdateManager(() -> {
+		if (pendingHighlightUpdate != null) {
+			pendingHighlightUpdate.doUpdate();
+			pendingHighlightUpdate = null;
+		}
+	});
 
+	private Set<String> ignoredMiddleMouseTokens = Set.of("{", "}", ";");
+	private ActiveMiddleMouse activeMiddleMouse;
     private int middleMouseHighlightButton;
     private Color middleMouseHighlightColor;
     private Color currentVariableHighlightColor;
@@ -88,7 +104,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
     private Color activeSearchHighlightColor;
     private Color searchHighlightColor;
 
-    // private DecompilerSearchResults currentSearchResults;
+    private EvtSearchResults currentSearchResults;
 
     private DisassembleData decompileData = new EmptyDisassembleData("No Script");
     private final EvtClipboardProvider clipboard;
@@ -171,195 +187,170 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 // Highlight Methods
 //==================================================================================================
 
-    // public TokenHighlightColors getSecondaryHighlightColors() {
-    //     return highlightController.getSecondaryHighlightColors();
-    // }
+    public TokenHighlightColors getSecondaryHighlightColors() {
+        return highlightController.getSecondaryHighlightColors();
+    }
 
-    // public boolean hasSecondaryHighlights(Function function) {
-    //     return highlightController.hasSecondaryHighlights(function);
-    // }
+    public boolean hasSecondaryHighlights(EvtScript script) {
+        return highlightController.hasSecondaryHighlights(script);
+    }
 
-    // public boolean hasSecondaryHighlight(EvtToken token) {
-    //     return highlightController.hasSecondaryHighlight(token);
-    // }
+    public boolean hasSecondaryHighlight(EvtToken token) {
+        return highlightController.hasSecondaryHighlight(token);
+    }
 
-    // public Color getSecondaryHighlight(EvtToken token) {
-    //     return highlightController.getSecondaryHighlight(token);
-    // }
+    public Color getSecondaryHighlight(EvtToken token) {
+        return highlightController.getSecondaryHighlight(token);
+    }
 
-    // public TokenHighlights getHighlights(DecompilerHighlighter highligter) {
-    //     return highlightController.getHighlighterHighlights(highligter);
-    // }
+    public TokenHighlights getHighlights(EvtHighlighter highligter) {
+        return highlightController.getHighlighterHighlights(highligter);
+    }
 
-    // public TokenHighlights getMiddleMouseHighlights() {
-    //     if (activeMiddleMouse != null) {
-    //         return activeMiddleMouse.getHighlights();
-    //     }
-    //     return null;
-    // }
+    public TokenHighlights getMiddleMouseHighlights() {
+        if (activeMiddleMouse != null) {
+            return activeMiddleMouse.getHighlights();
+        }
+        return null;
+    }
 
-    // private Set<DecompilerHighlighter> getSecondaryHighlihgtersByFunction(Function function) {
-    //     return highlightController.getSecondaryHighlighters(function);
-    // }
+    private Set<EvtHighlighter> getSecondaryHighlihgtersByFunction(EvtScript script) {
+        return highlightController.getSecondaryHighlighters(script);
+    }
 
     /**
      * Removes all secondary highlights for the current function
      *
      * @param function the function containing the secondary highlights
      */
-    // public void removeSecondaryHighlights(Function function) {
-    //     highlightController.removeSecondaryHighlights(function);
-    // }
+    public void removeSecondaryHighlights(EvtScript function) {
+        highlightController.removeSecondaryHighlights(function);
+    }
 
-    // public void removeSecondaryHighlight(EvtToken token) {
-    //     highlightController.removeSecondaryHighlights(token);
-    // }
+    public void removeSecondaryHighlight(EvtToken token) {
+        highlightController.removeSecondaryHighlights(token);
+    }
 
-    // public void addSecondaryHighlight(EvtToken token) {
-    //     ColorProvider cp = highlightController.getGeneratedColorProvider();
-    //     addSecondaryHighlight(token.getText(), cp);
-    // }
+    public void addSecondaryHighlight(EvtToken token) {
+        EvtColorProvider cp = highlightController.getGeneratedColorProvider();
+        addSecondaryHighlight(token.getText(), cp);
+    }
 
-    // public void addSecondaryHighlight(EvtToken token, Color color) {
-    //     ColorProvider cp = new DefaultColorProvider("User Secondary Highlight", color);
-    //     addSecondaryHighlight(token.getText(), cp);
-    // }
+    public void addSecondaryHighlight(EvtToken token, Color color) {
+        EvtColorProvider cp = new DefaultEvtColorProvider("User Secondary Highlight", color);
+        addSecondaryHighlight(token.getText(), cp);
+    }
 
-    // private void addSecondaryHighlight(String tokenText, ColorProvider colorProvider) {
-    //     NameTokenMatcher matcher = new NameTokenMatcher(tokenText, colorProvider);
-    //     DecompilerHighlighter highlighter = createHighlighter(matcher);
-    //     applySecondaryHighlights(highlighter);
-    // }
+    private void addSecondaryHighlight(String tokenText, EvtColorProvider colorProvider) {
+        NameTokenMatcher matcher = new NameTokenMatcher(tokenText, colorProvider);
+        EvtHighlighter highlighter = createHighlighter(matcher);
+        applySecondaryHighlights(highlighter);
+    }
 
-    // private void applySecondaryHighlights(DecompilerHighlighter highlighter) {
-    //     Function function = decompileData.getData();
-    //     highlightController.addSecondaryHighlighter(function, highlighter);
-    //     highlighter.applyHighlights();
-    // }
+    private void applySecondaryHighlights(EvtHighlighter highlighter) {
+        EvtScript function = decompileData.getScript();
+        highlightController.addSecondaryHighlighter(function, highlighter);
+        highlighter.applyHighlights();
+    }
 
-    // private void toggleMiddleMouseHighlight(FieldLocation location, Field field) {
-    //     EvtToken token = ((ClangTextField) field).getToken(location);
+    private void toggleMiddleMouseHighlight(FieldLocation location, Field field) {
+        EvtToken token = ((EvtTextField) field).getToken(location);
 
-    //     ActiveMiddleMouse previousMiddleMouse = activeMiddleMouse;
-    //     activeMiddleMouse = null;
+        ActiveMiddleMouse previousMiddleMouse = activeMiddleMouse;
+        activeMiddleMouse = null;
 
-    //     if (previousMiddleMouse != null) {
-    //         // middle mousing always clears the last middle-mouse highlight
-    //         previousMiddleMouse.clear();
+        if (previousMiddleMouse != null) {
+            // middle mousing always clears the last middle-mouse highlight
+            previousMiddleMouse.clear();
 
-    //         if (previousMiddleMouse.matches(token)) {
-    //             // middle mousing on the same token clears, but does not create a new highlight
-    //             return;
-    //         }
-    //     }
+            if (previousMiddleMouse.matches(token)) {
+                // middle mousing on the same token clears, but does not create a new highlight
+                return;
+            }
+        }
 
-    //     // exclude tokens that users do not want to highlight
-    //     if (shouldIgnoreOpToken(token)) {
-    //         return;
-    //     }
-    //     if (shouldIgnoreSyntaxTokenHighlight(token)) {
-    //         return;
-    //     }
+        // exclude tokens that users do not want to highlight
+        // if (shouldIgnoreOpToken(token)) {
+            // return;
+        // }
+        // if (shouldIgnoreSyntaxTokenHighlight(token)) {
+        //     return;
+        // }
 
-    //     ActiveMiddleMouse newMiddleMouse = new ActiveMiddleMouse(token.getText());
-    //     newMiddleMouse.apply();
-    //     activeMiddleMouse = newMiddleMouse;
-    // }
+        ActiveMiddleMouse newMiddleMouse = new ActiveMiddleMouse(token.getText());
+        newMiddleMouse.apply();
+        activeMiddleMouse = newMiddleMouse;
+    }
 
-    // private boolean shouldIgnoreOpToken(EvtToken token) {
-    //     if (!(token instanceof ClangOpToken)) {
-    //         return false;
-    //     }
+    void addHighlighterHighlights(EvtTokenHighlighter highlighter,
+            Supplier<? extends Collection<EvtToken>> tokens, EvtColorProvider colorProvider) {
+        highlightController.addHighlighterHighlights(highlighter, tokens, colorProvider);
+    }
 
-    //     // users would like to be able to highlight return statements
-    //     String text = token.toString();
-    //     return !text.equals("return");
-    // }
+    void removeHighlighterHighlights(EvtHighlighter highlighter) {
+        highlightController.removeHighlighterHighlights(highlighter);
+    }
 
-    // private boolean shouldIgnoreSyntaxTokenHighlight(EvtToken token) {
+    private EvtHighlighter createHighlighter(EvtTokenHighlightMatcher tm) {
+        EvtScript function = decompileData.getScript();
+        return createHighlighter(function, tm);
+    }
 
-    //     if (!(token instanceof ClangSyntaxToken syntaxToken)) {
-    //         return false;
-    //     }
+    public EvtHighlighter createHighlighter(EvtScript f, EvtTokenHighlightMatcher tm) {
+        UUID uuId = UUID.randomUUID();
+        String id = uuId.toString();
+        return createHighlighter(id, f, tm);
+    }
 
-    //     String string = syntaxToken.toString();
-    //     return ignoredMiddleMouseTokens.contains(string);
-    // }
+    public EvtHighlighter createHighlighter(String id, EvtScript f,
+            EvtTokenHighlightMatcher tm) {
+        EvtHighlighter currentHighlighter = highlightersById.get(id);
+        if (currentHighlighter != null) {
+            currentHighlighter.dispose();
+        }
 
-    // void addHighlighterHighlights(ClangDecompilerHighlighter highlighter,
-    //         Supplier<? extends Collection<EvtToken>> tokens, ColorProvider colorProvider) {
-    //     highlightController.addHighlighterHighlights(highlighter, tokens, colorProvider);
-    // }
+        EvtTokenHighlighter newHighlighter = new EvtTokenHighlighter(id, this, f, tm);
+        highlightersById.put(id, newHighlighter);
+        highlightController.addHighlighter(newHighlighter);
+        return newHighlighter;
+    }
 
-    // void removeHighlighterHighlights(DecompilerHighlighter highlighter) {
-    //     highlightController.removeHighlighterHighlights(highlighter);
-    // }
+    public EvtHighlighter getHighlighter(String id) {
+        return highlightersById.get(id);
+    }
 
-    // private DecompilerHighlighter createHighlighter(CTokenHighlightMatcher tm) {
-    //     Function function = decompileData.getData();
-    //     return createHighlighter(function, tm);
-    // }
+    void removeHighlighter(String id) {
+        EvtHighlighter highlighter = highlightersById.remove(id);
+        highlightController.removeHighlighter(highlighter);
+    }
 
-    // public DecompilerHighlighter createHighlighter(Function f, CTokenHighlightMatcher tm) {
-    //     UUID uuId = UUID.randomUUID();
-    //     String id = uuId.toString();
-    //     return createHighlighter(id, f, tm);
-    // }
+    public void clearPrimaryHighlights() {
+        highlightController.clearPrimaryHighlights();
+    }
 
-    // public DecompilerHighlighter createHighlighter(String id, Function f,
-    //         CTokenHighlightMatcher tm) {
-    //     DecompilerHighlighter currentHighlighter = highlightersById.get(id);
-    //     if (currentHighlighter != null) {
-    //         currentHighlighter.dispose();
-    //     }
+    public void addHighlights(/*Set<Varnode> varnodes,*/ EvtColorProvider colorProvider) {
+        List<EvtLine> root = layoutController.getLines();
+        highlightController.addPrimaryHighlights(root, colorProvider);
+    }
 
-    //     ClangDecompilerHighlighter newHighlighter = new ClangDecompilerHighlighter(id, this, f, tm);
-    //     highlightersById.put(id, newHighlighter);
-    //     highlightController.addHighlighter(newHighlighter);
-    //     return newHighlighter;
-    // }
+    public void setHighlightController(EvtHighlightController highlightController) {
+        if (this.highlightController != null) {
+            this.highlightController.removeListener(this);
+        }
 
-    // public DecompilerHighlighter getHighlighter(String id) {
-    //     return highlightersById.get(id);
-    // }
+        this.highlightController = EvtHighlightController.dummyIfNull(highlightController);
+        highlightController.setHighlightColor(currentVariableHighlightColor);
+        highlightController.addListener(this);
+    }
 
-    // void removeHighlighter(String id) {
-    //     DecompilerHighlighter highlighter = highlightersById.remove(id);
-    //     highlightController.removeHighlighter(highlighter);
-    // }
+    public EvtHighlightController getHighlightController() {
+        return highlightController;
+    }
 
-    // public void clearPrimaryHighlights() {
-    //     highlightController.clearPrimaryHighlights();
-    // }
-
-    // public void addHighlights(Set<Varnode> varnodes, ColorProvider colorProvider) {
-    //     ClangTokenGroup root = layoutController.getRoot();
-    //     highlightController.addPrimaryHighlights(root, colorProvider);
-    // }
-
-    // public void addHighlights(Set<PcodeOp> ops, Color hlColor) {
-    //     ClangTokenGroup root = layoutController.getRoot();
-    //     highlightController.addPrimaryHighlights(root, ops, hlColor);
-    // }
-
-    // public void setHighlightController(ClangHighlightController highlightController) {
-    //     if (this.highlightController != null) {
-    //         this.highlightController.removeListener(this);
-    //     }
-
-    //     this.highlightController = ClangHighlightController.dummyIfNull(highlightController);
-    //     highlightController.setHighlightColor(currentVariableHighlightColor);
-    //     highlightController.addListener(this);
-    // }
-
-    // public ClangHighlightController getHighlightController() {
-    //     return highlightController;
-    // }
-
-    // @Override
-    // public void tokenHighlightsChanged() {
-    //     repaint();
-    // }
+    @Override
+    public void tokenHighlightsChanged() {
+        repaint();
+    }
 
     /**
      * This function is used to alert the panel that a token was renamed. If the token being renamed
@@ -381,59 +372,59 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
     }
 
     private void repairSecondarySelectionForRename(EvtToken token, String newName) {
-        // Color hlColor = highlightController.getSecondaryHighlight(token);
-        // if (hlColor == null) {
-        //     return; // not highlighted
-        // }
+        Color hlColor = highlightController.getSecondaryHighlight(token);
+        if (hlColor == null) {
+            return; // not highlighted
+        }
 
-        // highlightController.removeSecondaryHighlights(token);
+        highlightController.removeSecondaryHighlights(token);
 
-        // // Add the new highlighter when we have rebuilt the token
-        // controller.doWhenNotBusy(() -> {
-        //     addSecondaryHighlight(newName, t -> hlColor);
-        // });
+        // Add the new highlighter when we have rebuilt the token
+        controller.doWhenNotBusy(() -> {
+            addSecondaryHighlight(newName, t -> hlColor);
+        });
     }
 
     private void repairMiddleMouseSelectionForRename(EvtToken token, String newName) {
-        // if (activeMiddleMouse == null || !activeMiddleMouse.matches(token)) {
-        //     return;
-        // }
+        if (activeMiddleMouse == null || !activeMiddleMouse.matches(token)) {
+            return;
+        }
 
-        // activeMiddleMouse.clear();
-        // activeMiddleMouse = new ActiveMiddleMouse(newName);
+        activeMiddleMouse.clear();
+        activeMiddleMouse = new ActiveMiddleMouse(newName);
 
-        // // Apply the new middle-mouse highlighter when we have rebuilt the token
-        // controller.doWhenNotBusy(() -> {
-        //     activeMiddleMouse.apply();
-        // });
+        // Apply the new middle-mouse highlighter when we have rebuilt the token
+        controller.doWhenNotBusy(() -> {
+            activeMiddleMouse.apply();
+        });
     }
 
-    // private void cloneServiceHiglighters(EvtPanel sourcePanel) {
+    private void cloneServiceHiglighters(EvtPanel sourcePanel) {
 
-    //     Set<DecompilerHighlighter> serviceHighlighters =
-    //         sourcePanel.highlightController.getServiceHighlighters();
+        Set<EvtHighlighter> serviceHighlighters =
+            sourcePanel.highlightController.getServiceHighlighters();
 
-    //     for (DecompilerHighlighter otherHighlighter : serviceHighlighters) {
+        for (EvtHighlighter otherHighlighter : serviceHighlighters) {
 
-    //         if (!(otherHighlighter instanceof ClangDecompilerHighlighter clangHighlighter)) {
-    //             continue;
-    //         }
+            if (!(otherHighlighter instanceof EvtTokenHighlighter clangHighlighter)) {
+                continue;
+            }
 
-    //         DecompilerHighlighter newHighlighter = clangHighlighter.clone(this);
-    //         highlightersById.put(newHighlighter.getId(), newHighlighter);
+            EvtHighlighter newHighlighter = clangHighlighter.clone(this);
+            highlightersById.put(newHighlighter.getId(), newHighlighter);
 
-    //         TokenHighlights otherHighlighterTokens =
-    //             sourcePanel.highlightController.getHighlighterHighlights(otherHighlighter);
-    //         if (otherHighlighterTokens == null || otherHighlighterTokens.isEmpty()) {
-    //             // The highlighter has been created but no highlights have been applied.  It is up
-    //             // to the client to apply the highlights. The new highlighter will respond to the
-    //             // client request if the later apply the highlights.
-    //             continue;
-    //         }
+            TokenHighlights otherHighlighterTokens =
+                sourcePanel.highlightController.getHighlighterHighlights(otherHighlighter);
+            if (otherHighlighterTokens == null || otherHighlighterTokens.isEmpty()) {
+                // The highlighter has been created but no highlights have been applied.  It is up
+                // to the client to apply the highlights. The new highlighter will respond to the
+                // client request if the later apply the highlights.
+                continue;
+            }
 
-    //         newHighlighter.applyHighlights();
-    //     }
-    // }
+            newHighlighter.applyHighlights();
+        }
+    }
 
     /**
      * Called by the provider to clone all highlights in the source panel and apply them to this
@@ -441,33 +432,33 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
      *
      * @param sourcePanel the panel that was cloned
      */
-    // public void cloneHighlights(EvtPanel sourcePanel) {
+    public void cloneHighlights(EvtPanel sourcePanel) {
 
-    //     Function function = decompileData.getData();
-    //     cloneServiceHiglighters(sourcePanel);
+        EvtScript script = decompileData.getScript();
+        cloneServiceHiglighters(sourcePanel);
 
-    //     //
-    //     // Keep only those secondary highlighters for the current function.  This ensures that the
-    //     // clone will match the cloned decompiler.
-    //     //
-    //     Set<DecompilerHighlighter> secondaryHighlighters =
-    //         sourcePanel.getSecondaryHighlihgtersByFunction(function);
+        //
+        // Keep only those secondary highlighters for the current function.  This ensures that the
+        // clone will match the cloned decompiler.
+        //
+        Set<EvtHighlighter> secondaryHighlighters =
+            sourcePanel.getSecondaryHighlihgtersByFunction(script);
 
-    //     //
-    //     // We do NOT clone the secondary highlighters.  This allows the user the remove them
-    //     // from the primary provider without effecting the cloned provider and vice versa.
-    //     //
-    //     for (DecompilerHighlighter highlighter : secondaryHighlighters) {
+        //
+        // We do NOT clone the secondary highlighters.  This allows the user the remove them
+        // from the primary provider without effecting the cloned provider and vice versa.
+        //
+        for (EvtHighlighter highlighter : secondaryHighlighters) {
 
-    //         if (!(highlighter instanceof ClangDecompilerHighlighter clangHighlighter)) {
-    //             continue;
-    //         }
+            if (!(highlighter instanceof EvtTokenHighlighter clangHighlighter)) {
+                continue;
+            }
 
-    //         DecompilerHighlighter newHighlighter = clangHighlighter.copy(this);
-    //         highlightersById.put(newHighlighter.getId(), newHighlighter);
-    //         applySecondaryHighlights(newHighlighter);
-    //     }
-    // }
+            EvtHighlighter newHighlighter = clangHighlighter.copy(this);
+            highlightersById.put(newHighlighter.getId(), newHighlighter);
+            applySecondaryHighlights(newHighlighter);
+        }
+    }
 
 //==================================================================================================
 // End Highlight Methods
@@ -516,14 +507,14 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
         }
 
         // don't highlight search results across functions
-        // if (currentSearchResults != null) {
-        //     currentSearchResults.decompilerUpdated();
-        //     currentSearchResults = null;
-        // }
+        if (currentSearchResults != null) {
+            currentSearchResults.disassemblerUpdated();
+            currentSearchResults = null;
+        }
 
-        // if (function != null) {
-            // highlightController.reapplyAllHighlights(function);
-        // }
+        if (script != null) {
+            highlightController.reapplyAllHighlights(script);
+        }
     }
 
     private void setLocation(DisassembleData oldData, DisassembleData newData) {
@@ -665,9 +656,9 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
         setDisassembleData(new EmptyDisassembleData("Disposed"));
         layoutController = null;
         decompilerHoverProvider.dispose();
-        // highlighCursorUpdater.dispose();
-        // highlightController.dispose();
-        // highlightersById.clear();
+        highlighCursorUpdater.dispose();
+        highlightController.dispose();
+        highlightersById.clear();
     }
 
     public FontMetrics getFontMetrics() {
@@ -710,9 +701,9 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
             }
         }
 
-        // if (buttonState == middleMouseHighlightButton && clickCount == 1) {
-            // toggleMiddleMouseHighlight(location, field);
-        // }
+        if (buttonState == middleMouseHighlightButton && clickCount == 1) {
+            toggleMiddleMouseHighlight(location, field);
+        }
     }
 
     private void tryToGoto(FieldLocation location, Field field, MouseEvent event,
@@ -769,8 +760,8 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
             return;
         }
 
-        // pendingHighlightUpdate = new PendingHighlightUpdate(location, field, trigger);
-        // highlighCursorUpdater.update();
+        pendingHighlightUpdate = new PendingHighlightUpdate(location, field, trigger);
+        highlighCursorUpdater.update();
 
         if (!(field instanceof EvtTextField)) {
             return;
@@ -848,33 +839,33 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
         return new DefaultEvtLocation(program, address, info);
     }
 
-    // public void clearSearchResults(DecompilerSearchResults searchResults) {
-    //     if (currentSearchResults == searchResults) {
-    //         currentSearchResults = null;
-    //         repaint();
-    //     }
-    // }
+    public void clearSearchResults(EvtSearchResults searchResults) {
+        if (currentSearchResults == searchResults) {
+            currentSearchResults = null;
+            repaint();
+        }
+    }
 
-    // public void setSearchResults(DecompilerSearchResults searchResults) {
-    //     currentSearchResults = searchResults;
+    public void setSearchResults(EvtSearchResults searchResults) {
+        currentSearchResults = searchResults;
 
-    //     if (currentSearchResults != null) {
-    //         DecompilerSearchLocation location = currentSearchResults.getActiveLocation();
-    //         if (location != null) {
-    //             setCursorPosition(location.getFieldLocation());
-    //         }
-    //     }
+        if (currentSearchResults != null) {
+            EvtSearchLocation location = currentSearchResults.getActiveLocation();
+            if (location != null) {
+                setCursorPosition(location.getFieldLocation());
+            }
+        }
 
-    //     repaint();
-    // }
+        repaint();
+    }
 
-    // public DecompilerSearchLocation getActiveSearchLocation() {
-    //     if (currentSearchResults == null) {
-    //         return null;
-    //     }
-    //     DecompilerSearchLocation location = currentSearchResults.getActiveLocation();
-    //     return location;
-    // }
+    public EvtSearchLocation getActiveSearchLocation() {
+        if (currentSearchResults == null) {
+            return null;
+        }
+        EvtSearchLocation location = currentSearchResults.getActiveLocation();
+        return location;
+    }
 
     public Color getCurrentVariableHighlightColor() {
         return currentVariableHighlightColor;
@@ -894,16 +885,16 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
         return SPECIAL_COLOR_DEF;
     }
 
-    // public String getHighlightedText() {
-    //     EvtToken token = highlightController.getHighlightedToken();
-    //     if (token == null) {
-    //         return null;
-    //     }
-    //     if (token instanceof ClangCommentToken) {
-    //         return null; // comments are not single words that get highlighted
-    //     }
-    //     return token.getText();
-    // }
+    public String getHighlightedText() {
+        EvtToken token = highlightController.getHighlightedToken();
+        if (token == null) {
+            return null;
+        }
+        // if (token instanceof ClangCommentToken) {
+        //     return null; // comments are not single words that get highlighted
+        // }
+        return token.getText();
+    }
 
     public String getTextUnderCursor() {
 
@@ -1055,7 +1046,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
         middleMouseHighlightButton = decompilerOptions.getMiddleMouseHighlightButton();
         searchHighlightColor = decompilerOptions.getSearchHighlightColor();
 
-        // highlightController.setHighlightColor(currentVariableHighlightColor);
+        highlightController.setHighlightColor(currentVariableHighlightColor);
 
         if (options.isDisplayLineNumbers()) {
             if (lineNumbersMargin == null) {
@@ -1120,30 +1111,30 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 
         @Override
         public Highlight[] createHighlights(Field field, String text, int cursorTextOffset) {
-            return new Highlight[0];
-            // if (currentSearchResults == null) {
-            // }
+            if (currentSearchResults == null) {
+                return new Highlight[0];
+            }
 
-            // ClangTextField cField = (ClangTextField) field;
-            // int lineNumber = cField.getLineNumber();
-            // Map<Integer, List<DecompilerSearchLocation>> locationsByLine =
-            //     currentSearchResults.getLocationsByLine();
-            // List<DecompilerSearchLocation> locationsOnLine = locationsByLine.get(lineNumber);
-            // if (locationsOnLine == null) {
-            //     return new Highlight[0];
-            // }
+            EvtTextField cField = (EvtTextField) field;
+            int lineNumber = cField.getLineNumber();
+            Map<Integer, List<EvtSearchLocation>> locationsByLine =
+                currentSearchResults.getLocationsByLine();
+            List<EvtSearchLocation> locationsOnLine = locationsByLine.get(lineNumber);
+            if (locationsOnLine == null) {
+                return new Highlight[0];
+            }
 
-            // DecompilerSearchLocation activeLocation = currentSearchResults.getActiveLocation();
-            // List<Highlight> highlights = new ArrayList<>();
-            // for (DecompilerSearchLocation location : locationsOnLine) {
-            //     Color c =
-            //         location == activeLocation ? activeSearchHighlightColor : searchHighlightColor;
-            //     int start = location.getStartIndexInclusive();
-            //     int end = location.getEndIndexInclusive();
-            //     highlights.add(new Highlight(start, end, c));
-            // }
+            EvtSearchLocation activeLocation = currentSearchResults.getActiveLocation();
+            List<Highlight> highlights = new ArrayList<>();
+            for (EvtSearchLocation location : locationsOnLine) {
+                Color c =
+                    location == activeLocation ? activeSearchHighlightColor : searchHighlightColor;
+                int start = location.getStartIndexInclusive();
+                int end = location.getEndIndexInclusive();
+                highlights.add(new Highlight(start, end, c));
+            }
 
-            // return highlights.toArray(Highlight[]::new);
+            return highlights.toArray(Highlight[]::new);
         }
     }
 
@@ -1225,4 +1216,84 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
                 EventTrigger.GUI_ACTION);
         }
     }
+
+	/**
+	 * A class to track pending location updates. This allows us to buffer updates, only sending the
+	 * last one received.
+	 */
+	private class PendingHighlightUpdate {
+
+		private FieldLocation location;
+		private Field field;
+		private EventTrigger trigger;
+		private long updateId;
+
+		PendingHighlightUpdate(FieldLocation location, Field field, EventTrigger trigger) {
+			this.location = location;
+			this.field = field;
+			this.trigger = trigger;
+			this.updateId = highlightController.getUpdateId();
+		}
+
+		void doUpdate() {
+			// Note: don't send this buffered cursor change highlight if some other highlight
+			//       has been applied.  Otherwise, this highlight would overwrite the last
+			//       applied highlight.
+			long lastUpdateId = highlightController.getUpdateId();
+			if (updateId == lastUpdateId) {
+				highlightController.fieldLocationChanged(location, field, trigger);
+			}
+		}
+	}
+
+	private class MiddleMouseColorProvider implements EvtColorProvider {
+
+		@Override
+		public Color getColor(EvtToken token) {
+			return middleMouseHighlightColor;
+		}
+
+		@Override
+		public String toString() {
+			return "Middle Mouse Color Provider " + middleMouseHighlightColor;
+		}
+	}
+
+	/**
+	 * A class to track the current middle moused token.
+	 */
+	private class ActiveMiddleMouse {
+
+		private String tokenText;
+		private EvtHighlighter highlighter;
+
+		ActiveMiddleMouse(String tokenText) {
+			this.tokenText = tokenText;
+
+			EvtColorProvider cp = new MiddleMouseColorProvider();
+			NameTokenMatcher matcher = new NameTokenMatcher(tokenText, cp);
+			this.highlighter = createHighlighter(matcher);
+		}
+
+		TokenHighlights getHighlights() {
+			return highlightController.getHighlighterHighlights(highlighter);
+		}
+
+		boolean matches(EvtToken other) {
+			return tokenText.equals(other.getText());
+		}
+
+		void clear() {
+			highlightController.removeHighlighter(highlighter);
+		}
+
+		void apply() {
+			applySecondaryHighlights(highlighter);
+		}
+
+		@Override
+		public String toString() {
+			return "Middle Mouse Token " + tokenText;
+		}
+	}
 }

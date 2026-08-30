@@ -109,7 +109,7 @@ public class EvtManager {
             startAddress = snapToSymbol(program, startAddress);
         }
 
-        EvtScript script = new EvtScript(startAddress);
+        EvtScript script = new EvtScript(program, startAddress);
 
         int sizeLimit = Integer.MAX_VALUE;
         if (stopOnNextSymbol) {

@@ -108,31 +108,31 @@ public class GhidraPrinter {
         );
     }
 
-    private List<EvtToken> symbolToTokens(Address atAddr, Color color, Address target, long size) {
+    private List<EvtToken> symbolToTokens(EvtScript script, Address atAddr, Color color, Address target, long size) {
         Symbol symbol = program.getSymbolTable().getPrimarySymbol(target);
         if (symbol == null) {
             Msg.warn(this, "No symbol for " + target);
-            return Arrays.asList(addrFailToken(atAddr, target, size));
+            return Arrays.asList(addrFailToken(script, atAddr, target, size));
         }
         else  {
             Namespace ns = symbol.getParentNamespace();
             List<EvtToken> ret = new ArrayList<>();
             // TODO: options - off/on/sync decompiler, and also force in C macro mode with spm::
             while (!ns.isGlobal()) {
-                ret.add(new EvtToken(ns.getName(), decompileOptions.getGlobalColor(), atAddr, size));
-                ret.add(new EvtToken("::", decompileOptions.getDefaultColor(), atAddr, size));
+                ret.add(new EvtToken(script, ns.getName(), decompileOptions.getGlobalColor(), atAddr, size));
+                ret.add(new EvtToken(script, "::", decompileOptions.getDefaultColor(), atAddr, size));
                 ns = ns.getParentNamespace();
             }
-            ret.add(new EvtAddrToken(symbol.getName(), color, atAddr, target, size));
+            ret.add(new EvtAddrToken(script, symbol.getName(), color, atAddr, target, size));
             return ret;
         }
     }
 
-    private EvtToken addrFailToken(Address atAddr, Address target, long size) {
-        return new EvtAddrToken("ERR_" + target, COLOR_EXTERNAL_FUNCTION, atAddr, target, size);
+    private EvtToken addrFailToken(EvtScript script, Address atAddr, Address target, long size) {
+        return new EvtAddrToken(script, "ERR_" + target, COLOR_EXTERNAL_FUNCTION, atAddr, target, size);
     }
 
-    private List<EvtToken> addrToTokens(Arg.ADDR arg, Address atAddr) {
+    private List<EvtToken> addrToTokens(EvtScript script, Arg.ADDR arg, Address atAddr) {
         List<EvtToken> ret = new ArrayList<>();
 
         Address target = program.getAddressFactory().getDefaultAddressSpace().getAddress(arg.value());
@@ -142,23 +142,24 @@ public class GhidraPrinter {
         CodeUnit cu = program.getListing().getCodeUnitAt(target);
         if (cu == null) {
             Msg.warn(this, "No code unit for " + Long.toHexString(arg.value()));
-            ret.add(addrFailToken(atAddr, target, Arg.bytesSize()));
+            ret.add(addrFailToken(script, atAddr, target, Arg.bytesSize()));
         }
         else if (cu instanceof Data data && isROString(data)) {
             String value = (String) data.getValue();
-            ret.add(new EvtAddrToken("\"" + value + "\"", decompileOptions.getConstantColor(), atAddr, target, Arg.bytesSize()));
+            ret.add(new EvtAddrToken(script, "\"" + value + "\"", decompileOptions.getConstantColor(), atAddr, target, Arg.bytesSize()));
         }
         else {
-            ret.addAll(symbolToTokens(atAddr, color, target, Arg.bytesSize()));
+            ret.addAll(symbolToTokens(script, atAddr, color, target, Arg.bytesSize()));
         }
 
         return ret;
     }
 
-    private List<EvtToken> argToTokens(Arg arg, Address atAddr) {
+    private List<EvtToken> argToTokens(EvtScript script, Arg arg, Address atAddr) {
         return switch (arg) {
-            case Arg.ADDR addr -> addrToTokens(addr, atAddr);
+            case Arg.ADDR addr -> addrToTokens(script, addr, atAddr);
             case Arg.FLOAT(float value) -> Arrays.asList(EvtToken.argScalar(
+                script,
                 Float.toString(value),
                 decompileOptions.getConstantColor(),
                 atAddr,
@@ -166,6 +167,7 @@ public class GhidraPrinter {
                 true
             ));
             case Arg.INT(int value) -> Arrays.asList(EvtToken.argScalar(
+                script,
                 Integer.toString(value),
                 decompileOptions.getConstantColor(),
                 atAddr,
@@ -173,11 +175,13 @@ public class GhidraPrinter {
                 true
             ));
             case Arg.Variable variable -> Arrays.asList(EvtToken.arg(
+                script,
                 variable.typeName() + "(" + variable.id() + ")",
                 variableToColor(variable),
                 atAddr
             ));
             case Arg.NONE() ->  Arrays.asList(EvtToken.arg(
+                script,
                 "NONE",
                 decompileOptions.getVariableColor(),
                 atAddr
@@ -194,9 +198,9 @@ public class GhidraPrinter {
 
         // Header
         List<EvtToken> header = new ArrayList<>();
-        header.add(EvtToken.syntax(HEADER_DECORATION + " ", decompileOptions.getDefaultColor(), addr));
-        header.addAll(symbolToTokens(addr, COLOR_HEADER, addr, 0));
-        header.add(EvtToken.syntax(" " + HEADER_DECORATION, decompileOptions.getDefaultColor(), addr));
+        header.add(EvtToken.syntax(script, HEADER_DECORATION + " ", decompileOptions.getDefaultColor(), addr));
+        header.addAll(symbolToTokens(script, addr, COLOR_HEADER, addr, 0));
+        header.add(EvtToken.syntax(script, " " + HEADER_DECORATION, decompileOptions.getDefaultColor(), addr));
         ret.add(new EvtLine(header, addr, line, indent));
 
         Address lineAddr = addr;
@@ -209,7 +213,7 @@ public class GhidraPrinter {
 
             List<EvtToken> tokens = new ArrayList<>();
 
-            tokens.add(EvtToken.instr(opcode.niceName(), COLOR_INSTR, addr));
+            tokens.add(EvtToken.instr(script, opcode.niceName(), COLOR_INSTR, addr));
             addr = addr.add(Instr.HEADER_SIZE);
 
             boolean first = true;
@@ -217,8 +221,8 @@ public class GhidraPrinter {
             {
                 String sep = first ? " " : ", ";
                 first = false; 
-                tokens.add(EvtToken.syntax(sep, decompileOptions.getDefaultColor(), addr));
-                tokens.addAll(argToTokens(arg, addr));
+                tokens.add(EvtToken.syntax(script, sep, decompileOptions.getDefaultColor(), addr));
+                tokens.addAll(argToTokens(script, arg, addr));
                 addr = addr.add(Arg.bytesSize());
             }
 
@@ -228,7 +232,7 @@ public class GhidraPrinter {
             indent += opcode.indent();
         }
 
-        ret.add(new EvtLine(Arrays.asList(new EvtToken("", decompileOptions.getDefaultColor(), lineAddr, 0)), addr, line, indent));
+        ret.add(new EvtLine(Arrays.asList(new EvtToken(script, "", decompileOptions.getDefaultColor(), lineAddr, 0)), addr, line, indent));
 
         return ret;
     }

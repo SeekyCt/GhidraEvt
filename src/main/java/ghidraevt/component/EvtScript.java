@@ -22,17 +22,36 @@ package ghidraevt.component;
 import java.util.Objects;
 
 import ghidra.program.model.address.Address;
+import ghidra.program.model.listing.Program;
+import ghidra.program.model.symbol.Symbol;
 
 /**
  * Analogue of Ghidra's Function class, without requiring a Data to be defined
  */
 public class EvtScript {
+    private Program program;
     private final Address startAddress;
     private Address endAddress;
     
-    public EvtScript(Address startAddress) {
+    public EvtScript(Program program, Address startAddress) {
+        this.program = program;
         this.startAddress = Objects.requireNonNull(startAddress);
         this.endAddress = null;
+    }
+
+    public Program getProgram() {
+        return program;
+    }
+
+    public String getName() {
+        if (startAddress == null)
+            return null;
+
+        Symbol symbol = program.getSymbolTable().getPrimarySymbol(startAddress);
+        if (symbol == null)
+            return null;
+
+        return symbol.getName();
     }
 
     public Address getStartAddress() {

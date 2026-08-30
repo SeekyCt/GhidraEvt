@@ -31,7 +31,10 @@ import docking.WindowPosition;
 import docking.action.DockingAction;
 import docking.action.MenuData;
 import docking.action.ToolBarData;
+import docking.widgets.fieldpanel.field.Field;
+import docking.widgets.fieldpanel.support.FieldHighlightFactory;
 import docking.widgets.fieldpanel.support.FieldLocation;
+import docking.widgets.fieldpanel.support.Highlight;
 import docking.widgets.fieldpanel.support.ViewerPosition;
 import ghidra.GhidraOptions;
 import ghidra.app.decompiler.DecompileOptions;
@@ -60,6 +63,7 @@ import ghidraevt.GhidraEvtPlugin;
 import ghidraevt.action.CloneAction;
 import ghidraevt.action.EditDataTypeAction;
 import ghidraevt.action.EvtActionContext;
+import ghidraevt.action.FindAction;
 import ghidraevt.action.RenameSymbolAction;
 import ghidraevt.action.RetypeGlobalAction;
 import ghidraevt.action.SelectAllAction;
@@ -87,7 +91,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
     private EvtController controller;
     private EvtPanel evtPanel;
     // private DecoratorPanel decorationPanel;
-    // private ClangHighlightController highlightController;
+    private EvtHighlightController highlightController;
 
     private ViewerPosition pendingViewerPosition;
 
@@ -112,8 +116,6 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
     private DockingToggle snapToSymbol;
     private DockingToggle game;
 
-    // private EvtHighlightFactory hlFactory = new EvtHighlightFactory();
-
     public EvtProvider(GhidraEvtPlugin plugin, boolean isConnected) {
         super(plugin.getTool(), "Evt Disassembler", plugin.getName(), EvtActionContext.class);
 
@@ -131,8 +133,8 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         evtPanel = controller.getEvtPanel();
 
         // FUTURE move the hl controller into the panel
-        // highlightController = new LocationClangHighlightController();
-        // evtPanel.setHighlightController(highlightController);
+        highlightController = new LocationEvtHighlightController();
+        evtPanel.setHighlightController(highlightController);
         // decorationPanel = new DecoratorPanel(evtPanel, isConnected) {
         //     @Override
         //     public void paint(Graphics g) {
@@ -486,16 +488,6 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         return null;
     }
 
-    // @Override
-    // public String getTextSelection() {
-    //     FieldSelection selection = fieldPanel.getSelection();
-    //     if (selection.isEmpty()) {
-    //         return null;
-    //     }
-
-    //     return FieldSelectionHelper.getFieldSelectionText(selection, fieldPanel);
-    // }
-
     @Override
     public String getTextSelection() {
         EvtPanel evtPanel = controller.getEvtPanel();
@@ -814,11 +806,11 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         //
         // Search
         //
-        // String searchGroup = "Comment2 - Search Group";
-        // subGroupPosition = 0; // reset for the next group
+        String searchGroup = "Comment2 - Search Group";
+        subGroupPosition = 0; // reset for the next group
 
-        // FindAction findAction = new FindAction();
-        // setGroupInfo(findAction, searchGroup, subGroupPosition++);
+        FindAction findAction = new FindAction();
+        setGroupInfo(findAction, searchGroup, subGroupPosition++);
 
         //
         // References
@@ -883,7 +875,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         // addLocalAction(convertOctAction);
         // addLocalAction(convertCharAction);
         // addLocalAction(convertAction);
-        // addLocalAction(findAction);
+        addLocalAction(findAction);
         // addLocalAction(findReferencesAction);
         // addLocalAction(propertiesAction);
         addLocalAction(cloneDecompilerAction);
@@ -975,13 +967,6 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 	public void handleTokenRenamed(EvtToken tokenAtCursor, String newName) {
 		controller.getEvtPanel().tokenRenamed(tokenAtCursor, newName);
 	}
-
-    // private static class EvtHighlightFactory implements FieldHighlightFactory {
-    //     @Override
-    //     public Highlight[] createHighlights(Field field, String text, int cursorTextOffset) {
-    //         return new Highlight[0];
-    //     }
-    // }
 
     // // Customize GUI
     // private void buildPanel() {
