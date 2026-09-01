@@ -11,7 +11,6 @@ import ghidra.program.model.listing.CodeUnit;
 import ghidra.program.model.listing.Data;
 import ghidra.program.model.listing.Function;
 import ghidra.program.model.listing.Program;
-import ghidra.program.model.scalar.Scalar;
 import ghidra.program.model.symbol.Namespace;
 import ghidra.program.model.symbol.Symbol;
 import ghidra.util.Msg;
@@ -21,8 +20,6 @@ import ghidra.app.util.SymbolInspector;
 import jevt.Instr;
 import jevt.Opcode;
 import jevt.Arg;
-
-import ghidra.app.decompiler.component.DecompilerUtils;
 
 public class GhidraPrinter {
     public static Color COLOR_LW      = new GColor("color.fg.ghidraevt.lw");

@@ -26,35 +26,16 @@ import docking.action.KeyBindingData;
 import docking.action.MenuData;
 import ghidra.framework.cmd.Command;
 import ghidra.app.cmd.data.CreateDataCmd;
-import ghidra.app.cmd.data.CreateDataInStructureCmd;
-import ghidra.app.util.HelpTopics;
-import ghidra.app.util.datatype.DataTypeSelectionDialog;
 import ghidra.framework.plugintool.PluginTool;
 import ghidra.program.model.address.Address;
-import ghidra.program.model.address.AddressOverflowException;
 import ghidra.program.model.data.DataType;
-import ghidra.program.model.data.DataTypeManager;
-import ghidra.program.model.data.DataUtilities;
 import ghidra.program.model.listing.Data;
-import ghidra.program.model.listing.Function;
-import ghidra.program.model.listing.Listing;
 import ghidra.program.model.listing.Program;
-import ghidra.program.model.mem.MemoryBlock;
-import ghidra.program.model.pcode.HighFunctionDBUtil;
-import ghidra.program.model.pcode.HighSymbol;
-import ghidra.program.model.symbol.SourceType;
-import ghidra.program.model.util.CodeUnitInsertionException;
-import ghidra.program.util.CodeUnitLocation;
-import ghidra.program.util.ProgramLocation;
-import ghidra.program.util.ProgramSelection;
 import ghidra.util.*;
 import ghidra.util.data.DataTypeParser.AllowedDataTypes;
-import ghidra.util.exception.*;
 import ghidraevt.component.EvtScript;
 import ghidraevt.token.EvtAddrToken;
 import ghidraevt.token.EvtToken;
-
-import ghidra.app.plugin.core.data.ChooseDataTypeAction;;
 
 /**
  * Action triggered from a specific token in the decompiler window to change the data-type

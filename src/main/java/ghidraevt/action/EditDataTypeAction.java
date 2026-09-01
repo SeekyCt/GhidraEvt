@@ -17,27 +17,11 @@ package ghidraevt.action;
 
 import docking.ActionContext;
 import docking.action.MenuData;
-import ghidra.app.cmd.data.CreateDataCmd;
-import ghidra.app.decompiler.ClangFieldToken;
-import ghidra.app.decompiler.ClangToken;
-import ghidra.app.decompiler.ClangTypeToken;
-import ghidra.app.decompiler.component.DecompilerPanel;
-import ghidra.app.decompiler.component.DecompilerUtils;
 import ghidra.app.plugin.core.datamgr.util.DataTypeUtils;
-import ghidra.app.plugin.core.decompile.DecompilerActionContext;
 import ghidra.app.services.DataTypeManagerService;
-import ghidra.app.util.HelpTopics;
 import ghidra.framework.plugintool.PluginTool;
 import ghidra.program.model.data.*;
 import ghidra.program.model.listing.Data;
-import ghidra.program.model.listing.Function;
-import ghidra.program.model.listing.Program;
-import ghidra.util.HelpLocation;
-import ghidra.util.Msg;
-import ghidra.util.UndefinedFunction;
-import ghidra.util.data.DataTypeParser.AllowedDataTypes;
-import ghidraevt.component.EvtPanel;
-import ghidraevt.component.EvtUtils;
 import ghidraevt.token.EvtAddrToken;
 import ghidraevt.token.EvtToken;
 

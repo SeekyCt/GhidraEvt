@@ -31,10 +31,7 @@ import docking.WindowPosition;
 import docking.action.DockingAction;
 import docking.action.MenuData;
 import docking.action.ToolBarData;
-import docking.widgets.fieldpanel.field.Field;
-import docking.widgets.fieldpanel.support.FieldHighlightFactory;
 import docking.widgets.fieldpanel.support.FieldLocation;
-import docking.widgets.fieldpanel.support.Highlight;
 import docking.widgets.fieldpanel.support.ViewerPosition;
 import ghidra.GhidraOptions;
 import ghidra.app.decompiler.DecompileOptions;
@@ -45,7 +42,6 @@ import ghidra.app.plugin.core.decompile.DecompilePlugin;
 import ghidra.app.services.ClipboardService;
 import ghidra.app.services.GoToService;
 import ghidra.app.services.ProgramManager;
-import ghidra.app.services.QueryData;
 import ghidra.app.util.ListingHighlightProvider;
 import ghidra.framework.options.OptionsChangeListener;
 import ghidra.framework.options.SaveState;
@@ -72,8 +68,6 @@ import ghidraevt.location.EvtLocationMemento;
 import ghidraevt.token.EvtToken;
 import resources.Icons;
 import utility.function.Callback;
-
-// DecompilerHighlightService?
 
 public class EvtProvider extends NavigatableComponentProviderAdapter
         implements OptionsChangeListener, EvtCallbackHandler {
@@ -596,21 +590,24 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         // invoke later to give the window manage a chance to create the new window
         // (its done in an invoke later)
         Swing.runLater(() -> {
-
-            ViewerPosition myViewPosition = controller.getEvtPanel().getViewerPosition();
-            newProvider.doSetProgram(program);
-
-            // initialize the new provider's cache and then set the location
-            newProvider.setLocation(currentLocation, myViewPosition);
-
-            // transfer any state after the new disassembler is initialized
-            EvtPanel myPanel = getEvtPanel();
-            EvtPanel newPanel = newProvider.getEvtPanel();
-            newProvider.doWhenNotBusy(() -> {
-                newPanel.setViewerPosition(myViewPosition);
-                // newPanel.cloneHighlights(myPanel);
-            });
+            initializeClone(newProvider);
         });
+    }
+
+    private void initializeClone(EvtProvider newProvider) {
+        ViewerPosition myViewPosition = controller.getEvtPanel().getViewerPosition();
+        newProvider.doSetProgram(program);
+
+        newProvider.setLocation(currentLocation, myViewPosition);
+
+        // transfer any state after the new disassembler is initialized
+        EvtPanel myPanel = getEvtPanel();
+        EvtPanel newPanel = newProvider.getEvtPanel();
+        newProvider.doWhenNotBusy(() -> {
+            newPanel.setViewerPosition(myViewPosition);
+            newPanel.cloneHighlights(myPanel);
+        });
+
     }
 
     @Override

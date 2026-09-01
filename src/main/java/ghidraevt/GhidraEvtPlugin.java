@@ -32,7 +32,6 @@ import ghidra.app.events.ProgramLocationPluginEvent;
 import ghidra.app.events.ProgramSelectionPluginEvent;
 import ghidra.app.events.ProgramClosedPluginEvent;
 import ghidra.app.plugin.PluginCategoryNames;
-import ghidra.app.plugin.ProgramPlugin;
 import ghidra.app.services.ClipboardService;
 import ghidra.app.services.DataTypeManagerService;
 import ghidra.app.services.GoToService;
@@ -52,7 +51,6 @@ import ghidra.program.model.listing.Listing;
 import ghidra.program.model.listing.Program;
 import ghidra.program.util.ProgramLocation;
 import ghidra.program.util.ProgramSelection;
-import ghidra.util.Msg;
 import ghidra.util.task.SwingUpdateManager;
 import ghidraevt.component.EvtProvider;
 import ghidraevt.component.hover.EvtHoverService;
@@ -98,6 +96,7 @@ public class GhidraEvtPlugin extends Plugin {
     private ProgramLocation currentLocation;
     private ProgramSelection currentSelection;
 
+    // Merged from separate hover plugins
     private FunctionSignatureEvtHover functionNameHoverService;
     private ScalarValueEvtHover scalarValueHoverService;
     private ReferenceEvtHover referenceHoverService;
@@ -118,24 +117,21 @@ public class GhidraEvtPlugin extends Plugin {
         connectedProvider.setLocation(currentLocation, null);
     });
 
-    /**
-     * Plugin constructor.
-     * 
-     * @param tool The plugin tool that this plugin is added to.
-     * @throws IOException 
-     */
     public GhidraEvtPlugin(PluginTool tool) throws IOException {
         super(tool);
 
         disconnectedProviders = new ArrayList<>();
         connectedProvider = new EvtProvider(this, true);
 
+        // Merged from separate hover plugins
 		functionNameHoverService = new FunctionSignatureEvtHover(tool);
 		registerServiceProvided(EvtHoverService.class, functionNameHoverService);
         scalarValueHoverService = new ScalarValueEvtHover(tool);
         registerServiceProvided(EvtHoverService.class, scalarValueHoverService);
         referenceHoverService = new ReferenceEvtHover(tool);
         registerServiceProvided(EvtHoverService.class, referenceHoverService);
+
+        // No highlight and hover services are exposed, extension of them is not desired
     }
 
     @Override
@@ -283,6 +279,7 @@ public class GhidraEvtPlugin extends Plugin {
         if (event instanceof ProgramActivatedPluginEvent) {
             currentProgram = ((ProgramActivatedPluginEvent) event).getActiveProgram();
             connectedProvider.doSetProgram(currentProgram);
+            // No need to duplicate registering SpecExtension
         }
         else if (event instanceof ProgramLocationPluginEvent) {
             ProgramLocation location = ((ProgramLocationPluginEvent) event).getLocation();

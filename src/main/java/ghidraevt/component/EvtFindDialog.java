@@ -16,10 +16,6 @@
 
 
 import docking.widgets.FindDialog;
-import ghidra.app.decompiler.component.DecompilerPanel;
-import ghidra.app.plugin.core.decompile.actions.DecompilerSearcher;
-import ghidra.app.util.HelpTopics;
-import ghidra.util.HelpLocation;
 import ghidraevt.action.EvtSearcher;
 
 public class EvtFindDialog extends FindDialog {

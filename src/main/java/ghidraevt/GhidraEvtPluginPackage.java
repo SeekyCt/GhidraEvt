@@ -2,7 +2,6 @@ package ghidraevt;
 
 import ghidra.framework.plugintool.util.PluginPackage;
 import resources.Icons;
-import resources.ResourceManager;
 
 public class GhidraEvtPluginPackage extends PluginPackage {
 	public static final String NAME = "GhidraEvt";

@@ -25,8 +25,6 @@ import docking.widgets.fieldpanel.field.Field;
 import docking.widgets.fieldpanel.support.FieldLocation;
 import generic.theme.GColor;
 import ghidra.program.model.listing.Function;
-import ghidra.program.model.pcode.HighFunction;
-import ghidra.program.model.pcode.PcodeOp;
 import ghidra.util.ColorUtils;
 import ghidraevt.token.EvtLine;
 import ghidraevt.token.EvtToken;
