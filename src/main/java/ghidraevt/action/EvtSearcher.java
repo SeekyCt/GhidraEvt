@@ -15,7 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Modified from Ghidra's decompiler UI source code to work on evt scripts
+ * Modified from ghidra/app/plugin/core/decompile/actions/DecompilerSearcher.java to work on evt
+ * scripts
  */
 package ghidraevt.action;
 
@@ -37,25 +38,21 @@ import ghidraevt.component.EvtPanel;
 import ghidraevt.component.EvtTextField;
 
 /**
- * A {@link FindDialogSearcher} for searching the text of the decompiler window.
+ * A {@link FindDialogSearcher} for searching the text of the disassembler window.
  */
 public class EvtSearcher implements FindDialogSearcher {
 
 	private Worker worker = Worker.createGuiWorker();
-	private EvtPanel decompilerPanel;
+	private EvtPanel evtPanel;
 	private EvtSearchResults searchResults;
 
-	/**
-	 * Constructor
-	 * @param decompilerPanel decompiler panel
-	 */
-	public EvtSearcher(EvtPanel decompilerPanel) {
-		this.decompilerPanel = decompilerPanel;
+	public EvtSearcher(EvtPanel evtPanel) {
+		this.evtPanel = evtPanel;
 	}
 
 	@Override
 	public CursorPosition getCursorPosition() {
-		FieldLocation fieldLocation = decompilerPanel.getCursorPosition();
+		FieldLocation fieldLocation = evtPanel.getCursorPosition();
 		return new EvtCursorPosition(fieldLocation);
 	}
 
@@ -72,7 +69,7 @@ public class EvtSearcher implements FindDialogSearcher {
 	@Override
 	public CursorPosition getEnd() {
 
-		List<Field> lines = decompilerPanel.getFields();
+		List<Field> lines = evtPanel.getFields();
 		int lineNumber = lines.size() - 1;
 		EvtTextField textLine = (EvtTextField) lines.get(lineNumber);
 
@@ -86,7 +83,7 @@ public class EvtSearcher implements FindDialogSearcher {
 
 	@Override
 	public void dispose() {
-		decompilerPanel.setSearchResults(null);
+		evtPanel.setSearchResults(null);
 
 		if (searchResults != null) {
 			searchResults.dispose();
@@ -130,7 +127,7 @@ public class EvtSearcher implements FindDialogSearcher {
 		}
 
 		EvtSearchResults newResults =
-			new EvtSearchResults(worker, decompilerPanel, searchText, results);
+			new EvtSearchResults(worker, evtPanel, searchText, results);
 		newResults.activate();
 		return newResults;
 	}
@@ -192,7 +189,7 @@ public class EvtSearcher implements FindDialogSearcher {
 				return Pattern.compile(searchString, options);
 			}
 			catch (PatternSyntaxException e) {
-				Msg.showError(this, decompilerPanel, "Regular Expression Syntax Error",
+				Msg.showError(this, evtPanel, "Regular Expression Syntax Error",
 					e.getMessage());
 				return null;
 			}
@@ -219,7 +216,7 @@ public class EvtSearcher implements FindDialogSearcher {
 
 	private EvtSearchLocation findNext(Function<String, SearchMatch> matcher,
 			String searchString, FieldLocation currentLocation) {
-		List<Field> fields = decompilerPanel.getFields();
+		List<Field> fields = evtPanel.getFields();
 		int line = currentLocation.getIndex().intValue();
 		for (int i = line; i < fields.size(); i++) {
 			EvtTextField field = (EvtTextField) fields.get(i);
