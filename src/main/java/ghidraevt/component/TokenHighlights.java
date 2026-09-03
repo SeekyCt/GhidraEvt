@@ -25,19 +25,19 @@ import java.util.*;
 import ghidraevt.token.EvtToken;
 
 /**
- * A simple class to manage {@link HighlightToken}s used to create highlights in the Decompiler.
+ * A simple class to manage {@link EvtHighlightToken}s used to create highlights in the Decompiler.
  * This class allows clients to access highlights either by a {@link ClangToken} or a
- * {@link HighlightToken}.
+ * {@link EvtHighlightToken}.
  */
-public class TokenHighlights implements Iterable<HighlightToken> {
+public class TokenHighlights implements Iterable<EvtHighlightToken> {
 
-	private Map<TokenKey, HighlightToken> highlightsByToken = new HashMap<>();
+	private Map<TokenKey, EvtHighlightToken> highlightsByToken = new HashMap<>();
 
 	public Map<String, Color> copyHighlightsByName() {
 		Map<String, Color> results = new HashMap<>();
 
-		Collection<HighlightToken> values = highlightsByToken.values();
-		for (HighlightToken hl : values) {
+		Collection<EvtHighlightToken> values = highlightsByToken.values();
+		for (EvtHighlightToken hl : values) {
 			String name = hl.getToken().getText();
 			results.put(name, hl.getColor());
 		}
@@ -45,7 +45,7 @@ public class TokenHighlights implements Iterable<HighlightToken> {
 		return results;
 	}
 
-	private TokenKey getKey(HighlightToken ht) {
+	private TokenKey getKey(EvtHighlightToken ht) {
 		return new TokenKey(ht);
 	}
 
@@ -73,7 +73,7 @@ public class TokenHighlights implements Iterable<HighlightToken> {
 	 * Adds the given highlight to this container
 	 * @param t the highlight
 	 */
-	public void add(HighlightToken t) {
+	public void add(EvtHighlightToken t) {
 		highlightsByToken.put(getKey(t), t);
 	}
 
@@ -82,7 +82,7 @@ public class TokenHighlights implements Iterable<HighlightToken> {
 	 * @param t the token
 	 * @return the highlight
 	 */
-	public HighlightToken get(EvtToken t) {
+	public EvtHighlightToken get(EvtToken t) {
 		return highlightsByToken.get(getKey(t));
 	}
 
@@ -111,7 +111,7 @@ public class TokenHighlights implements Iterable<HighlightToken> {
 	}
 
 	@Override
-	public Iterator<HighlightToken> iterator() {
+	public Iterator<EvtHighlightToken> iterator() {
 		return highlightsByToken.values().iterator();
 	}
 

@@ -186,7 +186,7 @@ public abstract class EvtHighlightController {
 		it = CollectionUtils.asIterable(service, secondary);
 		for (EvtHighlighter highlighter : it) {
 			TokenHighlights hlTokens = userHighlights.add(highlighter);
-			for (HighlightToken hlToken : hlTokens) {
+			for (EvtHighlightToken hlToken : hlTokens) {
 				allTokens.add(hlToken.getToken());
 			}
 		}
@@ -212,7 +212,7 @@ public abstract class EvtHighlightController {
 	 */
 	public EvtToken getHighlightedToken() {
 		if (contextHighlightTokens.size() == 1) {
-			HighlightToken hlToken = CollectionUtils.any(contextHighlightTokens);
+			EvtHighlightToken hlToken = CollectionUtils.any(contextHighlightTokens);
 			return hlToken.getToken();
 		}
 		return null;
@@ -235,9 +235,9 @@ public abstract class EvtHighlightController {
 	}
 
 	private void doClearHighlights(TokenHighlights tokenHighlights, Consumer<EvtToken> clearer) {
-		Iterator<HighlightToken> it = tokenHighlights.iterator();
+		Iterator<EvtHighlightToken> it = tokenHighlights.iterator();
 		while (it.hasNext()) {
-			HighlightToken highlight = it.next();
+			EvtHighlightToken highlight = it.next();
 
 			// must remove the highlight before calling the clearer as that may call back into the
 			// TokenHighlights we are clearing
@@ -392,7 +392,7 @@ public abstract class EvtHighlightController {
 		}
 
 		// store the actual requested color
-		currentHighlights.add(new HighlightToken(EvtToken, highlightColor));
+		currentHighlights.add(new EvtHighlightToken(EvtToken, highlightColor));
 		updateHighlightColor(EvtToken);
 	}
 
@@ -407,7 +407,7 @@ public abstract class EvtHighlightController {
 		t.setHighlight(combinedColor);
 	}
 
-	private void add(Set<Color> colors, HighlightToken hlToken) {
+	private void add(Set<Color> colors, EvtHighlightToken hlToken) {
 		if (hlToken != null) {
 			colors.add(hlToken.getColor());
 		}
@@ -430,7 +430,7 @@ public abstract class EvtHighlightController {
 		// note: not sure whether we should always blend all colors or decide to allow some
 		//       highlighters have precedence for highlighting
 
-		HighlightToken primaryHl = contextHighlightTokens.get(t);
+		EvtHighlightToken primaryHl = contextHighlightTokens.get(t);
 		Color blendedHlColor = blendHighlighterColors(t);
 
 		Set<Color> allColors = new HashSet<>();
@@ -468,7 +468,7 @@ public abstract class EvtHighlightController {
 		Set<Color> colors = new HashSet<>();
 		for (EvtHighlighter highlighter : it) {
 			TokenHighlights highlights = userHighlights.get(highlighter);
-			HighlightToken hlToken = highlights.get(token);
+			EvtHighlightToken hlToken = highlights.get(token);
 			if (hlToken == null) {
 				continue;
 			}

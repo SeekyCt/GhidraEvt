@@ -70,7 +70,7 @@ public class UserHighlights {
 		EvtHighlighter highlighter = getSecondaryHighlighter(token);
 		if (highlighter != null) {
 			TokenHighlights highlights = allHighlighterHighlights.get(highlighter);
-			HighlightToken hlToken = highlights.get(token);
+			EvtHighlightToken hlToken = highlights.get(token);
 			return hlToken.getColor();
 		}
 
@@ -103,7 +103,7 @@ public class UserHighlights {
 	EvtHighlighter getSecondaryHighlighter(EvtToken token) {
 		for (EvtHighlighter highlighter : secondaryHighlighters) {
 			TokenHighlights highlights = allHighlighterHighlights.get(highlighter);
-			HighlightToken hlToken = highlights.get(token);
+			EvtHighlightToken hlToken = highlights.get(token);
 			if (hlToken != null) {
 				return highlighter;
 			}

@@ -46,7 +46,7 @@ class TokenKey {
 		hash += lineNumber;
 	}
 
-	public TokenKey(HighlightToken t) {
+	public TokenKey(EvtHighlightToken t) {
 		this(t.getToken());
 	}
 

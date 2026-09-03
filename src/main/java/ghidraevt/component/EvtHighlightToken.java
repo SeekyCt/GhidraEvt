@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Modified from Ghidra's decompiler UI source code to work on evt scripts
+ * Modified from ghidra/app/decompiler/component/HighlightToken.java to work on evt scripts
  */
 package ghidraevt.component;
 
@@ -24,14 +24,14 @@ import java.awt.Color;
 import ghidraevt.token.EvtToken;
 
 /**
- * A class to used to track a {@link Decompiler} token along with its highlight color
+ * A class to used to track a disassembler token along with its highlight color
  */
-public class HighlightToken {
+public class EvtHighlightToken {
 
 	private EvtToken token;
 	private Color color;
 
-	public HighlightToken(EvtToken token, Color color) {
+	public EvtHighlightToken(EvtToken token, Color color) {
 		this.token = token;
 		this.color = color;
 	}
