@@ -17,7 +17,7 @@
  *
  * Modified from ghidra/app/decompiler/component/ClangHighlightController.java to work on evt scripts
  */
-package ghidraevt.component;
+package ghidraevt.highlight;
 
 import java.awt.Color;
 import java.util.*;
@@ -30,6 +30,9 @@ import docking.widgets.fieldpanel.support.FieldLocation;
 import generic.theme.GColor;
 import ghidra.program.model.listing.Function;
 import ghidra.util.ColorUtils;
+import ghidraevt.component.DefaultEvtColorProvider;
+import ghidraevt.component.EvtColorProvider;
+import ghidraevt.component.EvtScript;
 import ghidraevt.token.EvtLine;
 import ghidraevt.token.EvtToken;
 import util.CollectionUtils;
@@ -73,8 +76,8 @@ public abstract class EvtHighlightController {
 	protected Color defaultHighlightColor = DEFAULT_HIGHLIGHT_COLOR;
 	protected Color defaultParenColor = DEFAULT_HIGHLIGHT_COLOR;
 
-	private TokenHighlights contextHighlightTokens = new TokenHighlights();
-	private UserHighlights userHighlights = new UserHighlights();
+	private EvtTokenHighlights contextHighlightTokens = new EvtTokenHighlights();
+	private EvtUserHighlights userHighlights = new EvtUserHighlights();
 
 	/**
 	 * A counter to track updates so that clients know when a buffered highlight request is invalid
@@ -133,7 +136,7 @@ public abstract class EvtHighlightController {
 		return userHighlights.getSecondaryHighlightColors();
 	}
 
-	public TokenHighlights getPrimaryHighlights() {
+	public EvtTokenHighlights getPrimaryHighlights() {
 		return contextHighlightTokens;
 	}
 
@@ -185,7 +188,7 @@ public abstract class EvtHighlightController {
 		Set<EvtToken> allTokens = new HashSet<>();
 		it = CollectionUtils.asIterable(service, secondary);
 		for (EvtHighlighter highlighter : it) {
-			TokenHighlights hlTokens = userHighlights.add(highlighter);
+			EvtTokenHighlights hlTokens = userHighlights.add(highlighter);
 			for (EvtHighlightToken hlToken : hlTokens) {
 				allTokens.add(hlToken.getToken());
 			}
@@ -202,7 +205,7 @@ public abstract class EvtHighlightController {
 	 * @return the highlights
 	 * @see #getPrimaryHighlights()
 	 */
-	public TokenHighlights getHighlighterHighlights(EvtHighlighter highlighter) {
+	public EvtTokenHighlights getHighlighterHighlights(EvtHighlighter highlighter) {
 		return userHighlights.getHighlights(highlighter);
 	}
 
@@ -234,7 +237,7 @@ public abstract class EvtHighlightController {
 		notifyListeners();
 	}
 
-	private void doClearHighlights(TokenHighlights tokenHighlights, Consumer<EvtToken> clearer) {
+	private void doClearHighlights(EvtTokenHighlights tokenHighlights, Consumer<EvtToken> clearer) {
 		Iterator<EvtHighlightToken> it = tokenHighlights.iterator();
 		while (it.hasNext()) {
 			EvtHighlightToken highlight = it.next();
@@ -285,7 +288,7 @@ public abstract class EvtHighlightController {
 			userHighlights.getSecondaryHighlightersByFunction(script);
 
 		for (EvtHighlighter highlighter : highlighters) {
-			TokenHighlights highlights = userHighlights.getHighlights(highlighter);
+			EvtTokenHighlights highlights = userHighlights.getHighlights(highlighter);
 			Consumer<EvtToken> clearHighlight = token -> updateHighlightColor(token);
 			doClearHighlights(highlights, clearHighlight);
 		}
@@ -317,7 +320,7 @@ public abstract class EvtHighlightController {
 	 */
 	public void removeHighlighterHighlights(EvtHighlighter highlighter) {
 
-		TokenHighlights highlighterTokens = userHighlights.get(highlighter);
+		EvtTokenHighlights highlighterTokens = userHighlights.get(highlighter);
 		if (highlighterTokens == null) {
 			return;
 		}
@@ -347,7 +350,7 @@ public abstract class EvtHighlightController {
 			Supplier<? extends Collection<EvtToken>> tokens, EvtColorProvider colorProvider) {
 
 		Objects.requireNonNull(highlighter);
-		TokenHighlights highlighterTokens = userHighlights.add(highlighter);
+		EvtTokenHighlights highlighterTokens = userHighlights.add(highlighter);
 		addTokensToHighlights(tokens.get(), colorProvider, highlighterTokens);
 	}
 
@@ -369,7 +372,7 @@ public abstract class EvtHighlightController {
 	}
 
 	private void addTokensToHighlights(Collection<EvtToken> tokens, EvtColorProvider colorProvider,
-			TokenHighlights currentHighlights) {
+			EvtTokenHighlights currentHighlights) {
 
 		updateId++;
 
@@ -385,7 +388,7 @@ public abstract class EvtHighlightController {
 	}
 
 	private void doAddHighlight(EvtToken EvtToken, Color highlightColor,
-			TokenHighlights currentHighlights) {
+			EvtTokenHighlights currentHighlights) {
 
 		if (highlightColor == null) {
 			return;
@@ -467,7 +470,7 @@ public abstract class EvtHighlightController {
 		Iterable<EvtHighlighter> it = CollectionUtils.asIterable(service, secondary);
 		Set<Color> colors = new HashSet<>();
 		for (EvtHighlighter highlighter : it) {
-			TokenHighlights highlights = userHighlights.get(highlighter);
+			EvtTokenHighlights highlights = userHighlights.get(highlighter);
 			EvtHighlightToken hlToken = highlights.get(token);
 			if (hlToken == null) {
 				continue;

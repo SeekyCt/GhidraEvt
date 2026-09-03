@@ -18,13 +18,18 @@
  * Modified from ghidra/app/decompiler/component/ClangDecompilerHighlighter.java to work on evt
  * scripts
  */
-package ghidraevt.component;
+package ghidraevt.highlight;
 
 import java.awt.Color;
 import java.util.*;
 import java.util.function.Supplier;
 
 import generic.json.Json;
+import ghidraevt.component.EvtColorProvider;
+import ghidraevt.component.EvtController;
+import ghidraevt.component.EvtLayoutModel;
+import ghidraevt.component.EvtPanel;
+import ghidraevt.component.EvtScript;
 import ghidraevt.token.EvtLine;
 import ghidraevt.token.EvtToken;
 

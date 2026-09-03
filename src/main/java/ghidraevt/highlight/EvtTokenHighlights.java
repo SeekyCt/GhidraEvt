@@ -15,23 +15,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Modified from Ghidra's decompiler UI source code to work on evt scripts
+ * Modified from ghidra/app/decompiler/component/TokenHighlights.java to work on evt scripts
  */
-package ghidraevt.component;
+package ghidraevt.highlight;
 
 import java.awt.Color;
 import java.util.*;
 
 import ghidraevt.token.EvtToken;
+import ghidraevt.token.EvtTokenKey;
 
 /**
  * A simple class to manage {@link EvtHighlightToken}s used to create highlights in the Decompiler.
  * This class allows clients to access highlights either by a {@link ClangToken} or a
  * {@link EvtHighlightToken}.
  */
-public class TokenHighlights implements Iterable<EvtHighlightToken> {
+public class EvtTokenHighlights implements Iterable<EvtHighlightToken> {
 
-	private Map<TokenKey, EvtHighlightToken> highlightsByToken = new HashMap<>();
+	private Map<EvtTokenKey, EvtHighlightToken> highlightsByToken = new HashMap<>();
 
 	public Map<String, Color> copyHighlightsByName() {
 		Map<String, Color> results = new HashMap<>();
@@ -45,12 +46,12 @@ public class TokenHighlights implements Iterable<EvtHighlightToken> {
 		return results;
 	}
 
-	private TokenKey getKey(EvtHighlightToken ht) {
-		return new TokenKey(ht);
+	private EvtTokenKey getKey(EvtHighlightToken ht) {
+		return new EvtTokenKey(ht);
 	}
 
-	private TokenKey getKey(EvtToken t) {
-		return new TokenKey(t);
+	private EvtTokenKey getKey(EvtToken t) {
+		return new EvtTokenKey(t);
 	}
 
 	/**

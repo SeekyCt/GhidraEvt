@@ -53,10 +53,10 @@ import ghidra.program.util.ProgramLocation;
 import ghidra.program.util.ProgramSelection;
 import ghidra.util.task.SwingUpdateManager;
 import ghidraevt.component.EvtProvider;
-import ghidraevt.component.hover.EvtHoverService;
-import ghidraevt.component.hover.FunctionSignatureEvtHover;
-import ghidraevt.component.hover.ReferenceEvtHover;
-import ghidraevt.component.hover.ScalarValueEvtHover;
+import ghidraevt.hover.EvtHoverService;
+import ghidraevt.hover.FunctionSignatureEvtHover;
+import ghidraevt.hover.ReferenceEvtHover;
+import ghidraevt.hover.ScalarValueEvtHover;
 import ghidraevt.token.EvtToken;
 
 /**

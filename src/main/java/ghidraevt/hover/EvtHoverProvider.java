@@ -18,7 +18,7 @@
  * Modified from ghidra/app/decompiler/component/DecompilerHoverProvider.java to work on evt
  * scripts
  */
-package ghidraevt.component.hover;
+package ghidraevt.hover;
 
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;

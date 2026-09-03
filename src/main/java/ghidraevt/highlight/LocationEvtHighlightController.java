@@ -15,44 +15,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Modified from Ghidra's decompiler UI source code to work on evt scripts
+ * Modified from ghidra/app/decompiler/component/LocationClangHighlightController.java to work on
+ * evt scripts
  */
-package ghidraevt.component;
+package ghidraevt.highlight;
 
-import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 
 import docking.widgets.EventTrigger;
 import docking.widgets.fieldpanel.field.Field;
 import docking.widgets.fieldpanel.support.FieldLocation;
-import ghidraevt.token.EvtLine;
+import ghidraevt.component.EvtTextField;
+import ghidraevt.token.EvtToken;
 
 /**
- * A stub implementation of the highlight controller that allows clients to avoid null checks
+ * Class to handle location based highlights for a decompiled function.
  */
-public class NullEvtHighlightController extends EvtHighlightController {
+public class LocationEvtHighlightController extends EvtHighlightController {
 
 	@Override
 	public void fieldLocationChanged(FieldLocation location, Field field, EventTrigger trigger) {
-		// stub
-	}
 
-	@Override
-	public void addPrimaryHighlights(List<EvtLine> parentNode, EvtColorProvider colorProvider) {
-		// stub
-	}
+		clearPrimaryHighlights();
 
-	// @Override
-	// public void addPrimaryHighlightToTokensForBrace(EvtToken token, Color highlightColor) {
-	// 	// stub
-	// }
+		if (!(field instanceof EvtTextField)) {
+			return;
+		}
 
-	@Override
-	public void addListener(EvtHighlightListener listener) {
-		// stub
-	}
+		EvtToken tok = ((EvtTextField) field).getToken(location);
+		if (tok == null) {
+			return;
+		}
 
-	@Override
-	public void removeListener(EvtHighlightListener listener) {
-		// stub
+		String text = tok.getText();
+		if (StringUtils.isBlank(text)) {
+			return; // do not highlight whitespace
+		}
+
+		addPrimaryHighlight(tok, defaultHighlightColor);
 	}
 }

@@ -17,10 +17,10 @@
  * 
  * Modified from ghidra/app/decompiler/component/DecompilerFindDialog.java to work on evt scripts
  */
-package ghidraevt.component;
+package ghidraevt.action;
 
 import docking.widgets.FindDialog;
-import ghidraevt.action.EvtSearcher;
+import ghidraevt.component.EvtPanel;
 
 public class EvtFindDialog extends FindDialog {
 

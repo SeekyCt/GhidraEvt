@@ -15,24 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Modified from Ghidra's decompiler UI source code to work on evt scripts
+ * Modified from ghidra/app/decompiler/component/TokenKey.java to work on evt scripts
  */
-package ghidraevt.component;
+package ghidraevt.token;
 
 import java.util.Objects;
 
-import ghidraevt.token.EvtLine;
-import ghidraevt.token.EvtToken;
+import ghidraevt.highlight.EvtHighlightToken;
 
 // a key that allows us to equate tokens that are not the same instance
-class TokenKey {
+class EvtTokenKey {
 
 	private EvtToken token;
 	private int hash;
 	private int lineNumber = -1;
 	private int indexInParent = Integer.MAX_VALUE;
 
-	TokenKey(EvtToken token) {
+	EvtTokenKey(EvtToken token) {
 		this.token = Objects.requireNonNull(token);
 
 		EvtLine lineParent = token.getLineParent();
@@ -46,7 +45,7 @@ class TokenKey {
 		hash += lineNumber;
 	}
 
-	public TokenKey(EvtHighlightToken t) {
+	public EvtTokenKey(EvtHighlightToken t) {
 		this(t.getToken());
 	}
 
@@ -82,7 +81,7 @@ class TokenKey {
 			return false;
 		}
 
-		TokenKey otherKey = (TokenKey) obj;
+		EvtTokenKey otherKey = (EvtTokenKey) obj;
 		EvtToken otherToken = otherKey.token;
 		if (token.getClass() != otherToken.getClass()) {
 			return false;

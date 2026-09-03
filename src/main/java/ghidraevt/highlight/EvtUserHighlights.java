@@ -15,15 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Modified from Ghidra's decompiler UI source code to work on evt scripts
+ * Modified from ghidra/app/decompiler/component/UserHighlights.java to work on evt scripts
  */
-package ghidraevt.component;
+package ghidraevt.highlight;
 
 import java.awt.Color;
 import java.util.*;
 
 import org.apache.commons.collections4.map.LazyMap;
 
+import ghidraevt.component.EvtScript;
 import ghidraevt.token.EvtToken;
 
 /**
@@ -36,7 +37,7 @@ import ghidraevt.token.EvtToken;
  * Contrastingly, context highlights are cleared as the user moves the cursor around the Disassembler 
  * display.
  */
-public class UserHighlights {
+public class EvtUserHighlights {
 
 	private Map<EvtScript, List<EvtHighlighter>> secondaryHighlightersByScript =
 		LazyMap.lazyMap(new HashMap<>(), f -> new ArrayList<>());
@@ -47,7 +48,7 @@ public class UserHighlights {
 
 	// all highlighters, including secondary and global highlight service highlighters and per 
 	// function highlight service highlighters
-	private Map<EvtHighlighter, TokenHighlights> allHighlighterHighlights = new HashMap<>();
+	private Map<EvtHighlighter, EvtTokenHighlights> allHighlighterHighlights = new HashMap<>();
 
 	// color supplier for secondary highlights
 	private EvtTokenHighlightColors secondaryHighlightColors = new EvtTokenHighlightColors();
@@ -69,7 +70,7 @@ public class UserHighlights {
 	Color getSecondaryHighlight(EvtToken token) {
 		EvtHighlighter highlighter = getSecondaryHighlighter(token);
 		if (highlighter != null) {
-			TokenHighlights highlights = allHighlighterHighlights.get(highlighter);
+			EvtTokenHighlights highlights = allHighlighterHighlights.get(highlighter);
 			EvtHighlightToken hlToken = highlights.get(token);
 			return hlToken.getColor();
 		}
@@ -96,13 +97,13 @@ public class UserHighlights {
 		return secondaryHighlightersByScript.get(f);
 	}
 
-	TokenHighlights getHighlights(EvtHighlighter highlighter) {
+	EvtTokenHighlights getHighlights(EvtHighlighter highlighter) {
 		return allHighlighterHighlights.get(highlighter);
 	}
 
 	EvtHighlighter getSecondaryHighlighter(EvtToken token) {
 		for (EvtHighlighter highlighter : secondaryHighlighters) {
-			TokenHighlights highlights = allHighlighterHighlights.get(highlighter);
+			EvtTokenHighlights highlights = allHighlighterHighlights.get(highlighter);
 			EvtHighlightToken hlToken = highlights.get(token);
 			if (hlToken != null) {
 				return highlighter;
@@ -118,13 +119,13 @@ public class UserHighlights {
 		//       yet been bound to the given function.
 		secondaryHighlightersByScript.get(script).add(highlighter);
 		secondaryHighlighters.add(highlighter);
-		allHighlighterHighlights.putIfAbsent(highlighter, new TokenHighlights());
+		allHighlighterHighlights.putIfAbsent(highlighter, new EvtTokenHighlights());
 	}
 
 	// This adds the given highlighter.  This is for global and secondary highlights.  Secondary
 	// highlights will be later registered to this class for the function they apply to.
-	TokenHighlights add(EvtHighlighter highlighter) {
-		allHighlighterHighlights.putIfAbsent(highlighter, new TokenHighlights());
+	EvtTokenHighlights add(EvtHighlighter highlighter) {
+		allHighlighterHighlights.putIfAbsent(highlighter, new EvtTokenHighlights());
 		return allHighlighterHighlights.get(highlighter);
 	}
 
@@ -140,7 +141,7 @@ public class UserHighlights {
 		}
 	}
 
-	TokenHighlights get(EvtHighlighter highlighter) {
+	EvtTokenHighlights get(EvtHighlighter highlighter) {
 		return allHighlighterHighlights.get(highlighter);
 	}
 

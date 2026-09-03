@@ -17,7 +17,7 @@
  * 
  * Modified from ghidra/app/decompiler/CTokenHighlightMatcher.java to work on evt scripts
  */
-package ghidraevt.component;
+package ghidraevt.highlight;
 
 import java.awt.Color;
 import java.util.List;

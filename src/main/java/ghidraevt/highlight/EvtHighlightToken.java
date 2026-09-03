@@ -15,38 +15,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Modified from Ghidra's decompiler UI source code to work on evt scripts
+ * Modified from ghidra/app/decompiler/component/HighlightToken.java to work on evt scripts
  */
-package ghidraevt.component;
+package ghidraevt.highlight;
 
 import java.awt.Color;
 
-import generic.json.Json;
 import ghidraevt.token.EvtToken;
 
 /**
- * Matcher used for secondary highlights in the Disassembler.
+ * A class to used to track a disassembler token along with its highlight color
  */
-class NameTokenMatcher implements EvtTokenHighlightMatcher {
+public class EvtHighlightToken {
 
-	private EvtColorProvider colorProvider;
-	private String name;
+	private EvtToken token;
+	private Color color;
 
-	NameTokenMatcher(String name, EvtColorProvider colorProvider) {
-		this.name = name;
-		this.colorProvider = colorProvider;
+	public EvtHighlightToken(EvtToken token, Color color) {
+		this.token = token;
+		this.color = color;
 	}
 
-	@Override
-	public Color getTokenHighlight(EvtToken token) {
-		if (name.equals(token.getText())) {
-			return colorProvider.getColor(token);
-		}
-		return null;
+	public EvtToken getToken() {
+		return token;
+	}
+
+	public Color getColor() {
+		return color;
 	}
 
 	@Override
 	public String toString() {
-		return Json.toString(this);
+		return token.toString() + "; highlight=" + color;
 	}
 }

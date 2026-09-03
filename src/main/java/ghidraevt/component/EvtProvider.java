@@ -64,6 +64,8 @@ import ghidraevt.action.FindAction;
 import ghidraevt.action.RenameSymbolAction;
 import ghidraevt.action.RetypeGlobalAction;
 import ghidraevt.action.SelectAllAction;
+import ghidraevt.highlight.EvtHighlightController;
+import ghidraevt.highlight.LocationEvtHighlightController;
 import ghidraevt.location.EvtLocation;
 import ghidraevt.location.EvtLocationMemento;
 import ghidraevt.token.EvtToken;

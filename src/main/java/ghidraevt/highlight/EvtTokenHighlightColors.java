@@ -17,7 +17,7 @@
  * 
  * Modified from ghidra/app/decompiler/component/TokenHighlightColors.java to work on evt scripts
  */
-package ghidraevt.component;
+package ghidraevt.highlight;
 
 import ghidra.app.decompiler.component.TokenHighlightColors;
 

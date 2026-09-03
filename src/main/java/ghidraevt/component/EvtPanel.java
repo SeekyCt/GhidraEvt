@@ -55,8 +55,14 @@ import ghidra.util.bean.field.AnnotatedTextFieldElement;
 import ghidra.util.task.SwingUpdateManager;
 import ghidraevt.action.EvtSearchLocation;
 import ghidraevt.action.EvtSearchResults;
-import ghidraevt.component.hover.EvtHoverProvider;
-import ghidraevt.component.hover.EvtHoverService;
+import ghidraevt.highlight.EvtHighlightController;
+import ghidraevt.highlight.EvtHighlightListener;
+import ghidraevt.highlight.EvtHighlighter;
+import ghidraevt.highlight.EvtTokenHighlightMatcher;
+import ghidraevt.highlight.EvtTokenHighlighter;
+import ghidraevt.highlight.EvtTokenHighlights;
+import ghidraevt.hover.EvtHoverProvider;
+import ghidraevt.hover.EvtHoverService;
 import ghidraevt.location.DefaultEvtLocation;
 import ghidraevt.location.EvtLocation;
 import ghidraevt.location.EvtLocationInfo;
@@ -203,11 +209,11 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
         return highlightController.getSecondaryHighlight(token);
     }
 
-    public TokenHighlights getHighlights(EvtHighlighter highligter) {
+    public EvtTokenHighlights getHighlights(EvtHighlighter highligter) {
         return highlightController.getHighlighterHighlights(highligter);
     }
 
-    public TokenHighlights getMiddleMouseHighlights() {
+    public EvtTokenHighlights getMiddleMouseHighlights() {
         if (activeMiddleMouse != null) {
             return activeMiddleMouse.getHighlights();
         }
@@ -242,7 +248,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
     }
 
     private void addSecondaryHighlight(String tokenText, EvtColorProvider colorProvider) {
-        NameTokenMatcher matcher = new NameTokenMatcher(tokenText, colorProvider);
+        EvtNameTokenMatcher matcher = new EvtNameTokenMatcher(tokenText, colorProvider);
         EvtHighlighter highlighter = createHighlighter(matcher);
         applySecondaryHighlights(highlighter);
     }
@@ -413,7 +419,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
             EvtHighlighter newHighlighter = clangHighlighter.clone(this);
             highlightersById.put(newHighlighter.getId(), newHighlighter);
 
-            TokenHighlights otherHighlighterTokens =
+            EvtTokenHighlights otherHighlighterTokens =
                 sourcePanel.highlightController.getHighlighterHighlights(otherHighlighter);
             if (otherHighlighterTokens == null || otherHighlighterTokens.isEmpty()) {
                 // The highlighter has been created but no highlights have been applied.  It is up
@@ -1276,11 +1282,11 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 			this.tokenText = tokenText;
 
 			EvtColorProvider cp = new MiddleMouseColorProvider();
-			NameTokenMatcher matcher = new NameTokenMatcher(tokenText, cp);
+			EvtNameTokenMatcher matcher = new EvtNameTokenMatcher(tokenText, cp);
 			this.highlighter = createHighlighter(matcher);
 		}
 
-		TokenHighlights getHighlights() {
+		EvtTokenHighlights getHighlights() {
 			return highlightController.getHighlighterHighlights(highlighter);
 		}
 

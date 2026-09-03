@@ -15,40 +15,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Modified from ghidra/app/decompiler/component/hover/FunctionSignatureDecompilerHover.java to
- * work on evt scripts
+ * Modified from ghidra/app/decompiler/component/hover/ReferenceDecompilerHover.java to work on evt
+ * scripts
  */
-package ghidraevt.component.hover;
+package ghidraevt.hover;
 
 import javax.swing.JComponent;
 
 import docking.widgets.fieldpanel.field.Field;
 import docking.widgets.fieldpanel.support.FieldLocation;
 import ghidra.GhidraOptions;
-import ghidra.app.plugin.core.hover.AbstractConfigurableHover;
-import ghidra.app.util.ToolTipUtils;
+import ghidra.app.plugin.core.hover.AbstractReferenceHover;
 import ghidra.framework.plugintool.PluginTool;
+import ghidra.program.model.address.Address;
 import ghidra.program.model.listing.Function;
 import ghidra.program.model.listing.Program;
 import ghidra.program.util.ProgramLocation;
-import ghidraevt.component.EvtTextField;
-import ghidraevt.token.EvtAddrToken;
-import ghidraevt.token.EvtToken;
 
-/**
- * A hover service to show tool tip text for hovering over a function name in the disassembler.
- * The tooltip shows the function signature per the listing.
-*/
-public class FunctionSignatureEvtHover extends AbstractConfigurableHover
+public class ReferenceEvtHover extends AbstractReferenceHover
 		implements EvtHoverService {
-	private static final String NAME = "Function Signature Display (evt)";
+
+	private static final String NAME = "Reference Viewer (evt)";
 	private static final String DESCRIPTION =
-		"Show function signatures when hovering over a function name.";
+		"Shows referred to code and data from the disassembler.";
 
 	// note: this is relative to other EvtHovers; a higher priority gets called first
-	private static final int PRIORITY = 20;
+	// Use high value so this hover gets called first.  The method for determining what the user
+	// is hovering in the Decompiler is less then perfect.  We choose to allow the more precise
+	// hovers get a chance to process the request first.
+	private static final int PRIORITY = 50;
 
-	public FunctionSignatureEvtHover(PluginTool tool) {
+	public ReferenceEvtHover(PluginTool tool) {
 		super(tool, PRIORITY);
 	}
 
@@ -68,27 +65,22 @@ public class FunctionSignatureEvtHover extends AbstractConfigurableHover
 	}
 
 	@Override
-	public JComponent getHoverComponent(Program program, ProgramLocation programLocation,
+	public JComponent getHoverComponent(Program program, ProgramLocation location,
 			FieldLocation fieldLocation, Field field) {
 
-		if (!enabled) {
+		if (!enabled || location == null) {
 			return null;
 		}
 
-		if (!(field instanceof EvtTextField)) {
+		Address refAddr = location.getRefAddress();
+		if (refAddr == null) {
 			return null;
 		}
-
-		EvtToken token = ((EvtTextField) field).getToken(fieldLocation);
-		if (token instanceof EvtAddrToken addr) {
-			Function function = program.getFunctionManager().getFunctionAt(addr.getTarget());
-			if (function == null) {
-				return null; // no function in program; maybe bad address
-			}
-			String content = ToolTipUtils.getToolTipText(function, false);
-			return createTooltipComponent(content);
+		Function other = program.getListing().getFunctionAt(refAddr);
+		if (other != null) {
+			return null;
 		}
-
-		return null;
+		return super.getHoverComponent(program, location, fieldLocation, field);
 	}
+
 }

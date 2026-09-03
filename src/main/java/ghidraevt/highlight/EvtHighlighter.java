@@ -15,12 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Modified from ghidra/app/decompiler/component/ClangHighlightListener.java to work on evt scripts
+ * Modified from ghidra/app/decompiler/component/ClangHighlightController.java to work on evt scripts
  */
-package ghidraevt.component;
+package ghidraevt.highlight;
 
-import ghidra.app.decompiler.component.ClangHighlightListener;
+import ghidra.app.decompiler.DecompilerHighlighter;
 
-public interface EvtHighlightListener extends ClangHighlightListener {
+public interface EvtHighlighter extends DecompilerHighlighter {
     // Original interface has no link to the decompiler
 }

@@ -18,7 +18,7 @@
  * Modified from ghidra/app/decompiler/component/hover/ScalarValueDecompilerHover.java to work on
  * evt scripts
  */
-package ghidraevt.component.hover;
+package ghidraevt.hover;
 
 import javax.swing.JComponent;
 

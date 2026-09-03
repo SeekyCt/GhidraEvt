@@ -26,7 +26,6 @@ import org.apache.commons.lang3.StringUtils;
 import docking.DockingUtils;
 import docking.action.*;
 import docking.widgets.FindDialog;
-import ghidraevt.component.EvtFindDialog;
 import ghidraevt.component.EvtPanel;
 
 public class FindAction extends AbstractEvtAction {
