@@ -24,10 +24,15 @@ import java.awt.Font;
 
 import ghidra.app.decompiler.DecompileOptions;
 import ghidra.framework.options.ToolOptions;
+import ghidra.program.model.address.Address;
 import ghidra.program.model.listing.Program;
+import ghidra.program.model.mem.MemoryAccessException;
+import ghidra.util.Msg;
+import jevt.Game;
 
 public class EvtOptions {
     private DecompileOptions decompileOptions;
+    private Game game;
 
     public EvtOptions(DecompileOptions decompileOptions) {
         this.decompileOptions = decompileOptions;
@@ -44,6 +49,21 @@ public class EvtOptions {
 
     public void grabFromToolAndProgram(ToolOptions fieldOptions, ToolOptions opt, Program program) {
         decompileOptions.grabFromToolAndProgram(fieldOptions, opt, program);
+
+        // Infer which game is loaded
+        // (SPM has memcpy here, TTYD does not)
+        Address maybeMemcpy = program.getAddressFactory().getAddress("0x80004000");
+        try {
+            this.game = switch (program.getMemory().getByte(maybeMemcpy)) {
+                case 0x00 -> Game.TTYD;
+                case 0x7c -> Game.SPM;
+                default -> null;
+            };
+        }
+        catch (MemoryAccessException e) {
+            Msg.warn(this, "Couldn't do memcpy check: " + e.getMessage());
+            this.game = null;
+        }
     }
 
     public Font getDefaultFont() {
@@ -92,6 +112,10 @@ public class EvtOptions {
     }
     public int getMiddleMouseHighlightButton() {
         return decompileOptions.getMiddleMouseHighlightButton();
+    }
+
+    public Game getGame() {
+        return game;
     }
 }
 

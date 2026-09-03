@@ -110,7 +110,6 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
     private DockingToggle showAddresses;
     private DockingToggle showLineNumbers;
     private DockingToggle snapToSymbol;
-    private DockingToggle game;
 
     public EvtProvider(GhidraEvtPlugin plugin, boolean isConnected) {
         super(plugin.getTool(), "Evt Disassembler", plugin.getName(), EvtActionContext.class);

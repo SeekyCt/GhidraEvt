@@ -47,7 +47,6 @@ public class EvtManager {
     private EvtOptions options;
 
     private boolean snapToSymbol = true;
-    private Game game = Game.SPM;
     private boolean strictMode = false;
     private boolean stopOnNextSymbol = true;
 
@@ -98,6 +97,10 @@ public class EvtManager {
         ViewerPosition viewerPosition, boolean snapToSymbol) {
         if (location == null)
             return DisassembleResults.empty("No script selected.");
+
+        Game game = options.getGame();
+        if (game == null)
+            return DisassembleResults.empty("Unable to detect game.");
 
         Address startAddress = location.getAddress();
 
