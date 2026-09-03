@@ -15,7 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Modified from Ghidra's decompiler UI source code to work on evt scripts
+ * Modified from ghidra/app/plugin/core/decompile/actions/AbstractDecompilerAction.java to work on
+ * evt scripts
  */
 package ghidraevt.action;
 
@@ -26,7 +27,6 @@ import ghidra.app.util.datatype.DataTypeSelectionDialog;
 import ghidra.framework.plugintool.PluginTool;
 import ghidra.program.model.data.*;
 import ghidra.program.model.listing.*;
-import ghidra.program.model.pcode.*;
 import ghidra.program.model.symbol.*;
 import ghidra.util.data.DataTypeParser.AllowedDataTypes;
 import ghidraevt.GhidraEvtPlugin;
@@ -34,16 +34,9 @@ import ghidraevt.token.EvtAddrToken;
 import ghidraevt.token.EvtToken;
 
 /**
- * A base class for {@link GhidraEvtPlugin} actions that handles checking whether the
- * disassembler is busy.   Each action is responsible for deciding its enablement via
- * {@link #isEnabledForEvtContext(EvtActionContext)}.  Each action must implement
+ * A base class for {@link GhidraEvtPlugin} actions.  Each action is responsible for deciding its
+ * enablement via {@link #isEnabledForEvtContext(EvtActionContext)}.  Each action must implement
  * {@link #evtActionPerformed(EvtActionContext)} to complete its work.
- * 
- * <p>This parent class uses the {@link EvtActionContext} to check for the disassembler's
- * busy status.  If the disassembler is busy, then the action will report that it is enabled.  We
- * do this so that any keybindings registered for this action will get consumed and not passed up
- * to the global context.   Then, if the action is executed, this class does not call the child
- * class, but will instead show an information message indicating that the disassembler is busy.
  */
 public abstract class AbstractEvtAction extends DockingAction {
 
@@ -68,62 +61,6 @@ public abstract class AbstractEvtAction extends DockingAction {
 	@Override
 	public void actionPerformed(ActionContext context) {
 		evtActionPerformed((EvtActionContext) context);
-	}
-
-	/**
-	 * Get the structure/union associated with a field token
-	 * @param tok is the token representing a field
-	 * @return the structure/union which contains this field
-	 */
-	// public static Composite getCompositeDataType(ClangToken tok) {
-	// 	// We already know tok is a ClangFieldToken
-	// 	ClangFieldToken fieldtok = (ClangFieldToken) tok;
-	// 	DataType dt = fieldtok.getDataType();
-	// 	if (dt == null) {
-	// 		return null;
-	// 	}
-	// 	if (dt instanceof TypeDef) {
-	// 		dt = ((TypeDef) dt).getBaseDataType();
-	// 	}
-	// 	if (dt instanceof Composite) {
-	// 		return (Composite) dt;
-	// 	}
-	// 	return null;
-	// }
-
-	/**
-	 * Compare the given HighFunction's idea of the prototype with the Function's idea.
-	 * Return true if there is a difference. If a specific symbol is being changed,
-	 * it can be passed in to check whether or not the prototype is being affected.
-	 * @param highSymbol (if not null) is the symbol being modified
-	 * @param hfunction is the given HighFunction
-	 * @return true if there is a difference (and a full commit is required)
-	 */
-	protected static boolean checkFullCommit(HighSymbol highSymbol, HighFunction hfunction) {
-		if (highSymbol != null && !highSymbol.isParameter()) {
-			return false;
-		}
-		Function function = hfunction.getFunction();
-		Parameter[] parameters = function.getParameters();
-		LocalSymbolMap localSymbolMap = hfunction.getLocalSymbolMap();
-		int numParams = localSymbolMap.getNumParams();
-		if (numParams != parameters.length) {
-			return true;
-		}
-
-		for (int i = 0; i < numParams; i++) {
-			HighSymbol param = localSymbolMap.getParamSymbol(i);
-			if (param.getCategoryIndex() != i) {
-				return true;
-			}
-			VariableStorage storage = param.getStorage();
-			// Don't compare using the equals method so that DynamicVariableStorage can match
-			if (0 != storage.compareTo(parameters[i].getVariableStorage())) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	protected static DataType chooseDataType(PluginTool tool, Program program,

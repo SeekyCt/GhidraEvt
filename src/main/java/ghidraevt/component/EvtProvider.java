@@ -56,7 +56,7 @@ import ghidra.util.Swing;
 import ghidra.util.bean.field.AnnotatedTextFieldElement;
 import ghidra.util.task.SwingUpdateManager;
 import ghidraevt.GhidraEvtPlugin;
-import ghidraevt.action.CloneAction;
+import ghidraevt.action.CloneEvtAction;
 import ghidraevt.action.EditDataTypeAction;
 import ghidraevt.action.EvtActionContext;
 import ghidraevt.action.FindAction;
@@ -846,7 +846,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         // These actions are not in the popup menu
         //
         // ExportToCAction convertAction = new ExportToCAction();
-        CloneAction cloneDecompilerAction = new CloneAction();
+        CloneEvtAction cloneDecompilerAction = new CloneEvtAction();
 
         addLocalAction(selectAllAction);
         addLocalAction(refreshAction);

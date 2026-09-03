@@ -12,6 +12,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ * 
+ * Modified from ghidra/app/plugin/core/decompile/actions/CloneDecompilerAction.java to work on evt
+ * scripts
  */
 package ghidraevt.action;
 
@@ -24,17 +27,14 @@ import docking.DockingUtils;
 import docking.action.KeyBindingData;
 import docking.action.ToolBarData;
 import generic.theme.GIcon;
-import ghidra.app.util.HelpTopics;
-import ghidra.util.HelpLocation;
 
-public class CloneAction extends AbstractEvtAction {
+public class CloneEvtAction extends AbstractEvtAction {
 
-	public CloneAction() {
+	public CloneEvtAction() {
 		super("Disassembler Clone");
 		Icon image = new GIcon("icon.decompiler.action.provider.clone");
 		setToolBarData(new ToolBarData(image, "ZZZ"));
-		setDescription("Create a snapshot (disconnected) copy of this Decompiler window ");
-		setHelpLocation(new HelpLocation(HelpTopics.DECOMPILER, "ToolBarSnapshot"));
+		setDescription("Create a snapshot (disconnected) copy of this Disassembler window ");
 		setKeyBindingData(new KeyBindingData(KeyEvent.VK_T,
 			DockingUtils.CONTROL_KEY_MODIFIER_MASK | InputEvent.SHIFT_DOWN_MASK));
 	}

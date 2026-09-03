@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Modified from Ghidra's decompiler UI source code to work on evt scripts
+ * Modified from ghidra/app/plugin/core/decompile/DecompilePlugin.java to work on evt scripts
  */
 package ghidraevt;
 
@@ -69,7 +69,6 @@ import ghidraevt.token.EvtToken;
     category = PluginCategoryNames.COMMON,
     shortDescription = "Script disassembler window.",
     description = "Super Paper Mario evt script disassembly integration.",
-
     servicesRequired = {
         GoToService.class, NavigationHistoryService.class, ClipboardService.class,
         DataTypeManagerService.class /*, ProgramManager.class */
