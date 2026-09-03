@@ -52,7 +52,7 @@ public class EvtTokenHighlighter implements EvtHighlighter {
     private EvtScript script; // will be null for global highlights
     private Set<EvtTokenHighlighter> clones = new HashSet<>();
 
-    EvtTokenHighlighter(String id, EvtPanel panel, EvtScript script,
+    public EvtTokenHighlighter(String id, EvtPanel panel, EvtScript script,
             EvtTokenHighlightMatcher matcher) {
         this.id = id;
         this.evtPanel = panel;
@@ -72,7 +72,7 @@ public class EvtTokenHighlighter implements EvtHighlighter {
      * @param panel the panel
      * @return the highlighter
      */
-    EvtTokenHighlighter clone(EvtPanel panel) {
+    public EvtTokenHighlighter clone(EvtPanel panel) {
         // note: we re-use the ID to make tracking easier
         EvtTokenHighlighter clone =
             new EvtTokenHighlighter(id, panel, script, matcher);
@@ -85,7 +85,7 @@ public class EvtTokenHighlighter implements EvtHighlighter {
      * @param panel the panel
      * @return the highlighter
      */
-    EvtTokenHighlighter copy(EvtPanel panel) {
+    public EvtTokenHighlighter copy(EvtPanel panel) {
         return new EvtTokenHighlighter(panel, matcher);
     }
 

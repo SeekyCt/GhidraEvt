@@ -288,12 +288,12 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
         activeMiddleMouse = newMiddleMouse;
     }
 
-    void addHighlighterHighlights(EvtTokenHighlighter highlighter,
+    public void addHighlighterHighlights(EvtTokenHighlighter highlighter,
             Supplier<? extends Collection<EvtToken>> tokens, EvtColorProvider colorProvider) {
         highlightController.addHighlighterHighlights(highlighter, tokens, colorProvider);
     }
 
-    void removeHighlighterHighlights(EvtHighlighter highlighter) {
+    public void removeHighlighterHighlights(EvtHighlighter highlighter) {
         highlightController.removeHighlighterHighlights(highlighter);
     }
 
@@ -325,7 +325,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
         return highlightersById.get(id);
     }
 
-    void removeHighlighter(String id) {
+    public void removeHighlighter(String id) {
         EvtHighlighter highlighter = highlightersById.remove(id);
         highlightController.removeHighlighter(highlighter);
     }

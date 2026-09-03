@@ -24,14 +24,14 @@ import java.util.Objects;
 import ghidraevt.highlight.EvtHighlightToken;
 
 // a key that allows us to equate tokens that are not the same instance
-class EvtTokenKey {
+public class EvtTokenKey {
 
 	private EvtToken token;
 	private int hash;
 	private int lineNumber = -1;
 	private int indexInParent = Integer.MAX_VALUE;
 
-	EvtTokenKey(EvtToken token) {
+	public  EvtTokenKey(EvtToken token) {
 		this.token = Objects.requireNonNull(token);
 
 		EvtLine lineParent = token.getLineParent();

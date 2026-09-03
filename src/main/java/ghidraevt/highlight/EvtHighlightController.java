@@ -93,7 +93,7 @@ public abstract class EvtHighlightController {
 	public abstract void fieldLocationChanged(FieldLocation location, Field field,
 			EventTrigger trigger);
 
-	void setHighlightColor(Color c) {
+	public void setHighlightColor(Color c) {
 		defaultHighlightColor = c;
 	}
 

@@ -36,7 +36,7 @@ public class DefaultEvtColorProvider implements EvtColorProvider {
 	 * @param prefix a descriptive prefix used in the {@link #toString()} method
 	 * @param color the color
 	 */
-	DefaultEvtColorProvider(String prefix, Color color) {
+	public DefaultEvtColorProvider(String prefix, Color color) {
 		this.prefix = prefix;
 		this.color = color;
 	}
