@@ -15,7 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Modified from Ghidra's decompiler UI source code to work on evt scripts
+ * Modified from ghidra/app/decompiler/component/hover/ReferenceDecompilerHover.java to work on evt
+ * scripts
  */
 package ghidraevt.component.hover;
 
@@ -60,7 +61,7 @@ public class ReferenceEvtHover extends AbstractReferenceHover
 
 	@Override
 	protected String getOptionsCategory() {
-		return GhidraOptions.CATEGORY_DECOMPILER_POPUPS;
+		return GhidraOptions.CATEGORY_DECOMPILER_POPUPS; // TODO
 	}
 
 	@Override

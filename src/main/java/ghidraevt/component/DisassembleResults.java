@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Modified from Ghidra's decompiler UI source code to work on evt scripts
+ * Modified from ghidra/app/decompiler/DecompileResults.java to work on evt scripts
  */
 package ghidraevt.component;
 
@@ -26,8 +26,8 @@ import jevt.Instr;
 /**
  * Class for getting at the various structures returned by the disassembler. 
  * 
- * To check if disassembly completed normally use the disassembleCompleted method. If this returns
- * false, the getErrorMessage method may contain a useful error message. Its also possible that
+ * To check if disassembly completed normally use the disassembleCompleted method.  If this returns
+ * false, the getErrorMessage method may contain a useful error message.  It's also possible that
  * getErrorMessage will return warning messages, even if disassembly did complete.
  */
 public class DisassembleResults {
@@ -60,7 +60,7 @@ public class DisassembleResults {
      * available via getErrorMessage.
      * @return true if the disassembly completed.
      */
-    public boolean decompileCompleted() {
+    public boolean disassembleCompleted() {
         return docroot != null;
     }
 
@@ -79,7 +79,7 @@ public class DisassembleResults {
     /**
      * Return any error message associated with the disassembly producing these results. Generally,
      * there will only be an error if the disassembly was aborted for some reason, but there could
-     * conceivably be warnings obtainable via this method, even if the decompilation did complete.
+     * conceivably be warnings obtainable via this method, even if the disassembly did complete.
      * @return any error message associated with these results
      */
     public String getErrorMessage() {

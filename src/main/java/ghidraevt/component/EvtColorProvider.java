@@ -15,22 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Modified from Ghidra's decompiler UI source code to work on evt scripts
+ * Modified from ghidra/app/decompiler/component/ColorProvider.java to work on evt scripts
  */
 package ghidraevt.component;
 
 import java.awt.Color;
-import java.util.function.Function;
 
 import ghidraevt.token.EvtToken;
 
-/**
- * Functional interface to allow us to map a token to a color.
- * 
- * <p>This class allows us to avoid the namespace conflicts of Java's Function and Ghidra's
- * Function since we can declare a {@code ColorProvider} as a parameter to methods instead of
- * a {@link Function}.
- */
 public interface EvtColorProvider {
 
 	/**

@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Modified from Ghidra's decompiler UI source code to work on evt scripts
+ * Modified from ghidra/app/plugin/core/decompile/DecompilerProvider.java to work on evt scripts
  */
 package ghidraevt.component;
 
@@ -36,6 +36,7 @@ import docking.widgets.fieldpanel.support.ViewerPosition;
 import ghidra.GhidraOptions;
 import ghidra.app.decompiler.DecompileOptions;
 import ghidra.app.events.ProgramSelectionPluginEvent;
+import ghidra.app.nav.DecoratorPanel;
 import ghidra.app.nav.LocationMemento;
 import ghidra.app.nav.Navigatable;
 import ghidra.app.plugin.core.decompile.DecompilePlugin;
@@ -83,8 +84,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
     private ProgramSelection currentSelection;
 
     private EvtController controller;
-    private EvtPanel evtPanel;
-    // private DecoratorPanel decorationPanel;
+    private DecoratorPanel decorationPanel;
     private EvtHighlightController highlightController;
 
     private ViewerPosition pendingViewerPosition;
@@ -124,24 +124,19 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 
         controller =
             new EvtController(getTool(), this, options, clipboardProvider);
-        evtPanel = controller.getEvtPanel();
+        EvtPanel evtPanel = controller.getEvtPanel();
 
         // FUTURE move the hl controller into the panel
         highlightController = new LocationEvtHighlightController();
         evtPanel.setHighlightController(highlightController);
-        // decorationPanel = new DecoratorPanel(evtPanel, isConnected) {
-        //     @Override
-        //     public void paint(Graphics g) {
-        //         super.paint(g);
-        //         overlayPainter.paintOverlay(g, evtPanel.getViewContentBounds());
-        //     }
-        // };
+        decorationPanel = new DecoratorPanel(evtPanel, isConnected);
 
         if (!isConnected) {
             setTransient();
         }
 
         setIcon(Icons.INFO_ICON);
+        setTitle("Evt Disassembler");
 
         setWindowMenuGroup("Evt Disassembler");
         setDefaultWindowPosition(WindowPosition.RIGHT);
@@ -215,7 +210,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 
     @Override
     public JComponent getComponent() {
-        return evtPanel;
+        return decorationPanel;
     }
 
 

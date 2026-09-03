@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Modified from Ghidra's decompiler UI source code to work on evt scripts
+ * Modified from ghidra/app/decompiler/component/DecompilerPanel.java to work on evt scripts
  */
 package ghidraevt.component;
 
@@ -903,6 +903,11 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
         if (textField == null) {
             return null;
         }
+
+		// ClangToken token = textField.getToken(location);
+		// if (!(token instanceof ClangCommentToken)) {
+		// 	return token.getText(); // non-comment tokens are not multi-word; use the token's text
+		// }
 
         FieldElement clickedElement = textField.getClickedObject(location);
         if (clickedElement instanceof AnnotatedTextFieldElement) {

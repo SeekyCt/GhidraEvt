@@ -1,18 +1,22 @@
 /* ###
-* IP: GHIDRA
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * IP: GHIDRA
+ *
+ * Copyright 2026 SeekyCt
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Modified from ghidra/app/decompiler/component/ClangHighlightController.java to work on evt scripts
+ */
 package ghidraevt.component;
 
 import java.awt.Color;
@@ -31,7 +35,7 @@ import ghidraevt.token.EvtToken;
 import util.CollectionUtils;
 
 /**
- * Class to handle highlights for a decompiled function.
+ * Class to handle highlights for a disassembled script.
  * 
  * <p>This class does not paint directly.  Rather, this class tracks the currently highlighted
  * tokens and then sets the highlight color on the token when it is highlighted and clears the
@@ -50,11 +54,6 @@ import util.CollectionUtils;
  *  	highlight.
  *   	<B>These highlights apply to the function in use when the highlight is created.  Thus,
  *  	each function has a unique set of highlights that is maintained between decompilation.</B>
- *  </LI>
- *  <LI>Service Highlights - triggered by clients of the {@link DecompilerHighlightService}; they
- *  	will be stored in this class until the client of the service clears the highlight.  These
- *      can be global (applied to all functions) or specific to a given function.  Each user 
- *      highlight will be called to generate highlights when a function is first decompiled.
  *  </LI>
  * </UL>
  * 
@@ -458,7 +457,7 @@ public abstract class EvtHighlightController {
 
 	private Color blendHighlighterColors(EvtToken token) {
 
-		EvtScript function = getFunction(token);
+		EvtScript function = getScript(token);
 		if (function == null) {
 			return null; // not sure if this can happen
 		}
@@ -484,7 +483,7 @@ public abstract class EvtHighlightController {
 		return blend(colors);
 	}
 
-	private EvtScript getFunction(EvtToken t) {
+	private EvtScript getScript(EvtToken t) {
         return t.getScript();
 	}
 

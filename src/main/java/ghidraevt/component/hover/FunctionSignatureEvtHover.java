@@ -15,7 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Modified from Ghidra's decompiler UI source code to work on evt scripts
+ * Modified from ghidra/app/decompiler/component/hover/FunctionSignatureDecompilerHover.java to
+ * work on evt scripts
  */
 package ghidraevt.component.hover;
 
@@ -35,7 +36,7 @@ import ghidraevt.token.EvtAddrToken;
 import ghidraevt.token.EvtToken;
 
 /**
- * A hover service to show tool tip text for hovering over a function name in the decompiler.
+ * A hover service to show tool tip text for hovering over a function name in the disassembler.
  * The tooltip shows the function signature per the listing.
 */
 public class FunctionSignatureEvtHover extends AbstractConfigurableHover

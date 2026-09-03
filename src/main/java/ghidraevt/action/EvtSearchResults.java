@@ -15,7 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Modified from Ghidra's decompiler UI source code to work on evt scripts
+ * Modified from ghidra/app/plugin/core/decompile/actions/DecompilerSearchResults.java to work on
+ * evt scripts
  */
 package ghidraevt.action;
 
@@ -37,7 +38,7 @@ import ghidraevt.component.EvtPanel;
 import ghidraevt.component.EvtScript;
 
 public class EvtSearchResults extends SearchResults {
-	// the location when the search was performed; used to know when the function has changed
+	// the location when the search was performed; used to know when the script has changed
 	private ProgramLocation programLocation;
 	private EvtPanel evtPanel;
 	private String searchText;
@@ -77,7 +78,7 @@ public class EvtSearchResults extends SearchResults {
 	}
 
 	boolean isInvalid(String otherSearchText) {
-		if (isDifferentFunction()) {
+		if (isDifferentScript()) {
 			return true;
 		}
 		return !searchText.equals(otherSearchText);
@@ -102,11 +103,11 @@ public class EvtSearchResults extends SearchResults {
 		return locationsByLine;
 	}
 
-	private boolean isDifferentFunction() {
+	private boolean isDifferentScript() {
 		return !evtPanel.containsLocation(programLocation);
 	}
 
-	private boolean isMyFunction() {
+	private boolean isMyScript() {
 		return evtPanel.containsLocation(programLocation);
 	}
 
@@ -128,8 +129,8 @@ public class EvtSearchResults extends SearchResults {
 	}
 
 	private void installSearchResults() {
-		if (isDifferentFunction()) {
-			return; // a different function was disassembled while we were running
+		if (isDifferentScript()) {
+			return; // a different script was disassembled while we were running
 		}
 		evtPanel.setSearchResults(this);
 	}
@@ -140,7 +141,7 @@ public class EvtSearchResults extends SearchResults {
 
 	public void disassemblerUpdated() {
 		// The disassembler has updated.  It may have been upon our request.  If not, deactivate.
-		if (isDifferentFunction()) {
+		if (isDifferentScript()) {
 			deactivate();
 		}
 	}
@@ -174,12 +175,12 @@ public class EvtSearchResults extends SearchResults {
 	}
 
 	private ActivationJob createActivationJob() {
-		if (isMyFunction()) {
+		if (isMyScript()) {
 			return createFinishedActivationJob(); // nothing to do
 		}
 
-		return (ActivationJob) new ActivateFunctionJob()
-				.thenWait(this::isMyFunction, Duration.ofSeconds(5));
+		return (ActivationJob) new ActivateScriptJob()
+				.thenWait(this::isMyScript, Duration.ofSeconds(5));
 	}
 
 	protected ActivationJob createFinishedActivationJob() {
@@ -218,10 +219,10 @@ public class EvtSearchResults extends SearchResults {
 // Inner Classes
 //=================================================================================================	
 
-	private class ActivateFunctionJob extends ActivationJob {
+	private class ActivateScriptJob extends ActivationJob {
 		@Override
 		protected void doRun(TaskMonitor monitor) throws CancelledException {
-			if (isMyFunction()) {
+			if (isMyScript()) {
 				return; // nothing to do
 			}
 

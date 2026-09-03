@@ -15,7 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Modified from Ghidra's decompiler UI source code to work on evt scripts
+ * Modified from ghidra/app/plugin/core/decompile/actions/RetypeGlobalAction.java to work on evt
+ * scripts
  */
 package ghidraevt.action;
 
@@ -38,12 +39,10 @@ import ghidraevt.token.EvtAddrToken;
 import ghidraevt.token.EvtToken;
 
 /**
- * Action triggered from a specific token in the decompiler window to change the data-type
- * associated with a global variable. If the variable does not already exist in the program database,
- * it will be created using storage address the decompiler has assigned to the variable within its model.
- * In either case, there is a preexisting notion of variable storage. This action may allow the newly
- * selected data-type to be of a different size relative to this preexisting storage, constrained by
- * other global variables that might already consume storage.
+ * Action triggered from a specific token in the disassembler window to change the data-type
+ * associated with a global variable. This action may allow the newly selected data-type to be of a
+ * different size relative to this preexisting storage, constrained by other global variables that
+ * might already consume storage.
  */
 public class RetypeGlobalAction extends AbstractEvtAction {
 

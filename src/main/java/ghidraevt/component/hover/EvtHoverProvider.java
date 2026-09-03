@@ -15,7 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Modified from Ghidra's decompiler UI source code to work on evt scripts
+ * Modified from ghidra/app/decompiler/component/DecompilerHoverProvider.java to work on evt
+ * scripts
  */
 package ghidraevt.component.hover;
 
@@ -53,8 +54,8 @@ public class EvtHoverProvider extends AbstractHoverProvider {
 			return null;
 		}
 
-		EvtTextField decompilerField = (EvtTextField) field;
-		EvtToken token = decompilerField.getToken(fieldLocation);
+		EvtTextField disassemblerField = (EvtTextField) field;
+		EvtToken token = disassemblerField.getToken(fieldLocation);
 
 		if (token.getMinAddress() == null) {
 			return null;
