@@ -54,6 +54,12 @@ public class GhidraEvtExporter extends Exporter {
         return false;
     }
 
+	@Override
+	public boolean canExportDomainObject(Class<? extends DomainObject> domainObjectClass) {
+		// return Program.class.isAssignableFrom(domainObjectClass);
+		return false;
+	}
+    
     @Override
     public boolean export(File file, DomainObject domainObj, AddressSetView addrSet,
             TaskMonitor monitor) throws ExporterException, IOException {
