@@ -31,6 +31,9 @@ public class EvtLine {
 
     public EvtLine(List<EvtToken> tokens, Address addr, int lineNumber, int indent) {
         this.tokens = tokens;
+        for (EvtToken token : tokens) {
+            token.setLineParent(this);
+        }
         this.addr = addr;
         this.lineNumber = lineNumber;
         this.indent = indent;
