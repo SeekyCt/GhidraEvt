@@ -101,7 +101,6 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 		}
 	});
 
-	private Set<String> ignoredMiddleMouseTokens = Set.of("{", "}", ";");
 	private ActiveMiddleMouse activeMiddleMouse;
     private int middleMouseHighlightButton;
     private Color middleMouseHighlightColor;

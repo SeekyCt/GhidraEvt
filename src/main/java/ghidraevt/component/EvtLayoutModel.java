@@ -32,7 +32,6 @@ import docking.widgets.fieldpanel.LayoutModel;
 import docking.widgets.fieldpanel.field.AttributedString;
 import docking.widgets.fieldpanel.field.Field;
 import docking.widgets.fieldpanel.field.FieldElement;
-import docking.widgets.fieldpanel.field.TextFieldElement;
 import docking.widgets.fieldpanel.listener.IndexMapper;
 import docking.widgets.fieldpanel.listener.LayoutModelListener;
 import docking.widgets.fieldpanel.support.FieldHighlightFactory;
