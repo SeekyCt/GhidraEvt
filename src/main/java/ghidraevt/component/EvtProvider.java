@@ -60,6 +60,7 @@ import ghidraevt.GhidraEvtPlugin;
 import ghidraevt.action.CloneEvtAction;
 import ghidraevt.action.EditDataTypeAction;
 import ghidraevt.action.EvtActionContext;
+import ghidraevt.action.EvtHighlightDefinedUseAction;
 import ghidraevt.action.FindAction;
 import ghidraevt.action.RenameSymbolAction;
 import ghidraevt.action.RetypeGlobalAction;
@@ -718,7 +719,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         //
         // String highlightGroup = "4a - Highlight Group";
         // tool.setMenuGroup(new String[] { "Highlight" }, highlightGroup);
-        // HighlightDefinedUseAction defUseHighlightAction = new HighlightDefinedUseAction();
+        // EvtHighlightDefinedUseAction defUseHighlightAction = new EvtHighlightDefinedUseAction();
         // setGroupInfo(defUseHighlightAction, highlightGroup, subGroupPosition++);
 
         // ForwardSliceAction forwardSliceAction = new ForwardSliceAction();

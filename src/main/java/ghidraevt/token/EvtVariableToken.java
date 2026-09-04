@@ -19,16 +19,19 @@ import java.awt.Color;
 
 import ghidra.program.model.address.Address;
 import ghidraevt.component.EvtScript;
+import jevt.Arg;
 
-public final class EvtAddrToken extends EvtToken {
-    private Address target;
+public final class EvtVariableToken extends EvtToken {
+    private Arg.Variable var;
 
-    public EvtAddrToken(EvtScript script, String txt, Color color, Address minAddress, Address target, long size) {
+    public EvtVariableToken(EvtScript script, String txt, Color color, Address minAddress,
+            long size, Arg.Variable ref) {
         super(script, txt, color, minAddress, size);
-        this.target = target;
+        this.var = ref;
     }
 
-    public Address getTarget() {
-        return target;
+    public Arg.Variable getVar() {
+        return var;
     }
+
 }

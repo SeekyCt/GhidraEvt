@@ -26,7 +26,7 @@ import ghidraevt.component.EvtScript;
 import jevt.Arg;
 import jevt.Instr;
 
-public class EvtToken {
+public sealed class EvtToken permits EvtAddrToken, EvtScalarToken, EvtVariableToken  {
     private EvtScript script;
     private String text;
     private Color color;
@@ -55,6 +55,10 @@ public class EvtToken {
 
     public static EvtToken arg(EvtScript script, String txt, Color color, Address minAddress) {
         return new EvtToken(script, txt, color, minAddress, Arg.bytesSize());
+    }
+
+    public static EvtToken var(EvtScript script, String txt, Color color, Address minAddress, Arg.Variable var) {
+        return new EvtVariableToken(script, txt, color, minAddress, Arg.bytesSize(), var);
     }
 
     public static EvtToken argScalar(EvtScript script, String txt, Color color, Address minAddress, long value, boolean signed) {

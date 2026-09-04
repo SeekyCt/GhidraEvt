@@ -22,7 +22,7 @@ import ghidra.program.model.scalar.Scalar;
 import ghidraevt.component.EvtScript;
 import jevt.Arg;
 
-public class EvtScalarToken extends EvtToken {
+public final class EvtScalarToken extends EvtToken {
     private Scalar scalar;
 
     public EvtScalarToken(EvtScript script, String txt, Color color, Address minAddress, long value, boolean signed) {
