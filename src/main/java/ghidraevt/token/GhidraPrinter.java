@@ -198,7 +198,7 @@ public class GhidraPrinter {
         header.add(EvtToken.syntax(script, HEADER_DECORATION + " ", decompileOptions.getDefaultColor(), addr));
         header.addAll(symbolToTokens(script, addr, COLOR_HEADER, addr, 0));
         header.add(EvtToken.syntax(script, " " + HEADER_DECORATION, decompileOptions.getDefaultColor(), addr));
-        ret.add(new EvtLine(header, addr, line, indent));
+        ret.add(new EvtLine(header, addr, 0, indent));
 
         Address lineAddr = addr;
         for (Instr instr : docroot) {

@@ -24,7 +24,7 @@ import java.util.List;
 import ghidra.program.model.address.Address;
 
 public class EvtLine {
-    private int lineNumber;
+    private int lineNumber; // Line numbers <= 0 will not be rendered
     private int indent;
     private List<EvtToken> tokens;
     private Address addr;
