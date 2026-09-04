@@ -60,8 +60,6 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
     private int maxLines = 30; // Maximum number of times 1 line of disassembly can be wrapped
     private int indentSize = 4; // Number of indentation characters to add per level
 
-    private boolean showLineNumbers = true;
-
     public EvtLayoutModel(EvtOptions opt, EvtPanel evtPanel, FontMetrics met,
             FieldHighlightFactory hlFactory) {
         options = opt;
@@ -202,8 +200,6 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
         metrics = Toolkit.getDefaultToolkit().getFontMetrics(options.getDefaultFont());
         indentCharWidth = metrics.stringWidth(GhidraPrinter.INDENT_CHAR);
         maxWidth = indentCharWidth * options.getMaxWidth();
-
-        showLineNumbers = options.isDisplayLineNumbers();
     }
 
     private void splitToMaxWidthLines(List<String> res, String line) {
