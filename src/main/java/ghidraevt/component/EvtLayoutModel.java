@@ -186,7 +186,7 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
             // }
 
             AttributedString as = new AttributedString(token.getText(), token.getColor(), metrics);
-            elements[i] = new TextFieldElement(as, 0, columnPosition);
+            elements[i] = new EvtFieldElement(token, as, columnPosition);
             columnPosition += as.length();
         }
         return elements;

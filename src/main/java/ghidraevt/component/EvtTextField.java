@@ -54,11 +54,11 @@ public class EvtTextField extends WrappingVerticalLayoutTextField {
             return null;
         }
 
-        // FieldElement clickedObject = getClickedObject(loc);
-        // if (clickedObject instanceof ClangFieldElement) {
-        //     ClangFieldElement element = (ClangFieldElement) clickedObject;
-        //     return element.getToken();
-        // }
+        FieldElement clickedObject = getClickedObject(loc);
+        if (clickedObject instanceof EvtFieldElement) {
+            EvtFieldElement element = (EvtFieldElement) clickedObject;
+            return element.getToken();
+        }
 
         int index = getTokenIndex(loc);
         return tokenList.get(index);
