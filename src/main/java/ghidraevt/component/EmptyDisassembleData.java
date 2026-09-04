@@ -15,8 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Modified from java/ghidra/app/decompiler/component/EmptyDecompileData.java to work on evt
- * scripts
+ * Modified from java/ghidra/app/decompiler/component/EmptyDecompileData.java to work on evt scripts
  */
 package ghidraevt.component;
 
