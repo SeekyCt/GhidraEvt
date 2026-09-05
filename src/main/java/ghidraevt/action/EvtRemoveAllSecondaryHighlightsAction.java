@@ -37,7 +37,7 @@ public class EvtRemoveAllSecondaryHighlightsAction extends AbstractEvtAction {
 		super(NAME);
 
 		setPopupMenuData(new MenuData(
-			new String[] { "Secondary Highlight", "Remove All Highlights" }, "Decompile"));
+			new String[] { "Secondary Highlight", "Remove All Highlights" }, "Evt Disassembler"));
 	}
 
 	@Override
