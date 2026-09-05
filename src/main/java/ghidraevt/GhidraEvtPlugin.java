@@ -46,6 +46,7 @@ import ghidra.framework.plugintool.PluginTool;
 import ghidra.framework.plugintool.util.PluginStatus;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.listing.CodeUnit;
+import ghidra.program.model.listing.Data;
 import ghidra.program.model.listing.Instruction;
 import ghidra.program.model.listing.Listing;
 import ghidra.program.model.listing.Program;
@@ -289,7 +290,7 @@ public class GhidraEvtPlugin extends Plugin {
             if (currentProgram != null) {
                 Listing listing = currentProgram.getListing();
                 CodeUnit codeUnit = listing.getCodeUnitContaining(address);
-                if (codeUnit instanceof Instruction) {
+                if (!(codeUnit instanceof Data data) || !data.isInitializedMemory()) {
                     return;
                 }
             }
