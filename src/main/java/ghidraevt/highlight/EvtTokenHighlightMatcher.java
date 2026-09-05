@@ -20,9 +20,8 @@
 package ghidraevt.highlight;
 
 import java.awt.Color;
-import java.util.List;
 
-import ghidraevt.token.EvtLine;
+import ghidraevt.token.EvtDocument;
 import ghidraevt.token.EvtToken;
 
 /**
@@ -35,7 +34,7 @@ import ghidraevt.token.EvtToken;
  * @see DecompilerHighlightService
  */
 public interface EvtTokenHighlightMatcher {
-	public default void start(List<EvtLine> root) {
+	public default void start(EvtDocument root) {
 		// stub; provided for clients that may wish to work from the root
 	}
 

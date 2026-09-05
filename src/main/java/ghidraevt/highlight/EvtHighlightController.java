@@ -34,6 +34,7 @@ import ghidra.util.ColorUtils;
 import ghidraevt.component.DefaultEvtColorProvider;
 import ghidraevt.component.EvtColorProvider;
 import ghidraevt.component.EvtScript;
+import ghidraevt.token.EvtDocument;
 import ghidraevt.token.EvtLine;
 import ghidraevt.token.EvtToken;
 import util.CollectionUtils;
@@ -222,7 +223,7 @@ public abstract class EvtHighlightController {
 		return null;
 	}
 
-	private void gatherAllTokens(List<EvtLine> docroot, Set<EvtToken> results) {
+	private void gatherAllTokens(EvtDocument docroot, Set<EvtToken> results) {
 		for (EvtLine line : docroot) {
             results.addAll(line.getAllTokens());
 		}
@@ -365,10 +366,10 @@ public abstract class EvtHighlightController {
 		addTokensToHighlights(tokens, colorProvider, contextHighlightTokens);
 	}
 
-	public void addPrimaryHighlights(List<EvtLine> parentNode, EvtColorProvider colorProvider) {
+	public void addPrimaryHighlights(EvtDocument document, EvtColorProvider colorProvider) {
 
 		Set<EvtToken> tokens = new HashSet<>();
-		gatherAllTokens(parentNode, tokens);
+		gatherAllTokens(document, tokens);
 		addTokensToHighlights(tokens, colorProvider, contextHighlightTokens);
 	}
 

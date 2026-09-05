@@ -30,6 +30,7 @@ import ghidraevt.component.EvtController;
 import ghidraevt.component.EvtLayoutModel;
 import ghidraevt.component.EvtPanel;
 import ghidraevt.component.EvtScript;
+import ghidraevt.token.EvtDocument;
 import ghidraevt.token.EvtLine;
 import ghidraevt.token.EvtToken;
 
@@ -106,7 +107,7 @@ public class EvtTokenHighlighter implements EvtHighlighter {
         // clearHighlights();
 
         EvtLayoutModel layoutModel = evtPanel.getLayoutController();
-        List<EvtLine> root = layoutModel.getLines();
+        EvtDocument root = layoutModel.getDocument();
 
         Map<EvtToken, Color> highlights = new HashMap<>();
         try {
@@ -124,7 +125,7 @@ public class EvtTokenHighlighter implements EvtHighlighter {
         clones.forEach(c -> c.applyHighlights());
     }
 
-    private void gatherHighlights(List<EvtLine> root, Map<EvtToken, Color> results) {
+    private void gatherHighlights(EvtDocument root, Map<EvtToken, Color> results) {
 
         for (EvtLine line : root) {
             for (EvtToken token : line.getAllTokens())

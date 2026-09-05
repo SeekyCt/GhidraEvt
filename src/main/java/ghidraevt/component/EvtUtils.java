@@ -31,6 +31,7 @@ import ghidra.program.model.address.AddressSet;
 import ghidra.program.model.address.AddressSetView;
 import ghidra.program.model.address.AddressSpace;
 import ghidra.program.model.listing.Program;
+import ghidraevt.token.EvtDocument;
 import ghidraevt.token.EvtLine;
 import ghidraevt.token.EvtToken;
 
@@ -271,15 +272,15 @@ public class EvtUtils {
         return -1;
     }
 
-    public static List<EvtToken> getTokens(List<EvtLine> lines, AddressSetView addressSet) {
+    public static List<EvtToken> getTokens(EvtDocument document, AddressSetView addressSet) {
         List<EvtToken> tokenList = new ArrayList<>();
-        collectTokens(tokenList, lines, addressSet);
+        collectTokens(tokenList, document, addressSet);
         return tokenList;
     }
 
-    private static void collectTokens(List<EvtToken> tokenList, List<EvtLine> lines,
+    private static void collectTokens(List<EvtToken> tokenList, EvtDocument document,
             AddressSetView addressSet) {
-        for (EvtLine line : lines) {
+        for (EvtLine line : document) {
             for (EvtToken token : line.getAllTokens()) {
                 if (intersects(token, addressSet)) {
                     tokenList.add(token);

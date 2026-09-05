@@ -29,6 +29,7 @@ public class EvtLine {
     private int indent;
     private List<EvtToken> tokens;
     private Address addr;
+    private EvtDocument documentParent;
 
     public EvtLine(List<EvtToken> tokens, Address addr, int lineNumber, int displayLineNumber, int indent) {
         this.tokens = tokens;
@@ -43,6 +44,10 @@ public class EvtLine {
 
     public List<EvtToken> getAllTokens() {
         return tokens;
+    }
+
+    public int getLength() {
+        return tokens.size();
     }
 
     public Address getAddr() {
@@ -69,4 +74,11 @@ public class EvtLine {
         return indent;
     }
 
+    public void setDocumentParent(EvtDocument document) {
+        this.documentParent = document;
+    }
+
+    public EvtDocument getDocumentParent() {
+        return documentParent;
+    }
 }

@@ -20,13 +20,11 @@
  */
 package ghidraevt.highlight;
 
-import java.util.List;
-
 import docking.widgets.EventTrigger;
 import docking.widgets.fieldpanel.field.Field;
 import docking.widgets.fieldpanel.support.FieldLocation;
 import ghidraevt.component.EvtColorProvider;
-import ghidraevt.token.EvtLine;
+import ghidraevt.token.EvtDocument;
 
 /**
  * A stub implementation of the highlight controller that allows clients to avoid null checks
@@ -39,7 +37,7 @@ public class NullEvtHighlightController extends EvtHighlightController {
 	}
 
 	@Override
-	public void addPrimaryHighlights(List<EvtLine> parentNode, EvtColorProvider colorProvider) {
+	public void addPrimaryHighlights(EvtDocument parentNode, EvtColorProvider colorProvider) {
 		// stub
 	}
 

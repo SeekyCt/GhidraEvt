@@ -65,6 +65,7 @@ import ghidraevt.location.DefaultEvtLocation;
 import ghidraevt.location.EvtLocation;
 import ghidraevt.location.EvtLocationInfo;
 import ghidraevt.token.EvtAddrToken;
+import ghidraevt.token.EvtDocument;
 import ghidraevt.token.EvtLine;
 import ghidraevt.token.EvtToken;
 
@@ -174,8 +175,8 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
         return controller;
     }
 
-    public List<EvtLine> getLines() {
-        return layoutController.getLines();
+    public EvtDocument getLines() {
+        return layoutController.getDocument();
     }
 
     public List<Field> getFields() {
@@ -332,7 +333,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
     }
 
     public void addHighlights(/*Set<Varnode> varnodes,*/ EvtColorProvider colorProvider) {
-        List<EvtLine> root = layoutController.getLines();
+        EvtDocument root = layoutController.getDocument();
         highlightController.addPrimaryHighlights(root, colorProvider);
     }
 
@@ -634,7 +635,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
         }
         else {
             List<EvtToken> tokens =
-                EvtUtils.getTokens(layoutController.getLines(), selection);
+                EvtUtils.getTokens(layoutController.getDocument(), selection);
             fieldSelection = EvtUtils.getFieldSelection(tokens);
         }
         fieldPanel.setSelection(fieldSelection);
@@ -1012,11 +1013,11 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 
     public List<EvtToken> findTokensByName(String name) {
         List<EvtToken> tokens = new ArrayList<>();
-        doFindTokensByName(tokens, layoutController.getLines(), name);
+        doFindTokensByName(tokens, layoutController.getDocument(), name);
         return tokens;
     }
 
-    private void doFindTokensByName(List<EvtToken> tokens, List<EvtLine> lines, String name) {
+    private void doFindTokensByName(List<EvtToken> tokens, EvtDocument lines, String name) {
         for (EvtLine line : lines) {
             for (EvtToken token : line.getAllTokens()) {
                 if (name.equals(token.getText())) {

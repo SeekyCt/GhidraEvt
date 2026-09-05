@@ -61,6 +61,8 @@ import ghidraevt.action.CloneEvtAction;
 import ghidraevt.action.EditDataTypeAction;
 import ghidraevt.action.EvtActionContext;
 import ghidraevt.action.EvtHighlightDefinedUseAction;
+import ghidraevt.action.EvtNextHighlightedTokenAction;
+import ghidraevt.action.EvtPreviousHighlightedTokenAction;
 import ghidraevt.action.EvtRemoveAllSecondaryHighlightsAction;
 import ghidraevt.action.EvtRemoveSecondaryHighlightAction;
 import ghidraevt.action.EvtSetSecondaryHighlightAction;
@@ -755,12 +757,12 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
             new EvtRemoveAllSecondaryHighlightsAction();
         setGroupInfo(removeAllSecondadryHighlightsAction, highlightGroup, subGroupPosition++);
 
-        // PreviousHighlightedTokenAction previousHighlightedTokenAction =
-        //     new PreviousHighlightedTokenAction();
-        // setGroupInfo(previousHighlightedTokenAction, highlightGroup, subGroupPosition++);
+        EvtPreviousHighlightedTokenAction previousHighlightedTokenAction =
+            new EvtPreviousHighlightedTokenAction();
+        setGroupInfo(previousHighlightedTokenAction, highlightGroup, subGroupPosition++);
 
-        // NextHighlightedTokenAction nextHighlightedTokenAction = new NextHighlightedTokenAction();
-        // setGroupInfo(nextHighlightedTokenAction, highlightGroup, subGroupPosition++);
+        EvtNextHighlightedTokenAction nextHighlightedTokenAction = new EvtNextHighlightedTokenAction();
+        setGroupInfo(nextHighlightedTokenAction, highlightGroup, subGroupPosition++);
 
         //
         // Convert
@@ -863,8 +865,8 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         addLocalAction(setSecondaryHighlightColorChooserAction);
         addLocalAction(removeSecondaryHighlightAction);
         addLocalAction(removeAllSecondadryHighlightsAction);
-        // addLocalAction(nextHighlightedTokenAction);
-        // addLocalAction(previousHighlightedTokenAction);
+        addLocalAction(nextHighlightedTokenAction);
+        addLocalAction(previousHighlightedTokenAction);
         // addLocalAction(convertBinaryAction);
         // addLocalAction(convertDecAction);
         // addLocalAction(convertFloatAction);

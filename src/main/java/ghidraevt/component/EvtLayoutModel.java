@@ -39,6 +39,7 @@ import docking.widgets.fieldpanel.support.SingleRowLayout;
 import ghidra.app.util.SymbolInspector;
 import ghidra.framework.plugintool.ServiceProvider;
 import ghidra.program.model.address.Address;
+import ghidraevt.token.EvtDocument;
 import ghidraevt.token.EvtLine;
 import ghidraevt.token.EvtToken;
 import ghidraevt.token.GhidraPrinter;
@@ -55,7 +56,7 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
     private FieldHighlightFactory hlFactory;
     private List<LayoutModelListener> listeners;
     private BigInteger numIndexes = BigInteger.ZERO;
-    private List<EvtLine> lines;
+    private EvtDocument document;
 
     private int maxLines = 30; // Maximum number of times 1 line of disassembly can be wrapped
     private int indentSize = 4; // Number of indentation characters to add per level
@@ -73,8 +74,8 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
         symbolInspector = new SymbolInspector(serviceProvider, evtPanel);
     }
 
-    public List<EvtLine> getLines() {
-        return lines;
+    public EvtDocument getDocument() {
+        return document;
     }
 
     @Override
@@ -245,7 +246,7 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
         }
     }
 
-    private void addErrorLines(EvtScript script, List<EvtLine> lines, String errmsg) { // Add indicated error message to display
+    private void addErrorLines(EvtScript script, EvtDocument document, String errmsg) { // Add indicated error message to display
         if (errmsg == null) {
             return; // No error message to add
         }
@@ -256,7 +257,7 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
         }
         int i = 0;
         for (String errline : errlines) {
-            lines.add(i, new EvtLine(
+            document.addLine(i, new EvtLine(
                 Arrays.asList(new EvtToken(script, errline, GhidraPrinter.COLOR_COMMENT, null, 0)),
                 Address.NO_ADDRESS,
                 i,
@@ -273,20 +274,20 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
         if (docroot != null) {
             GhidraPrinter printer =
                 new GhidraPrinter(evtPanel.getProgram(), symbolInspector, options);
-            lines = printer.getLines(script, docroot);
+            document = printer.getLines(script, docroot);
         }
         else {
-            lines = new ArrayList<>();
+            document = new EvtDocument();
         }
 
-        addErrorLines(script, lines, errmsg);
+        addErrorLines(script, document, errmsg);
 
-        int lineCount = lines.size();
+        int lineCount = document.getLineCount();
         fieldList = new Field[lineCount];
         numIndexes = BigInteger.valueOf(lineCount);
 
         for (int i = 0; i < lineCount; ++i) {
-            EvtLine oneLine = lines.get(i);
+            EvtLine oneLine = document.getLine(i);
             fieldList[i] = createTextFieldForLine(oneLine);
         }
 

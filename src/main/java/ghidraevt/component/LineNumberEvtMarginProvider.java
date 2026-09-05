@@ -110,7 +110,7 @@ public class LineNumberEvtMarginProvider extends JPanel
 		BigInteger endIdx = pixmap.getIndex(visible.y + visible.height);
 		int ascent = g.getFontMetrics().getMaxAscent();
 		for (BigInteger i = startIdx; i.compareTo(endIdx) <= 0; i = i.add(BigInteger.ONE)) {
-			EvtLine line = model.getLines().get(i.intValueExact());
+			EvtLine line = model.getDocument().getLine(i.intValueExact());
 			
 			// Only render real line numbers
 			int lineNumber = line.getDisplayLineNumber();
