@@ -61,6 +61,10 @@ import ghidraevt.action.CloneEvtAction;
 import ghidraevt.action.EditDataTypeAction;
 import ghidraevt.action.EvtActionContext;
 import ghidraevt.action.EvtHighlightDefinedUseAction;
+import ghidraevt.action.EvtRemoveAllSecondaryHighlightsAction;
+import ghidraevt.action.EvtRemoveSecondaryHighlightAction;
+import ghidraevt.action.EvtSetSecondaryHighlightAction;
+import ghidraevt.action.EvtSetSecondaryHighlightColorChooserAction;
 import ghidraevt.action.FindAction;
 import ghidraevt.action.RenameSymbolAction;
 import ghidraevt.action.RetypeGlobalAction;
@@ -717,7 +721,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         //
         // Highlight
         //
-        // String highlightGroup = "4a - Highlight Group";
+        String highlightGroup = "4a - Highlight Group";
         // tool.setMenuGroup(new String[] { "Highlight" }, highlightGroup);
         // EvtHighlightDefinedUseAction defUseHighlightAction = new EvtHighlightDefinedUseAction();
         // setGroupInfo(defUseHighlightAction, highlightGroup, subGroupPosition++);
@@ -735,21 +739,21 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         //     new BackwardsSliceToPCodeOpsAction();
         // setGroupInfo(backwardSliceToOpsAction, highlightGroup, subGroupPosition++);
 
-        // tool.setMenuGroup(new String[] { "Secondary Highlight" }, highlightGroup);
-        // SetSecondaryHighlightAction setSecondaryHighlightAction = new SetSecondaryHighlightAction();
-        // setGroupInfo(setSecondaryHighlightAction, highlightGroup, subGroupPosition++);
+        tool.setMenuGroup(new String[] { "Secondary Highlight" }, highlightGroup);
+        EvtSetSecondaryHighlightAction setSecondaryHighlightAction = new EvtSetSecondaryHighlightAction();
+        setGroupInfo(setSecondaryHighlightAction, highlightGroup, subGroupPosition++);
 
-        // SetSecondaryHighlightColorChooserAction setSecondaryHighlightColorChooserAction =
-        //     new SetSecondaryHighlightColorChooserAction();
-        // setGroupInfo(setSecondaryHighlightColorChooserAction, highlightGroup, subGroupPosition++);
+        EvtSetSecondaryHighlightColorChooserAction setSecondaryHighlightColorChooserAction =
+            new EvtSetSecondaryHighlightColorChooserAction();
+        setGroupInfo(setSecondaryHighlightColorChooserAction, highlightGroup, subGroupPosition++);
 
-        // RemoveSecondaryHighlightAction removeSecondaryHighlightAction =
-        //     new RemoveSecondaryHighlightAction();
-        // setGroupInfo(removeSecondaryHighlightAction, highlightGroup, subGroupPosition++);
+        EvtRemoveSecondaryHighlightAction removeSecondaryHighlightAction =
+            new EvtRemoveSecondaryHighlightAction();
+        setGroupInfo(removeSecondaryHighlightAction, highlightGroup, subGroupPosition++);
 
-        // RemoveAllSecondaryHighlightsAction removeAllSecondadryHighlightsAction =
-        //     new RemoveAllSecondaryHighlightsAction();
-        // setGroupInfo(removeAllSecondadryHighlightsAction, highlightGroup, subGroupPosition++);
+        EvtRemoveAllSecondaryHighlightsAction removeAllSecondadryHighlightsAction =
+            new EvtRemoveAllSecondaryHighlightsAction();
+        setGroupInfo(removeAllSecondadryHighlightsAction, highlightGroup, subGroupPosition++);
 
         // PreviousHighlightedTokenAction previousHighlightedTokenAction =
         //     new PreviousHighlightedTokenAction();
@@ -855,10 +859,10 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         // addLocalAction(backwardSliceAction);
         // addLocalAction(forwardSliceToOpsAction);
         // addLocalAction(backwardSliceToOpsAction);
-        // addLocalAction(setSecondaryHighlightAction);
-        // addLocalAction(setSecondaryHighlightColorChooserAction);
-        // addLocalAction(removeSecondaryHighlightAction);
-        // addLocalAction(removeAllSecondadryHighlightsAction);
+        addLocalAction(setSecondaryHighlightAction);
+        addLocalAction(setSecondaryHighlightColorChooserAction);
+        addLocalAction(removeSecondaryHighlightAction);
+        addLocalAction(removeAllSecondadryHighlightsAction);
         // addLocalAction(nextHighlightedTokenAction);
         // addLocalAction(previousHighlightedTokenAction);
         // addLocalAction(convertBinaryAction);

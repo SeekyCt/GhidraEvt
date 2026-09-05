@@ -41,7 +41,6 @@ import docking.widgets.fieldpanel.listener.*;
 import docking.widgets.fieldpanel.support.*;
 import docking.widgets.indexedscrollpane.IndexedScrollPane;
 import generic.theme.GColor;
-import ghidra.app.decompiler.component.TokenHighlightColors;
 import ghidra.app.decompiler.component.margin.VerticalLayoutPixelIndexMap;
 import ghidra.app.util.viewer.util.ScrollpaneAlignedHorizontalLayout;
 import ghidra.program.model.address.*;
@@ -56,6 +55,7 @@ import ghidraevt.action.EvtSearchResults;
 import ghidraevt.highlight.EvtHighlightController;
 import ghidraevt.highlight.EvtHighlightListener;
 import ghidraevt.highlight.EvtHighlighter;
+import ghidraevt.highlight.EvtTokenHighlightColors;
 import ghidraevt.highlight.EvtTokenHighlightMatcher;
 import ghidraevt.highlight.EvtTokenHighlighter;
 import ghidraevt.highlight.EvtTokenHighlights;
@@ -190,7 +190,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 // Highlight Methods
 //==================================================================================================
 
-    public TokenHighlightColors getSecondaryHighlightColors() {
+    public EvtTokenHighlightColors getSecondaryHighlightColors() {
         return highlightController.getSecondaryHighlightColors();
     }
 
