@@ -260,6 +260,7 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
                 Arrays.asList(new EvtToken(script, errline, GhidraPrinter.COLOR_COMMENT, null, 0)),
                 Address.NO_ADDRESS,
                 i,
+                0,
                 0));
             i++;
         }

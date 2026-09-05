@@ -113,10 +113,11 @@ public class LineNumberEvtMarginProvider extends JPanel
 			EvtLine line = model.getLines().get(i.intValueExact());
 			
 			// Only render real line numbers
-			if (line.getLineNumber() <= 0)
+			int lineNumber = line.getDisplayLineNumber();
+			if (lineNumber <= 0)
 				continue;
 
-			String text = Integer.toString(line.getLineNumber());
+			String text = Integer.toString(lineNumber);
 			int width = g.getFontMetrics().stringWidth(text);
 			GraphicsUtils.drawString(this, g, text, rightEdge - width, pixmap.getPixel(i) + ascent);
 		}

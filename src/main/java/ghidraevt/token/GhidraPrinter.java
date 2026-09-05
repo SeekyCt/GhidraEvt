@@ -207,6 +207,7 @@ public class GhidraPrinter {
         List<EvtLine> ret = new ArrayList<>();
         int indent = 0;
         int line = 1;
+        int displayLine = 1;
         Address addr = script.getStartAddress();
 
         // Header
@@ -214,7 +215,7 @@ public class GhidraPrinter {
         header.add(EvtToken.syntax(script, HEADER_DECORATION + " ", decompileOptions.getDefaultColor(), addr));
         header.addAll(symbolToTokens(script, addr, COLOR_HEADER, addr, 0));
         header.add(EvtToken.syntax(script, " " + HEADER_DECORATION, decompileOptions.getDefaultColor(), addr));
-        ret.add(new EvtLine(header, addr, 0, indent));
+        ret.add(new EvtLine(header, addr, line++, 0, indent));
 
         Address lineAddr = addr;
         for (Instr instr : docroot) {
@@ -239,13 +240,14 @@ public class GhidraPrinter {
                 addr = addr.add(Arg.bytesSize());
             }
 
-            ret.add(new EvtLine(tokens, lineAddr, line++, indent));
+            ret.add(new EvtLine(tokens, lineAddr, line++, displayLine++, indent));
 
             // Indent for next line
             indent += opcode.indent();
         }
 
-        ret.add(new EvtLine(Arrays.asList(new EvtToken(script, "", decompileOptions.getDefaultColor(), lineAddr, 0)), addr, line, indent));
+        List<EvtToken> blank = Arrays.asList(new EvtToken(script, "", decompileOptions.getDefaultColor(), lineAddr, 0));
+        ret.add(new EvtLine(blank, addr, line++, displayLine++, indent));
 
         return ret;
     }

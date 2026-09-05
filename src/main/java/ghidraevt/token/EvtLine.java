@@ -24,18 +24,20 @@ import java.util.List;
 import ghidra.program.model.address.Address;
 
 public class EvtLine {
-    private int lineNumber; // Line numbers <= 0 will not be rendered
+    private int lineNumber;
+    private int displayLineNumber; // Line numbers <= 0 will not be rendered
     private int indent;
     private List<EvtToken> tokens;
     private Address addr;
 
-    public EvtLine(List<EvtToken> tokens, Address addr, int lineNumber, int indent) {
+    public EvtLine(List<EvtToken> tokens, Address addr, int lineNumber, int displayLineNumber, int indent) {
         this.tokens = tokens;
         for (EvtToken token : tokens) {
             token.setLineParent(this);
         }
         this.addr = addr;
         this.lineNumber = lineNumber;
+        this.displayLineNumber = displayLineNumber;
         this.indent = indent;
     }
 
@@ -49,6 +51,10 @@ public class EvtLine {
 
     public int getLineNumber() {
         return lineNumber;
+    }
+
+    public int getDisplayLineNumber() {
+        return displayLineNumber;
     }
 
 	public EvtToken getToken(int i) {
