@@ -46,10 +46,6 @@ public class EvtManager {
     private EvtController controller;
     private EvtOptions options;
 
-    private boolean snapToSymbol = true;
-    private boolean strictMode = false;
-    private boolean stopOnNextSymbol = true;
-
     public EvtManager(EvtController controller, EvtOptions options) {
         this.controller = controller;
         this.options = options;
@@ -87,7 +83,9 @@ public class EvtManager {
 
     void disassemble(Program program, ProgramLocation location,
         ViewerPosition viewerPosition) {
-        DisassembleResults results = doDisassemble(program, location, viewerPosition, this.snapToSymbol);
+        DisassembleResults results = doDisassemble(
+            program, location, viewerPosition, options.isSnapToSymbol()
+        );
         controller.setDisasssembleData(new DisassembleData(
             program, results.getScript(), location, results, null, viewerPosition
         ));
@@ -115,7 +113,7 @@ public class EvtManager {
         EvtScript script = new EvtScript(program, startAddress);
 
         int sizeLimit = Integer.MAX_VALUE;
-        if (stopOnNextSymbol) {
+        if (options.isStopOnNextSymbol()) {
             Symbol next = nextSymbol(program, startAddress);
             if (next != null)
                 sizeLimit = (int) next.getAddress().subtract(startAddress);
@@ -126,7 +124,7 @@ public class EvtManager {
 
         List<Instr> docroot;
         try {
-            docroot = Instr.disassemble(game, stream, strictMode);
+            docroot = Instr.disassemble(game, stream, options.isStrictMode());
         }
         catch (BadEvtException e) {
             String err = "Script appears invalid: " + e.getMessage();

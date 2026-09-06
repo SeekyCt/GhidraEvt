@@ -116,8 +116,8 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
     private boolean allowOutgoingEvents = false;
 
 
-    // TODO: save settings
-    private DockingToggle strictMode; // TODO: type-based mode
+    // TODO: connect to settings
+    private DockingToggle strictMode;
     private DockingToggle showAddresses;
     private DockingToggle showLineNumbers;
     private DockingToggle snapToSymbol;

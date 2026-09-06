@@ -31,6 +31,7 @@ import ghidra.program.model.address.Address;
 import ghidra.program.model.listing.Program;
 import ghidra.program.model.scalar.Scalar;
 import ghidra.program.util.ProgramLocation;
+import ghidraevt.GhidraEvtPlugin;
 import ghidraevt.component.EvtTextField;
 import ghidraevt.token.EvtScalarToken;
 import ghidraevt.token.EvtToken;
@@ -65,7 +66,7 @@ public class ScalarValueEvtHover extends AbstractScalarOperandHover
 
 	@Override
 	protected String getOptionsCategory() {
-		return GhidraOptions.CATEGORY_DECOMPILER_POPUPS;
+		return GhidraEvtPlugin.POPUP_OPTIONS_TITLE;
 	}
 
 	@Override

@@ -89,6 +89,8 @@ import ghidraevt.token.EvtToken;
 public class GhidraEvtPlugin extends Plugin {
     public static final String OPTIONS_TITLE = "Evt Disassembler";
 
+    public static final String POPUP_OPTIONS_TITLE = "Evt Disassembler Popups";
+
     private EvtProvider connectedProvider;
     private List<EvtProvider> disconnectedProviders;
 

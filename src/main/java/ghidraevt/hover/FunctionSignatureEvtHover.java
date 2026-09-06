@@ -31,6 +31,7 @@ import ghidra.framework.plugintool.PluginTool;
 import ghidra.program.model.listing.Function;
 import ghidra.program.model.listing.Program;
 import ghidra.program.util.ProgramLocation;
+import ghidraevt.GhidraEvtPlugin;
 import ghidraevt.component.EvtTextField;
 import ghidraevt.token.EvtAddrToken;
 import ghidraevt.token.EvtToken;
@@ -64,7 +65,7 @@ public class FunctionSignatureEvtHover extends AbstractConfigurableHover
 
 	@Override
 	protected String getOptionsCategory() {
-		return GhidraOptions.CATEGORY_DECOMPILER_POPUPS; // TODO
+		return GhidraEvtPlugin.POPUP_OPTIONS_TITLE;
 	}
 
 	@Override

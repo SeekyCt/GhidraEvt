@@ -45,9 +45,109 @@ public class EvtOptions {
         GhidraOptions.CATEGORY_BROWSER_FIELDS
     );
 
+    public EvtOptions(DecompileOptions decompileOptions) {
+        this.decompileOptions = decompileOptions;
+    }
+
+    public void registerOptions(PluginTool tool, Program program) {
+        registerToolOptions(tool);
+        grabFromTool(tool);
+
+        registerProgramOptions(program);
+        grabFromProgram(program);
+
+        // No need to re-register decompiler options
+        ToolOptions fieldOptions = tool.getOptions(GhidraOptions.CATEGORY_BROWSER_FIELDS);
+        ToolOptions decompilerOptions = tool.getOptions(DecompilePlugin.OPTIONS_TITLE);
+        decompileOptions.grabFromToolAndProgram(fieldOptions, decompilerOptions, program);
+    }
+
+    public void registerListener(PluginTool tool, OptionsChangeListener listener) {
+        for (String title : listenedCategories) {
+            tool.getOptions(title).addOptionsChangeListener(listener);
+        }
+    }
+
+    public boolean isCategoryListened(String title) {
+        return listenedCategories.contains(title);
+    }
+
+    public void grabFromToolAndProgram(PluginTool tool, Program program) {
+        grabFromTool(tool);
+        grabFromProgram(program);
+
+        // Update decompiler options
+        ToolOptions fieldOptions = tool.getOptions(GhidraOptions.CATEGORY_BROWSER_FIELDS);
+        ToolOptions decompilerOptions = tool.getOptions(DecompilePlugin.OPTIONS_TITLE);
+        decompileOptions.grabFromToolAndProgram(fieldOptions, decompilerOptions, program);
+    }
+
+    /****************
+     * Tool Options *
+     ****************/
+
     private static final String TOPT_C_MACRO = "C Macro Mode";
     private static final String TOPT_C_MACRO_DESC = "Render scripts in the evt_cmd.h C macro format";
     private boolean cMacroMode;
+
+    public boolean isCMacroMode() {
+        return cMacroMode;
+    }
+
+    // TODO: another mode with type-based opt-in
+    private static final String TOPT_STRICT = "Strict Script Detection";
+    private static final String TOPT_STRICT_DESC = "Stricter script detection rules (may risk false-negatives)";
+    private boolean strictMode;
+
+    public boolean isStrictMode() {
+        return strictMode;
+    }
+
+    private static final String TOPT_LINE_NUMBERS = "Show Line Numbers";
+    private static final String TOPT_LINE_NUMBERS_DESC = "Display instruction-based line numbers";
+    private boolean showLineNumbers;
+
+    public boolean isShowLineNumbers() {
+        return showLineNumbers;
+    }
+
+    private static final String TOPT_SYM_SNAP = "Snap to Last Symbol";
+    private static final String TOPT_SYM_SNAP_DESC = "Start disassembly from the address of the last defined symbol";
+    private boolean snapToSymbol;
+
+    public boolean isSnapToSymbol() {
+        return snapToSymbol;
+    }
+
+    private static final String TOPT_SYM_STOP = "Stop on Next Symbol";
+    private static final String TOPT_SYM_STOP_DESC = "Cancel disassembly if the next defined symbol is reached";
+    private boolean stopOnNextSymbol;
+
+    public boolean isStopOnNextSymbol() {
+        return stopOnNextSymbol;
+    }
+
+    public void registerToolOptions(PluginTool tool) {
+        ToolOptions toolOptions = tool.getOptions(GhidraEvtPlugin.OPTIONS_TITLE);
+        toolOptions.registerOption(TOPT_C_MACRO,      false, null, TOPT_C_MACRO_DESC);
+        toolOptions.registerOption(TOPT_STRICT,       true,  null, TOPT_STRICT_DESC);
+        toolOptions.registerOption(TOPT_LINE_NUMBERS, true,  null, TOPT_LINE_NUMBERS_DESC);
+        toolOptions.registerOption(TOPT_SYM_SNAP,     true,  null, TOPT_SYM_SNAP_DESC);
+        toolOptions.registerOption(TOPT_SYM_STOP,     true,  null, TOPT_SYM_STOP_DESC);
+    }
+
+    public void grabFromTool(PluginTool tool) {
+        ToolOptions toolOptions = tool.getOptions(GhidraEvtPlugin.OPTIONS_TITLE);
+        this.cMacroMode       = toolOptions.getBoolean(TOPT_C_MACRO,      false);
+        this.strictMode       = toolOptions.getBoolean(TOPT_STRICT,       true );
+        this.showLineNumbers  = toolOptions.getBoolean(TOPT_LINE_NUMBERS, true );
+        this.snapToSymbol     = toolOptions.getBoolean(TOPT_SYM_SNAP,     true );
+        this.stopOnNextSymbol = toolOptions.getBoolean(TOPT_SYM_STOP,     true );
+    }
+
+    /*******************
+     * Program Options *
+     *******************/
 
     private static final String POPT_GAME = "Game";
     private static final String POPT_GAME_DESC = "Choose which game's constants to base disassembly on";
@@ -75,39 +175,16 @@ public class EvtOptions {
 	}
     private Game game;
 
-    private DecompileOptions decompileOptions;
-
-    public EvtOptions(DecompileOptions decompileOptions) {
-        this.decompileOptions = decompileOptions;
+    public Game getGame() {
+        return game;
     }
 
-    public DecompileOptions getDecompileOptions() {
-        return decompileOptions;
-    }
+    private void registerProgramOptions(Program program) {
+        if (program == null)
+            return;
 
-    public void registerOptions(PluginTool tool, Program program) {
-        ToolOptions toolOptions = tool.getOptions(GhidraEvtPlugin.OPTIONS_TITLE);
-        toolOptions.registerOption(TOPT_C_MACRO, false, null, TOPT_C_MACRO_DESC);
-        
-        if (program != null) {
-            Options programOptions = program.getOptions(GhidraEvtPlugin.OPTIONS_TITLE);
-            programOptions.registerOption(POPT_GAME, GameChoice.AUTO, null, POPT_GAME_DESC);
-        }
-
-        // No need to re-register decompiler options
-        ToolOptions fieldOptions = tool.getOptions(GhidraOptions.CATEGORY_BROWSER_FIELDS);
-        ToolOptions decompilerOptions = tool.getOptions(DecompilePlugin.OPTIONS_TITLE);
-        decompileOptions.grabFromToolAndProgram(fieldOptions, decompilerOptions, program);
-    }
-
-    public void registerListener(PluginTool tool, OptionsChangeListener listener) {
-        for (String title : listenedCategories) {
-            tool.getOptions(title).addOptionsChangeListener(listener);
-        }
-    }
-
-    public boolean isCategoryListened(String title) {
-        return listenedCategories.contains(title);
+        Options programOptions = program.getOptions(GhidraEvtPlugin.OPTIONS_TITLE);
+        programOptions.registerOption(POPT_GAME, GameChoice.AUTO, null, POPT_GAME_DESC);
     }
 
     private Game decideGame(Program program, Options programOptions) {
@@ -134,19 +211,7 @@ public class EvtOptions {
                 }
         }
     }
-
-    public void grabFromToolAndProgram(PluginTool tool, Program program) {
-        ToolOptions toolOptions = tool.getOptions(GhidraEvtPlugin.OPTIONS_TITLE);
-        this.cMacroMode = toolOptions.getBoolean(TOPT_C_MACRO, false);
-
-        grabFromProgram(program);
-
-        // Update decompiler options
-        ToolOptions fieldOptions = tool.getOptions(GhidraOptions.CATEGORY_BROWSER_FIELDS);
-        ToolOptions decompilerOptions = tool.getOptions(DecompilePlugin.OPTIONS_TITLE);
-        decompileOptions.grabFromToolAndProgram(fieldOptions, decompilerOptions, program);
-    }
-
+    
     private void grabFromProgram(Program program) {
         if (program == null) {
             this.game = null;
@@ -157,27 +222,15 @@ public class EvtOptions {
         this.game = decideGame(program, programOptions);
     }
 
-
-    /****************
-     * Tool Options *
-     ****************/
-
-    public boolean getCMacroMode() {
-        return cMacroMode;
-    }
-
-
-    /*******************
-     * Program Options *
-     *******************/
-
-    public Game getGame() {
-        return game;
-    }
-
     /**********************
      * Decompiler Options *
      **********************/
+
+    private DecompileOptions decompileOptions;
+
+    public DecompileOptions getDecompileOptions() {
+        return decompileOptions;
+    }
 
     public Font getDefaultFont() {
         return decompileOptions.getDefaultFont();
@@ -185,10 +238,6 @@ public class EvtOptions {
 
     public int getMaxWidth() {
         return decompileOptions.getMaxWidth();
-    }
-
-    public boolean isDisplayLineNumbers() {
-        return decompileOptions.isDisplayLineNumbers();
     }
 
     public Color getGlobalColor() {

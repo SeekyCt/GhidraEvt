@@ -31,6 +31,7 @@ import ghidra.program.model.address.Address;
 import ghidra.program.model.listing.Function;
 import ghidra.program.model.listing.Program;
 import ghidra.program.util.ProgramLocation;
+import ghidraevt.GhidraEvtPlugin;
 
 public class ReferenceEvtHover extends AbstractReferenceHover
 		implements EvtHoverService {
@@ -61,7 +62,7 @@ public class ReferenceEvtHover extends AbstractReferenceHover
 
 	@Override
 	protected String getOptionsCategory() {
-		return GhidraOptions.CATEGORY_DECOMPILER_POPUPS; // TODO
+		return GhidraEvtPlugin.POPUP_OPTIONS_TITLE;
 	}
 
 	@Override

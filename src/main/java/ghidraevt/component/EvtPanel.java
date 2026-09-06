@@ -166,7 +166,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
         setPreferredSize(new Dimension(600, 400));
         setDisassembleData(new EmptyDisassembleData("No Script"));
 
-        if (options.isDisplayLineNumbers()) {
+        if (options.isShowLineNumbers()) {
             addMarginProvider(lineNumbersMargin = new LineNumberEvtMarginProvider());
         }
     }
@@ -1057,7 +1057,7 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
 
         highlightController.setHighlightColor(currentVariableHighlightColor);
 
-        if (options.isDisplayLineNumbers()) {
+        if (options.isShowLineNumbers()) {
             if (lineNumbersMargin == null) {
                 addMarginProvider(lineNumbersMargin = new LineNumberEvtMarginProvider());
             }
