@@ -21,18 +21,61 @@ package ghidraevt.component;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.util.Arrays;
+import java.util.List;
 
+import ghidra.GhidraOptions;
 import ghidra.app.decompiler.DecompileOptions;
+import ghidra.app.plugin.core.decompile.DecompilePlugin;
+import ghidra.framework.options.Options;
+import ghidra.framework.options.OptionsChangeListener;
 import ghidra.framework.options.ToolOptions;
+import ghidra.framework.plugintool.PluginTool;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.listing.Program;
 import ghidra.program.model.mem.MemoryAccessException;
 import ghidra.util.Msg;
+import ghidraevt.GhidraEvtPlugin;
 import jevt.Game;
 
 public class EvtOptions {
-    private DecompileOptions decompileOptions;
+    private static List<String> listenedCategories = Arrays.asList(
+        GhidraEvtPlugin.OPTIONS_TITLE,
+        DecompilePlugin.OPTIONS_TITLE,
+        GhidraOptions.CATEGORY_BROWSER_FIELDS
+    );
+
+    private static final String TOPT_C_MACRO = "C Macro Mode";
+    private static final String TOPT_C_MACRO_DESC = "Render scripts in the evt_cmd.h C macro format";
+    private boolean cMacroMode;
+
+    private static final String POPT_GAME = "Game";
+    private static final String POPT_GAME_DESC = "Choose which game's constants to base disassembly on";
+    public static enum GameChoice {
+        AUTO("AUTO", "Auto-detect"),
+        TTYD("TTYD", "Paper Mario: The Thousand-Year Door"),
+        SPM("SPM", "Super Paper Mario");
+
+		private String label;
+		private String optionString;
+
+		private GameChoice(String optString, String label) {
+			this.label = label;
+			this.optionString = optString;
+		}
+
+		public String getOptionString() {
+			return optionString;
+		}
+
+		@Override
+		public String toString() {
+			return label;
+		}
+	}
     private Game game;
+
+    private DecompileOptions decompileOptions;
 
     public EvtOptions(DecompileOptions decompileOptions) {
         this.decompileOptions = decompileOptions;
@@ -42,29 +85,99 @@ public class EvtOptions {
         return decompileOptions;
     }
 
-    public void registerOptions(ToolOptions fieldOptions, ToolOptions opt, Program program) {
+    public void registerOptions(PluginTool tool, Program program) {
+        ToolOptions toolOptions = tool.getOptions(GhidraEvtPlugin.OPTIONS_TITLE);
+        toolOptions.registerOption(TOPT_C_MACRO, false, null, TOPT_C_MACRO_DESC);
+        
+        if (program != null) {
+            Options programOptions = program.getOptions(GhidraEvtPlugin.OPTIONS_TITLE);
+            programOptions.registerOption(POPT_GAME, GameChoice.AUTO, null, POPT_GAME_DESC);
+        }
 
-        decompileOptions.grabFromToolAndProgram(fieldOptions, opt, program);
+        // No need to re-register decompiler options
+        ToolOptions fieldOptions = tool.getOptions(GhidraOptions.CATEGORY_BROWSER_FIELDS);
+        ToolOptions decompilerOptions = tool.getOptions(DecompilePlugin.OPTIONS_TITLE);
+        decompileOptions.grabFromToolAndProgram(fieldOptions, decompilerOptions, program);
     }
 
-    public void grabFromToolAndProgram(ToolOptions fieldOptions, ToolOptions opt, Program program) {
-        decompileOptions.grabFromToolAndProgram(fieldOptions, opt, program);
-
-        // Infer which game is loaded
-        // (SPM has memcpy here, TTYD does not)
-        Address maybeMemcpy = program.getAddressFactory().getAddress("0x80004000");
-        try {
-            this.game = switch (program.getMemory().getByte(maybeMemcpy)) {
-                case 0x00 -> Game.TTYD;
-                case 0x7c -> Game.SPM;
-                default -> null;
-            };
+    public void registerListener(PluginTool tool, OptionsChangeListener listener) {
+        for (String title : listenedCategories) {
+            tool.getOptions(title).addOptionsChangeListener(listener);
         }
-        catch (MemoryAccessException e) {
-            Msg.warn(this, "Couldn't do memcpy check: " + e.getMessage());
+    }
+
+    public boolean isCategoryListened(String title) {
+        return listenedCategories.contains(title);
+    }
+
+    private Game decideGame(Program program, Options programOptions) {
+        switch (programOptions.getEnum(POPT_GAME, GameChoice.AUTO)) {
+            case GameChoice.SPM:
+                return Game.SPM;
+
+            case GameChoice.TTYD:
+                return Game.TTYD;
+
+            default:
+                // SPM has memcpy here, TTYD does not
+                Address maybeMemcpy = program.getAddressFactory().getAddress("0x80004000");
+                try {
+                    return switch (program.getMemory().getByte(maybeMemcpy)) {
+                        case 0x00 -> Game.TTYD;
+                        case 0x7c -> Game.SPM;
+                        default -> null;
+                    };
+                }
+                catch (MemoryAccessException e) {
+                    Msg.warn(this, "Couldn't do memcpy check: " + e.getMessage());
+                    return null;
+                }
+        }
+    }
+
+    public void grabFromToolAndProgram(PluginTool tool, Program program) {
+        ToolOptions toolOptions = tool.getOptions(GhidraEvtPlugin.OPTIONS_TITLE);
+        this.cMacroMode = toolOptions.getBoolean(TOPT_C_MACRO, false);
+
+        grabFromProgram(program);
+
+        // Update decompiler options
+        ToolOptions fieldOptions = tool.getOptions(GhidraOptions.CATEGORY_BROWSER_FIELDS);
+        ToolOptions decompilerOptions = tool.getOptions(DecompilePlugin.OPTIONS_TITLE);
+        decompileOptions.grabFromToolAndProgram(fieldOptions, decompilerOptions, program);
+    }
+
+    private void grabFromProgram(Program program) {
+        if (program == null) {
             this.game = null;
+            return;
         }
+
+        Options programOptions = program.getOptions(GhidraEvtPlugin.OPTIONS_TITLE);
+        this.game = decideGame(program, programOptions);
     }
+
+
+    /****************
+     * Tool Options *
+     ****************/
+
+    public boolean getCMacroMode() {
+        return cMacroMode;
+    }
+
+
+    /*******************
+     * Program Options *
+     *******************/
+
+    public Game getGame() {
+        return game;
+    }
+
+    /**********************
+     * Decompiler Options *
+     **********************/
 
     public Font getDefaultFont() {
         return decompileOptions.getDefaultFont();
@@ -112,10 +225,6 @@ public class EvtOptions {
     }
     public int getMiddleMouseHighlightButton() {
         return decompileOptions.getMiddleMouseHighlightButton();
-    }
-
-    public Game getGame() {
-        return game;
     }
 }
 

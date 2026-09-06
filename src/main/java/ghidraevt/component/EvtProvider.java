@@ -190,9 +190,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
     @Override
     public void componentShown() {
         if (program != null && currentLocation != null) {
-            ToolOptions fieldOptions = tool.getOptions(GhidraOptions.CATEGORY_BROWSER_FIELDS);
-            ToolOptions opt = tool.getOptions(DecompilePlugin.OPTIONS_TITLE);
-            options.grabFromToolAndProgram(fieldOptions, opt, program);
+            options.grabFromToolAndProgram(tool, program);
             controller.setOptions(options);
 
             refreshToggleButtons();
@@ -289,14 +287,12 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         if (!isVisible()) {
             return;
         }
-        ToolOptions fieldOptions = tool.getOptions(GhidraOptions.CATEGORY_BROWSER_FIELDS);
-        ToolOptions opt = tool.getOptions(DecompilePlugin.OPTIONS_TITLE);
 
         // Current values of toggle buttons
         // boolean decompilerEliminatesUnreachable = decompilerOptions.isEliminateUnreachable();
         // boolean decompilerRespectsReadOnlyFlags = decompilerOptions.isRespectReadOnly();
 
-        options.grabFromToolAndProgram(fieldOptions, opt, program);
+        options.grabFromToolAndProgram(tool, program);
 
         // If the tool options were not changed
         if (!optionsChanged) {
@@ -342,12 +338,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
     @Override
     public void optionsChanged(ToolOptions options, String optionName, Object oldValue,
             Object newValue) {
-        if (!isVisible()) {
-            return;
-        }
-
-        if (options.getName().equals(DecompilePlugin.OPTIONS_TITLE) ||
-            options.getName().equals(GhidraOptions.CATEGORY_BROWSER_FIELDS)) {
+        if (this.options.isCategoryListened(options.getName())) {
             doRefresh(true);
         }
     }
@@ -396,9 +387,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         currentSelection = null;
         if (program != null) {
             program.addListener(programListener);
-            ToolOptions fieldOptions = tool.getOptions(GhidraOptions.CATEGORY_BROWSER_FIELDS);
-            ToolOptions opt = tool.getOptions(DecompilePlugin.OPTIONS_TITLE);
-            options.grabFromToolAndProgram(fieldOptions, opt, program);
+            options.grabFromToolAndProgram(tool, program);
         }
 
         clipboardProvider.setProgram(program);
@@ -657,14 +646,8 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
     }
 
     private void initializeOptions() {
-        ToolOptions fieldOptions = tool.getOptions(GhidraOptions.CATEGORY_BROWSER_FIELDS);
-        ToolOptions opt = tool.getOptions(DecompilePlugin.OPTIONS_TITLE);
-        options.registerOptions(fieldOptions, opt, program);
-
-        opt.addOptionsChangeListener(this);
-
-        ToolOptions codeBrowserOptions = tool.getOptions(GhidraOptions.CATEGORY_BROWSER_FIELDS);
-        codeBrowserOptions.addOptionsChangeListener(this);
+        options.registerOptions(tool, program);
+        options.registerListener(tool, this);
     }
 
     private void createActions(boolean isConnected) {
