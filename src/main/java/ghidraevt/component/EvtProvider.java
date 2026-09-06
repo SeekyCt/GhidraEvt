@@ -59,7 +59,9 @@ import ghidra.util.task.SwingUpdateManager;
 import ghidraevt.GhidraEvtPlugin;
 import ghidraevt.action.CloneEvtAction;
 import ghidraevt.action.EvtEditDataTypeAction;
+import ghidraevt.action.EvtFindReferencesToAddressAction;
 import ghidraevt.action.EvtActionContext;
+import ghidraevt.action.EvtFindReferencesToDataTypeAction;
 import ghidraevt.action.EvtHighlightDefinedUseAction;
 import ghidraevt.action.EvtNextHighlightedTokenAction;
 import ghidraevt.action.EvtPreviousHighlightedTokenAction;
@@ -68,6 +70,7 @@ import ghidraevt.action.EvtRemoveSecondaryHighlightAction;
 import ghidraevt.action.EvtSetSecondaryHighlightAction;
 import ghidraevt.action.EvtSetSecondaryHighlightColorChooserAction;
 import ghidraevt.action.FindAction;
+import ghidraevt.action.EvtFindReferencesToSymbolAction;
 import ghidraevt.action.RenameSymbolAction;
 import ghidraevt.action.RetypeGlobalAction;
 import ghidraevt.action.SelectAllAction;
@@ -818,24 +821,24 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         //
 
         // note: set the menu group so that the 'References' group is with the 'Find' action
-        // String referencesParentGroup = searchGroup;
+        String referencesParentGroup = searchGroup;
 
-        // FindReferencesToDataTypeAction findReferencesAction =
-        //     new FindReferencesToDataTypeAction(owner, tool, controller);
-        // setGroupInfo(findReferencesAction, searchGroup, subGroupPosition++);
-        // findReferencesAction.getPopupMenuData().setParentMenuGroup(referencesParentGroup);
+        EvtFindReferencesToDataTypeAction findReferencesAction =
+            new EvtFindReferencesToDataTypeAction(owner, tool);
+        setGroupInfo(findReferencesAction, searchGroup, subGroupPosition++);
+        findReferencesAction.getPopupMenuData().setParentMenuGroup(referencesParentGroup);
 
-        // FindReferencesToHighSymbolAction findReferencesToSymbolAction =
-        //     new FindReferencesToHighSymbolAction();
-        // setGroupInfo(findReferencesToSymbolAction, searchGroup, subGroupPosition++);
-        // findReferencesToSymbolAction.getPopupMenuData().setParentMenuGroup(referencesParentGroup);
-        // addLocalAction(findReferencesToSymbolAction);
+        EvtFindReferencesToSymbolAction findReferencesToSymbolAction =
+            new EvtFindReferencesToSymbolAction();
+        setGroupInfo(findReferencesToSymbolAction, searchGroup, subGroupPosition++);
+        findReferencesToSymbolAction.getPopupMenuData().setParentMenuGroup(referencesParentGroup);
+        addLocalAction(findReferencesToSymbolAction);
 
-        // FindReferencesToAddressAction findReferencesToAddressAction =
-        //     new FindReferencesToAddressAction(tool, owner);
-        // setGroupInfo(findReferencesToAddressAction, searchGroup, subGroupPosition++);
-        // findReferencesToAddressAction.getPopupMenuData().setParentMenuGroup(referencesParentGroup);
-        // addLocalAction(findReferencesToAddressAction);
+        EvtFindReferencesToAddressAction findReferencesToAddressAction =
+            new EvtFindReferencesToAddressAction(tool, owner);
+        setGroupInfo(findReferencesToAddressAction, searchGroup, subGroupPosition++);
+        findReferencesToAddressAction.getPopupMenuData().setParentMenuGroup(referencesParentGroup);
+        addLocalAction(findReferencesToAddressAction);
 
         //
         // Options
@@ -877,7 +880,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         // addLocalAction(convertCharAction);
         // addLocalAction(convertAction);
         addLocalAction(findAction);
-        // addLocalAction(findReferencesAction);
+        addLocalAction(findReferencesAction);
         // addLocalAction(propertiesAction);
         addLocalAction(cloneDecompilerAction);
         // addLocalAction(goToNextBraceAction);
