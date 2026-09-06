@@ -71,6 +71,7 @@ import ghidraevt.action.EvtSetSecondaryHighlightAction;
 import ghidraevt.action.EvtSetSecondaryHighlightColorChooserAction;
 import ghidraevt.action.FindAction;
 import ghidraevt.action.EvtFindReferencesToSymbolAction;
+import ghidraevt.action.EvtFindReferencesToVariableAction;
 import ghidraevt.action.RenameSymbolAction;
 import ghidraevt.action.RetypeGlobalAction;
 import ghidraevt.action.SelectAllAction;
@@ -833,6 +834,12 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         setGroupInfo(findReferencesToSymbolAction, searchGroup, subGroupPosition++);
         findReferencesToSymbolAction.getPopupMenuData().setParentMenuGroup(referencesParentGroup);
         addLocalAction(findReferencesToSymbolAction);
+
+        EvtFindReferencesToVariableAction findReferencesToVariableAction =
+            new EvtFindReferencesToVariableAction(options);
+        setGroupInfo(findReferencesToVariableAction, searchGroup, subGroupPosition++);
+        findReferencesToVariableAction.getPopupMenuData().setParentMenuGroup(referencesParentGroup);
+        addLocalAction(findReferencesToVariableAction);
 
         EvtFindReferencesToAddressAction findReferencesToAddressAction =
             new EvtFindReferencesToAddressAction(tool, owner);

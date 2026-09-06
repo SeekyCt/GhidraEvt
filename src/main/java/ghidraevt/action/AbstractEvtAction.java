@@ -32,6 +32,8 @@ import ghidra.util.data.DataTypeParser.AllowedDataTypes;
 import ghidraevt.GhidraEvtPlugin;
 import ghidraevt.token.EvtAddrToken;
 import ghidraevt.token.EvtToken;
+import ghidraevt.token.EvtVariableToken;
+import jevt.Arg;
 
 /**
  * A base class for {@link GhidraEvtPlugin} actions.  Each action is responsible for deciding its
@@ -84,6 +86,16 @@ public abstract class AbstractEvtAction extends DockingAction {
 			Program program = context.getProgram();
 			SymbolTable symbolTable = program.getSymbolTable();
 			return symbolTable.getPrimarySymbol(addr.getTarget());
+		}
+		else {
+			return null;
+		}
+	}
+
+	protected Arg.Variable getVariableHighlighted(EvtActionContext context) {
+		EvtToken token = context.getTokenAtCursor();
+		if (token instanceof EvtVariableToken var) {
+			return var.getVar();
 		}
 		else {
 			return null;

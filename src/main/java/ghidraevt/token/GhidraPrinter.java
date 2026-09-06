@@ -188,7 +188,7 @@ public class GhidraPrinter {
             ));
             case Arg.Variable variable -> Arrays.asList(EvtToken.var(
                 script,
-                variable.typeName() + "(" + variable.id() + ")",
+                variable.getName(),
                 variableToColor(variable),
                 atAddr,
                 variable

@@ -21,6 +21,10 @@ public sealed interface Arg permits
     static public sealed interface Variable extends Arg permits
     Arg.UF, Arg.UW, Arg.GSW, Arg.LSW, Arg.GSWF, Arg.LSWF, Arg.GF, Arg.LF, Arg.GW, Arg.LW {
         int id();
+
+        public default String getName() {
+            return typeName() + "(" + id() + ")";
+        }
     }
 
     record ADDR(long value) implements Arg {
