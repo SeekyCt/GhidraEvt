@@ -54,27 +54,34 @@ public class EvtFindReferencesToVariableAction extends AbstractEvtAction {
 		setPopupMenuData(data);
 	}
 
-	@Override
-	protected boolean isEnabledForEvtContext(EvtActionContext context) {
-		Arg.Variable var = getVariableHighlighted(context);
+	private boolean shouldXrefVar(Arg.Variable var) {
 		switch (var) {
 			case null:
 				return false;
 
-			// Disable script-local variables to avoid confusion (TODO: option?)
+			// Disable script-local variables by default to avoid confusion
 			case Arg.LW v:
-				return false;
+				return options.isAllowLocalVarXrefs();
 			case Arg.LF eq:
-				return false;
+				return options.isAllowLocalVarXrefs();
 			case Arg.UW v:
-				return false;
+				return options.isAllowLocalVarXrefs();
 			case Arg.UF eq:
-				return false;
+				return options.isAllowLocalVarXrefs();
 
 			default:
-				updateMenuName(var.getName());
 				return true;
 		}
+
+	}
+
+	@Override
+	protected boolean isEnabledForEvtContext(EvtActionContext context) {
+		Arg.Variable var = getVariableHighlighted(context);
+		boolean ret = shouldXrefVar(var);
+		if (ret)
+			updateMenuName(var.getName());
+		return ret;
 	}
 
 	@Override

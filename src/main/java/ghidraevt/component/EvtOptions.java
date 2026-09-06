@@ -127,6 +127,14 @@ public class EvtOptions {
         return stopOnNextSymbol;
     }
 
+    private static final String TOPT_LOCAL_XREFS = "Allow Local Variable Search";
+    private static final String TOPT_LOCAL_XREFS_DESC = "Enable global reference searching for script-local variables.";
+    private boolean allowLocalVarXrefs;
+
+    public boolean isAllowLocalVarXrefs() {
+        return allowLocalVarXrefs;
+    }
+
     public void registerToolOptions(PluginTool tool) {
         ToolOptions toolOptions = tool.getOptions(GhidraEvtPlugin.OPTIONS_TITLE);
         toolOptions.registerOption(TOPT_C_MACRO,      false, null, TOPT_C_MACRO_DESC);
@@ -134,15 +142,17 @@ public class EvtOptions {
         toolOptions.registerOption(TOPT_LINE_NUMBERS, true,  null, TOPT_LINE_NUMBERS_DESC);
         toolOptions.registerOption(TOPT_SYM_SNAP,     true,  null, TOPT_SYM_SNAP_DESC);
         toolOptions.registerOption(TOPT_SYM_STOP,     true,  null, TOPT_SYM_STOP_DESC);
+        toolOptions.registerOption(TOPT_LOCAL_XREFS,  false,  null, TOPT_LOCAL_XREFS_DESC);
     }
 
     public void grabFromTool(PluginTool tool) {
         ToolOptions toolOptions = tool.getOptions(GhidraEvtPlugin.OPTIONS_TITLE);
-        this.cMacroMode       = toolOptions.getBoolean(TOPT_C_MACRO,      false);
-        this.strictMode       = toolOptions.getBoolean(TOPT_STRICT,       true );
-        this.showLineNumbers  = toolOptions.getBoolean(TOPT_LINE_NUMBERS, true );
-        this.snapToSymbol     = toolOptions.getBoolean(TOPT_SYM_SNAP,     true );
-        this.stopOnNextSymbol = toolOptions.getBoolean(TOPT_SYM_STOP,     true );
+        this.cMacroMode         = toolOptions.getBoolean(TOPT_C_MACRO,      false);
+        this.strictMode         = toolOptions.getBoolean(TOPT_STRICT,       true );
+        this.showLineNumbers    = toolOptions.getBoolean(TOPT_LINE_NUMBERS, true );
+        this.snapToSymbol       = toolOptions.getBoolean(TOPT_SYM_SNAP,     true );
+        this.stopOnNextSymbol   = toolOptions.getBoolean(TOPT_SYM_STOP,     true );
+        this.allowLocalVarXrefs = toolOptions.getBoolean(TOPT_LOCAL_XREFS,  false);
     }
 
     /*******************
