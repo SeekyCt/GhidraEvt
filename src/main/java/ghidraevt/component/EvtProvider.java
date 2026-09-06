@@ -724,7 +724,8 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         // Highlight
         //
         String highlightGroup = "4a - Highlight Group";
-        // tool.setMenuGroup(new String[] { "Highlight" }, highlightGroup);
+		subGroupPosition = 0; // reset for the next group
+        tool.setMenuGroup(new String[] { "Highlight" }, highlightGroup);
         // EvtHighlightDefinedUseAction defUseHighlightAction = new EvtHighlightDefinedUseAction();
         // setGroupInfo(defUseHighlightAction, highlightGroup, subGroupPosition++);
 
