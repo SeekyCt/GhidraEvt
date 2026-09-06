@@ -58,7 +58,7 @@ import ghidra.util.bean.field.AnnotatedTextFieldElement;
 import ghidra.util.task.SwingUpdateManager;
 import ghidraevt.GhidraEvtPlugin;
 import ghidraevt.action.CloneEvtAction;
-import ghidraevt.action.EditDataTypeAction;
+import ghidraevt.action.EvtEditDataTypeAction;
 import ghidraevt.action.EvtActionContext;
 import ghidraevt.action.EvtHighlightDefinedUseAction;
 import ghidraevt.action.EvtNextHighlightedTokenAction;
@@ -717,7 +717,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         RetypeGlobalAction retypeGlobalAction = new RetypeGlobalAction();
         setGroupInfo(retypeGlobalAction, symbolGroup, subGroupPosition++);
 
-        EditDataTypeAction editDataTypeAction = new EditDataTypeAction();
+        EvtEditDataTypeAction editDataTypeAction = new EvtEditDataTypeAction();
         setGroupInfo(editDataTypeAction, symbolGroup, subGroupPosition++);
 
         //

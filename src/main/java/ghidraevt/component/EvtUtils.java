@@ -30,7 +30,12 @@ import ghidra.program.model.address.Address;
 import ghidra.program.model.address.AddressSet;
 import ghidra.program.model.address.AddressSetView;
 import ghidra.program.model.address.AddressSpace;
+import ghidra.program.model.data.DataType;
+import ghidra.program.model.listing.Data;
 import ghidra.program.model.listing.Program;
+import ghidra.program.model.symbol.Symbol;
+import ghidraevt.action.EvtActionContext;
+import ghidraevt.token.EvtAddrToken;
 import ghidraevt.token.EvtDocument;
 import ghidraevt.token.EvtLine;
 import ghidraevt.token.EvtToken;
@@ -287,5 +292,18 @@ public class EvtUtils {
                 }
             }
         }
+    }
+
+    public static DataType getDataType(EvtActionContext context) {
+		EvtToken tokenAtCursor = context.getTokenAtCursor();
+        if (!(tokenAtCursor instanceof EvtAddrToken))
+            return null;
+        EvtAddrToken addr = (EvtAddrToken) tokenAtCursor;
+
+		Data data = context.getProgram().getListing().getDataAt(addr.getTarget());
+		if (data == null) {
+			return null;
+		}
+		return data.getDataType();
     }
 }

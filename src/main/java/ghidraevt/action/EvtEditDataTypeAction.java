@@ -25,14 +25,13 @@ import docking.action.MenuData;
 import ghidra.app.plugin.core.datamgr.util.DataTypeUtils;
 import ghidra.app.services.DataTypeManagerService;
 import ghidra.framework.plugintool.PluginTool;
-import ghidra.program.model.data.*;
-import ghidra.program.model.listing.Data;
-import ghidraevt.token.EvtAddrToken;
-import ghidraevt.token.EvtToken;
+import ghidra.program.model.data.DataType;
+import ghidra.program.model.data.DataTypeManager;
+import ghidraevt.component.EvtUtils;
 
-public class EditDataTypeAction extends AbstractEvtAction {
+public class EvtEditDataTypeAction extends AbstractEvtAction {
 
-	public EditDataTypeAction() {
+	public EvtEditDataTypeAction() {
 		super("Edit Data Type");
 		setPopupMenuData(new MenuData(new String[] { "Edit Data Type" }, "Evt Disassembler"));
 	}
@@ -50,16 +49,7 @@ public class EditDataTypeAction extends AbstractEvtAction {
 
 	@Override
 	protected boolean isEnabledForEvtContext(EvtActionContext context) {
-		EvtToken tokenAtCursor = context.getTokenAtCursor();
-        if (!(tokenAtCursor instanceof EvtAddrToken))
-            return false;
-        EvtAddrToken addr = (EvtAddrToken) tokenAtCursor;
-
-		Data data = context.getProgram().getListing().getDataAt(addr.getTarget());
-		if (data == null) {
-			return false;
-		}
-		DataType dataType = data.getDataType();
+		DataType dataType = EvtUtils.getDataType(context);
 		if (dataType == null) {
 			return false;
 		}
@@ -69,13 +59,7 @@ public class EditDataTypeAction extends AbstractEvtAction {
 
 	@Override
 	protected void evtActionPerformed(EvtActionContext context) {
-		EvtToken tokenAtCursor = context.getTokenAtCursor();
-        if (!(tokenAtCursor instanceof EvtAddrToken))
-            return;
-        EvtAddrToken addr = (EvtAddrToken) tokenAtCursor;
-
-		Data data = context.getProgram().getListing().getDataAt(addr.getTarget());
-		DataType dataType = data.getDataType();
+		DataType dataType = EvtUtils.getDataType(context);
 		if (dataType == null)
 			return;
 
