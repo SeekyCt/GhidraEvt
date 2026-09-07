@@ -39,10 +39,12 @@ import docking.widgets.fieldpanel.support.SingleRowLayout;
 import ghidra.app.util.SymbolInspector;
 import ghidra.framework.plugintool.ServiceProvider;
 import ghidra.program.model.address.Address;
+import ghidraevt.token.GhidraPrinter;
 import ghidraevt.token.EvtDocument;
 import ghidraevt.token.EvtLine;
 import ghidraevt.token.EvtToken;
 import ghidraevt.token.GhidraPrinter;
+import ghidraevt.token.PrettyGhidraPrinter;
 import jevt.Instr;
 
 public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
@@ -257,13 +259,11 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
         }
         int i = 0;
         for (String errline : errlines) {
-            document.addLine(i, new EvtLine(
+            document.addLine(i++, new EvtLine(
                 Arrays.asList(new EvtToken(script, errline, GhidraPrinter.COLOR_COMMENT, null, 0)),
                 Address.NO_ADDRESS,
-                i,
                 0,
                 0));
-            i++;
         }
     }
 
@@ -272,9 +272,15 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
         updateOptions();
 
         if (docroot != null) {
-            GhidraPrinter printer =
-                new GhidraPrinter(evtPanel.getProgram(), symbolInspector, options);
-            document = printer.getLines(script, docroot);
+            GhidraPrinter printer = GhidraPrinter.create(
+                evtPanel.getProgram(),
+                symbolInspector,
+                options,
+                script,
+                docroot,
+                options.isCMacroMode()
+            );
+            document = printer.getLines();
         }
         else {
             document = new EvtDocument();

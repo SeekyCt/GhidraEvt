@@ -201,7 +201,7 @@ public enum Opcode {
         };
     }
 
-    public String niceName() {
+    public String prettyName() {
         return this.name().toLowerCase();
     }
 
