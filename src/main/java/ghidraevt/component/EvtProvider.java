@@ -689,7 +689,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         refreshAction.setToolBarData(new ToolBarData(REFRESH_ICON, "A" /* first on toolbar */));
         refreshAction.setDescription("Push at any time to trigger a re-disassemble");
 
-		strictModeToggle = new ToggleDockingAction("Toggle Strict Mode", owner) {
+		strictModeToggle = new ToggleDockingAction("Toggle Strict Script Detection", owner) {
 			@Override
 			public void actionPerformed(ActionContext context) {
 				boolean isSelected = this.isSelected();
@@ -714,7 +714,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 				}
 			}
 		};
-		strictModeToggle.setDescription("Toggle off to disable strict mode");
+		strictModeToggle.setDescription("Toggle on to enable strict script detection (may risk false-negatives)");
 
 		cMacroModeToggle = new ToggleDockingAction("Toggle C Macro Mode", owner) {
 			@Override
@@ -740,7 +740,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 				}
 			}
 		};
-		cMacroModeToggle.setDescription("Toggle on to display in evt_cmd.h C Macro form");
+		cMacroModeToggle.setDescription("Toggle on to render scripts in the evt_cmd.h C Macro format");
 
         // Set the selected state and icon for the above toggle icons
         refreshToggleButtons();
