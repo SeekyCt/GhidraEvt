@@ -665,6 +665,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 
         SelectAllAction selectAllAction =
             new SelectAllAction(owner, controller.getEvtPanel());
+        addLocalAction(selectAllAction);
 
         DockingAction refreshAction = new DockingAction("Refresh", owner) {
             @Override
@@ -683,6 +684,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         };
         refreshAction.setToolBarData(new ToolBarData(REFRESH_ICON, "A" /* first on toolbar */));
         refreshAction.setDescription("Push at any time to trigger a re-disassemble");
+        addLocalAction(refreshAction);
 
         strictModeToggle = new ToggleDockingAction("Toggle Strict Script Detection", owner) {
             @Override
@@ -710,6 +712,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
             }
         };
         strictModeToggle.setDescription("Toggle on to enable strict script detection (may risk false-negatives)");
+        addLocalAction(strictModeToggle);
 
         cMacroModeToggle = new ToggleDockingAction("Toggle C Macro Mode", owner) {
             @Override
@@ -736,6 +739,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
             }
         };
         cMacroModeToggle.setDescription("Toggle on to render scripts in the evt_cmd.h C Macro format");
+        addLocalAction(cMacroModeToggle);
 
         // Set the selected state and icon for the above toggle icons
         refreshToggleButtons();
@@ -763,12 +767,15 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 
         RenameSymbolAction renameSymbolAction = new RenameSymbolAction();
         setGroupInfo(renameSymbolAction, symbolGroup, subGroupPosition++);
+        addLocalAction(renameSymbolAction);
 
         RetypeGlobalAction retypeGlobalAction = new RetypeGlobalAction();
         setGroupInfo(retypeGlobalAction, symbolGroup, subGroupPosition++);
-
+        addLocalAction(retypeGlobalAction);
+        
         EvtEditDataTypeAction editDataTypeAction = new EvtEditDataTypeAction();
         setGroupInfo(editDataTypeAction, symbolGroup, subGroupPosition++);
+        addLocalAction(editDataTypeAction);
 
         //
         // Highlight
@@ -778,42 +785,53 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         tool.setMenuGroup(new String[] { "Highlight" }, highlightGroup);
         // EvtHighlightDefinedUseAction defUseHighlightAction = new EvtHighlightDefinedUseAction();
         // setGroupInfo(defUseHighlightAction, highlightGroup, subGroupPosition++);
+        // addLocalAction(defUseHighlightAction);
 
         // ForwardSliceAction forwardSliceAction = new ForwardSliceAction();
         // setGroupInfo(forwardSliceAction, highlightGroup, subGroupPosition++);
+        // addLocalAction(forwardSliceAction);
 
         // BackwardsSliceAction backwardSliceAction = new BackwardsSliceAction();
         // setGroupInfo(backwardSliceAction, highlightGroup, subGroupPosition++);
+        // addLocalAction(backwardSliceAction);
 
         // ForwardSliceToPCodeOpsAction forwardSliceToOpsAction = new ForwardSliceToPCodeOpsAction();
         // setGroupInfo(forwardSliceToOpsAction, highlightGroup, subGroupPosition++);
+        // addLocalAction(forwardSliceToOpsAction);
 
         // BackwardsSliceToPCodeOpsAction backwardSliceToOpsAction =
         //     new BackwardsSliceToPCodeOpsAction();
         // setGroupInfo(backwardSliceToOpsAction, highlightGroup, subGroupPosition++);
+        // addLocalAction(backwardSliceToOpsAction);
 
         tool.setMenuGroup(new String[] { "Secondary Highlight" }, highlightGroup);
         EvtSetSecondaryHighlightAction setSecondaryHighlightAction = new EvtSetSecondaryHighlightAction();
         setGroupInfo(setSecondaryHighlightAction, highlightGroup, subGroupPosition++);
+        addLocalAction(setSecondaryHighlightAction);
 
         EvtSetSecondaryHighlightColorChooserAction setSecondaryHighlightColorChooserAction =
             new EvtSetSecondaryHighlightColorChooserAction();
         setGroupInfo(setSecondaryHighlightColorChooserAction, highlightGroup, subGroupPosition++);
+        addLocalAction(setSecondaryHighlightColorChooserAction);
 
         EvtRemoveSecondaryHighlightAction removeSecondaryHighlightAction =
             new EvtRemoveSecondaryHighlightAction();
         setGroupInfo(removeSecondaryHighlightAction, highlightGroup, subGroupPosition++);
+        addLocalAction(removeSecondaryHighlightAction);
 
         EvtRemoveAllSecondaryHighlightsAction removeAllSecondadryHighlightsAction =
             new EvtRemoveAllSecondaryHighlightsAction();
         setGroupInfo(removeAllSecondadryHighlightsAction, highlightGroup, subGroupPosition++);
+        addLocalAction(removeAllSecondadryHighlightsAction);
 
         EvtPreviousHighlightedTokenAction previousHighlightedTokenAction =
             new EvtPreviousHighlightedTokenAction();
         setGroupInfo(previousHighlightedTokenAction, highlightGroup, subGroupPosition++);
+        addLocalAction(previousHighlightedTokenAction);
 
         EvtNextHighlightedTokenAction nextHighlightedTokenAction = new EvtNextHighlightedTokenAction();
         setGroupInfo(nextHighlightedTokenAction, highlightGroup, subGroupPosition++);
+        addLocalAction(nextHighlightedTokenAction);
 
         //
         // Convert
@@ -828,24 +846,31 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 
         // ConvertBinaryAction convertBinaryAction = new ConvertBinaryAction(plugin);
         // setGroupInfo(convertBinaryAction, convertGroup, subGroupPosition++);
+        // addLocalAction(convertBinaryAction);
 
         // ConvertDecAction convertDecAction = new ConvertDecAction(plugin);
         // setGroupInfo(convertDecAction, convertGroup, subGroupPosition++);
+        // addLocalAction(convertDecAction);
 
         // ConvertFloatAction convertFloatAction = new ConvertFloatAction(plugin);
         // setGroupInfo(convertFloatAction, convertGroup, subGroupPosition++);
+        // addLocalAction(convertFloatAction);
 
         // ConvertDoubleAction convertDoubleAction = new ConvertDoubleAction(plugin);
         // setGroupInfo(convertDoubleAction, convertGroup, subGroupPosition++);
+        // addLocalAction(convertDoubleAction);
 
         // ConvertHexAction convertHexAction = new ConvertHexAction(plugin);
         // setGroupInfo(convertHexAction, convertGroup, subGroupPosition++);
+        // addLocalAction(convertHexAction);
 
         // ConvertOctAction convertOctAction = new ConvertOctAction(plugin);
         // setGroupInfo(convertOctAction, convertGroup, subGroupPosition++);
+        // addLocalAction(convertOctAction);
 
         // ConvertCharAction convertCharAction = new ConvertCharAction(plugin);
         // setGroupInfo(convertCharAction, convertGroup, subGroupPosition++);
+        // addLocalAction(convertCharAction);
 
         //
         // Comments
@@ -862,6 +887,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 
         FindAction findAction = new FindAction();
         setGroupInfo(findAction, searchGroup, subGroupPosition++);
+        addLocalAction(findAction);
 
         //
         // References
@@ -874,6 +900,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
             new EvtFindReferencesToDataTypeAction(owner, tool);
         setGroupInfo(findReferencesAction, searchGroup, subGroupPosition++);
         findReferencesAction.getPopupMenuData().setParentMenuGroup(referencesParentGroup);
+        addLocalAction(findReferencesAction);
 
         EvtFindReferencesToSymbolAction findReferencesToSymbolAction =
             new EvtFindReferencesToSymbolAction();
@@ -903,43 +930,16 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         setGroupInfo(propertiesAction, optionsGroup, subGroupPosition++);
         propertiesAction.setToolBarData(new ToolBarData(PROPERTIES_ICON, "A"));
         propertiesAction.setDescription("Open settings");
+        addLocalAction(propertiesAction);
 
         //
         // These actions are not in the popup menu
         //
         // ExportToCAction convertAction = new ExportToCAction();
-        CloneEvtAction cloneDecompilerAction = new CloneEvtAction();
-
-        addLocalAction(selectAllAction);
-        addLocalAction(refreshAction);
-        addLocalAction(strictModeToggle);
-        addLocalAction(cMacroModeToggle);
-        addLocalAction(renameSymbolAction);
-        addLocalAction(retypeGlobalAction);
-        addLocalAction(editDataTypeAction);
-        // addLocalAction(defUseHighlightAction);
-        // addLocalAction(forwardSliceAction);
-        // addLocalAction(backwardSliceAction);
-        // addLocalAction(forwardSliceToOpsAction);
-        // addLocalAction(backwardSliceToOpsAction);
-        addLocalAction(setSecondaryHighlightAction);
-        addLocalAction(setSecondaryHighlightColorChooserAction);
-        addLocalAction(removeSecondaryHighlightAction);
-        addLocalAction(removeAllSecondadryHighlightsAction);
-        addLocalAction(nextHighlightedTokenAction);
-        addLocalAction(previousHighlightedTokenAction);
-        // addLocalAction(convertBinaryAction);
-        // addLocalAction(convertDecAction);
-        // addLocalAction(convertFloatAction);
-        // addLocalAction(convertDoubleAction);
-        // addLocalAction(convertHexAction);
-        // addLocalAction(convertOctAction);
-        // addLocalAction(convertCharAction);
         // addLocalAction(convertAction);
-        addLocalAction(findAction);
-        addLocalAction(findReferencesAction);
-        addLocalAction(propertiesAction);
+        CloneEvtAction cloneDecompilerAction = new CloneEvtAction();
         addLocalAction(cloneDecompilerAction);
+
         // addLocalAction(goToNextBraceAction);
         // addLocalAction(goToPreviousBraceAction);
     }
