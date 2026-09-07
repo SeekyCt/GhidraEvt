@@ -20,6 +20,8 @@
  */
 package ghidraevt.highlight;
 
+import java.awt.Color;
+
 import org.apache.commons.lang3.StringUtils;
 
 import docking.widgets.EventTrigger;
@@ -27,6 +29,7 @@ import docking.widgets.fieldpanel.field.Field;
 import docking.widgets.fieldpanel.support.FieldLocation;
 import ghidraevt.component.EvtTextField;
 import ghidraevt.token.EvtOpcodeToken;
+import ghidraevt.token.EvtParenToken;
 import ghidraevt.token.EvtToken;
 import jevt.Opcode;
 
@@ -57,9 +60,9 @@ public class LocationEvtHighlightController extends EvtHighlightController {
 		if (tok instanceof EvtOpcodeToken instr && isBraceLike(instr)) {
             addPrimaryHighlightToTokensForBraceLike(instr, defaultParenColor);
         }
-        // else if (tok instanceof EvtParenToken instr) {
-			// addPrimaryHighlightToTokensForParenthesis(tok, defaultParenColor);
-		// }
+        if (tok instanceof EvtParenToken paren) {
+			addPrimaryHighlightToTokensForParenthesis(paren, defaultParenColor);
+		}
         addPrimaryHighlight(tok, defaultHighlightColor);
     }
 

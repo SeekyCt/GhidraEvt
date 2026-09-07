@@ -28,7 +28,7 @@ import jevt.Arg;
 import jevt.Opcode;
 
 public sealed class EvtToken permits
-    EvtOpcodeToken, EvtAddrToken, EvtScalarToken, EvtVariableToken {
+    EvtOpcodeToken, EvtAddrToken, EvtScalarToken, EvtVariableToken, EvtParenToken {
     private EvtScript script;
     private String text;
     private Color color;
@@ -69,6 +69,10 @@ public sealed class EvtToken permits
 
     public static EvtToken syntax(EvtScript script, String txt, Color color, Address minAddress) {
         return new EvtToken(script, txt, color, minAddress, 0);
+    }
+
+    public static EvtToken paren(EvtScript script, String txt, Color color, Address minAddress, boolean opening) {
+        return new EvtParenToken(script, txt, color, minAddress, 0, opening);
     }
 
     public static EvtToken err(EvtScript script, String txt, Color color) {

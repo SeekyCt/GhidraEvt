@@ -37,6 +37,7 @@ import ghidraevt.component.EvtScript;
 import ghidraevt.component.EvtUtils;
 import ghidraevt.token.EvtDocument;
 import ghidraevt.token.EvtOpcodeToken;
+import ghidraevt.token.EvtParenToken;
 import ghidraevt.token.EvtLine;
 import ghidraevt.token.EvtToken;
 import jevt.Opcode;
@@ -521,72 +522,12 @@ public abstract class EvtHighlightController {
         }
     }
 
-    /**
-     * If input token is a parenthesis, highlight all tokens between it and its match
-     * @param tok potential parenthesis token
-     * @param highlightColor the highlight color
-     * @return a list of all tokens that were highlighted.
-     */
-    // protected List<EvtToken> addPrimaryHighlightToTokensForParenthesis(ClangSyntaxToken tok,
-    //         Color highlightColor) {
-
-    //     int paren = tok.getOpen();
-    //     if (paren == -1) {
-    //         paren = tok.getClose();
-    //     }
-
-    //     if (paren == -1) {
-    //         return new ArrayList<>(); // Not a parenthesis
-    //     }
-
-    //     List<EvtToken> results = gatherContentsOfParenthesis(tok, paren);
-    //     addPrimaryHighlights(results, highlightColor);
-    //     return results;
-    // }
-
-    // private List<EvtToken> gatherContentsOfParenthesis(ClangSyntaxToken tok, int parenId) {
-
-    //     List<EvtToken> results = new ArrayList<>();
-    //     int parenCount = 0;
-    //     ClangNode par = tok.Parent();
-    //     while (par != null) {
-    //         boolean outside = true;
-    //         if (!(par instanceof EvtTokenGroup)) {
-    //             par = par.Parent();
-    //             continue;
-    //         }
-
-    //         List<ClangNode> list = new ArrayList<>();
-    //         ((EvtTokenGroup) par).flatten(list);
-
-    //         for (ClangNode node : list) {
-    //             EvtToken tk = (EvtToken) node;
-    //             if (tk instanceof ClangSyntaxToken) {
-    //                 ClangSyntaxToken syn = (ClangSyntaxToken) tk;
-    //                 if (syn.getOpen() == parenId) {
-    //                     parenCount++;
-    //                     outside = false;
-    //                 }
-    //                 else if (syn.getClose() == parenId) {
-    //                     parenCount++;
-    //                     outside = true;
-    //                     results.add(syn);
-    //                 }
-    //             }
-
-    //             if (!outside) {
-    //                 results.add(tk);
-    //             }
-
-    //             if (parenCount == 2) {
-    //                 return results; // found both parens; break out early
-    //             }
-    //         }
-    //         par = par.Parent();
-    //     }
-
-    //     return results;
-    // }
+    protected List<EvtToken> addPrimaryHighlightToTokensForParenthesis(EvtParenToken tok,
+            Color highlightColor) {
+        List<EvtToken> results = EvtUtils.gatherContentsOfParenthesis(tok);
+        addPrimaryHighlights(results, highlightColor);
+        return results;
+    }
 
     public void addListener(EvtHighlightListener listener) {
         listeners.add(listener);

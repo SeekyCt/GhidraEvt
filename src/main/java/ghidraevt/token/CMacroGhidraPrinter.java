@@ -41,16 +41,12 @@ public class CMacroGhidraPrinter extends GhidraPrinter {
         return 1;
     }
 
-    private EvtToken openBracket() {
-        return EvtToken.syntax(script, "(", decompileOptions.getDefaultColor(), currentAddr);
+    private EvtToken openParen() {
+        return EvtToken.paren(script, "(", decompileOptions.getDefaultColor(), currentAddr, true);
     }
 
-    private EvtToken closeBracket() {
-        return EvtToken.syntax(script, ")", decompileOptions.getDefaultColor(), currentAddr);
-    }
-
-    private EvtToken emptyBrackets() {
-        return EvtToken.syntax(script, "()", decompileOptions.getDefaultColor(), currentAddr);
+    private EvtToken closeParen() {
+        return EvtToken.paren(script, ")", decompileOptions.getDefaultColor(), currentAddr, false);
     }
 
     private EvtToken takePointer() {
@@ -64,9 +60,9 @@ public class CMacroGhidraPrinter extends GhidraPrinter {
     protected void buildHeader() {
         List<EvtToken> header = new ArrayList<>();
         header.add(EvtToken.syntax(script, "EVT_BEGIN", COLOR_INSTR, currentAddr));
-        header.add(openBracket());
+        header.add(openParen());
         header.addAll(symbolToTokens(script, currentAddr, COLOR_HEADER, currentAddr, 0));
-        header.add(closeBracket());
+        header.add(closeParen());
         doc.addLine(new EvtLine(header, currentAddr, 0, 0));
     }
 
@@ -78,7 +74,7 @@ public class CMacroGhidraPrinter extends GhidraPrinter {
         tokens.add(
             EvtToken.opcode(script, opcode.macroName(), COLOR_INSTR, opcode, currentAddr)
         );
-        tokens.add(openBracket());
+        tokens.add(openParen());
     }
 
     /*
@@ -95,7 +91,7 @@ public class CMacroGhidraPrinter extends GhidraPrinter {
     */
     @Override
     protected void endInstr(List<EvtToken> tokens) {
-        tokens.add(closeBracket());
+        tokens.add(closeParen());
     }
 
     /*
@@ -105,7 +101,8 @@ public class CMacroGhidraPrinter extends GhidraPrinter {
     protected void buildFooter() {
         List<EvtToken> footer = new ArrayList<>();
         footer.add(EvtToken.syntax(script, "EVT_END", COLOR_INSTR, currentAddr));
-        footer.add(emptyBrackets());
+        footer.add(openParen());
+        footer.add(closeParen());
         doc.addLine(new EvtLine(footer, currentAddr, displayLine++, 0));
     }
 
@@ -123,13 +120,13 @@ public class CMacroGhidraPrinter extends GhidraPrinter {
         ret.add(0,
             new EvtToken(script, "PTR", decompileOptions.getDefaultColor(), currentAddr, displayLine)
         );
-        ret.add(1, openBracket());
+        ret.add(1, openParen());
 
         // Functions and strings should not be prefixed with &
         if (!isString(addr) && !isFunction(addr))
             ret.add(2, takePointer());
 
-        ret.add(closeBracket());
+        ret.add(closeParen());
         return ret;
     }
 
@@ -142,8 +139,8 @@ public class CMacroGhidraPrinter extends GhidraPrinter {
         ret.add(0,
             new EvtToken(script, "FLOAT", decompileOptions.getDefaultColor(), currentAddr, displayLine)
         );
-        ret.add(1, openBracket());
-        ret.add(closeBracket());
+        ret.add(1, openParen());
+        ret.add(closeParen());
         return ret;
     }
 

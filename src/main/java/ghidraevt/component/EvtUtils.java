@@ -39,6 +39,7 @@ import ghidraevt.action.EvtActionContext;
 import ghidraevt.token.EvtAddrToken;
 import ghidraevt.token.EvtDocument;
 import ghidraevt.token.EvtOpcodeToken;
+import ghidraevt.token.EvtParenToken;
 import ghidraevt.token.EvtLine;
 import ghidraevt.token.EvtToken;
 import jevt.Opcode;
@@ -371,5 +372,27 @@ public class EvtUtils {
             }
         }
 		return null;
+	}
+
+    public static List<EvtToken> gatherContentsOfParenthesis(EvtParenToken startToken) {
+        List<EvtToken> results = new ArrayList<>();
+        int parenCount = 0;
+
+        Iterator<EvtToken> iter = startToken.iterator(startToken.isOpening());
+        while (iter.hasNext()) {
+			EvtToken token = iter.next();
+            results.add(token);
+            if (!(token instanceof EvtParenToken paren))
+                continue;
+
+            if (paren.isOpening() == startToken.isOpening())
+                parenCount += 1;
+            else
+                parenCount -= 1;
+            
+            if (parenCount == 0)
+                break;
+        }
+		return results;
 	}
 }
