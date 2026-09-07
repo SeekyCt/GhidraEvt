@@ -91,6 +91,12 @@ public class EvtFindReferencesToVariableAction extends AbstractEvtAction {
 		int encoded = var.encode(options.getGame());
 		Address asAddr = program.getAddressFactory().getDefaultAddressSpace().getAddress(encoded);
 		Symbol symbol = program.getSymbolTable().getPrimarySymbol(asAddr);
+		if (symbol == null) {
+			Msg.showError(this, null, "Missing Symbol",
+				"Finding references to " + var.getName() +
+				" requires a symbol to be created at address " + asAddr);
+			return;
+		}
 
 		LocationReferencesService service =
 			context.getTool().getService(LocationReferencesService.class);
