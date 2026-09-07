@@ -64,6 +64,7 @@ import ghidra.util.task.SwingUpdateManager;
 import ghidraevt.GhidraEvtPlugin;
 import ghidraevt.action.CloneEvtAction;
 import ghidraevt.action.EvtEditDataTypeAction;
+import ghidraevt.action.EvtEditPropertiesAction;
 import ghidraevt.action.EvtFindReferencesToAddressAction;
 import ghidraevt.action.EvtActionContext;
 import ghidraevt.action.EvtFindReferencesToDataTypeAction;
@@ -92,6 +93,7 @@ import utility.function.Callback;
 public class EvtProvider extends NavigatableComponentProviderAdapter
         implements OptionsChangeListener, EvtCallbackHandler {
 	private static final Icon REFRESH_ICON = Icons.REFRESH_ICON;
+    private static final Icon PROPERTIES_ICON = Icons.CONFIGURE_FILTER_ICON;
 
     private static final Icon SLASH_ICON = new GIcon("icon.decompiler.action.slash");
 
@@ -899,11 +901,13 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         //
         // Options
         //
-        // String optionsGroup = "comment6 - Options Group";
-        // subGroupPosition = 0; // reset for the next group
+        String optionsGroup = "comment6 - Options Group";
+        subGroupPosition = 0; // reset for the next group
 
-        // EditPropertiesAction propertiesAction = new EditPropertiesAction(owner, tool);
-        // setGroupInfo(propertiesAction, optionsGroup, subGroupPosition++);
+        EvtEditPropertiesAction propertiesAction = new EvtEditPropertiesAction(owner, tool);
+        setGroupInfo(propertiesAction, optionsGroup, subGroupPosition++);
+        propertiesAction.setToolBarData(new ToolBarData(PROPERTIES_ICON, "A"));
+        propertiesAction.setDescription("Open settings");
 
         //
         // These actions are not in the popup menu
@@ -939,7 +943,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         // addLocalAction(convertAction);
         addLocalAction(findAction);
         addLocalAction(findReferencesAction);
-        // addLocalAction(propertiesAction);
+        addLocalAction(propertiesAction);
         addLocalAction(cloneDecompilerAction);
         // addLocalAction(goToNextBraceAction);
         // addLocalAction(goToPreviousBraceAction);
