@@ -94,6 +94,10 @@ public class EvtOptions {
         return cMacroMode;
     }
 
+    public void setCMacroMode(boolean cMacroMode) {
+        this.cMacroMode = cMacroMode;
+    }
+
     // TODO: another mode with type-based opt-in
     private static final String TOPT_STRICT = "Strict Script Detection";
     private static final String TOPT_STRICT_DESC = "Stricter script detection rules (may risk false-negatives)";
@@ -101,6 +105,10 @@ public class EvtOptions {
 
     public boolean isStrictMode() {
         return strictMode;
+    }
+
+    public void setStrictMode(boolean strictMode) {
+        this.strictMode = strictMode;
     }
 
     private static final String TOPT_LINE_NUMBERS = "Show Line Numbers";

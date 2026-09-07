@@ -30,11 +30,14 @@ import docking.ActionContext;
 import docking.WindowPosition;
 import docking.action.DockingAction;
 import docking.action.MenuData;
+import docking.action.ToggleDockingAction;
 import docking.action.ToolBarData;
 import docking.widgets.fieldpanel.support.FieldLocation;
 import docking.widgets.fieldpanel.support.ViewerPosition;
+import generic.theme.GIcon;
 import ghidra.GhidraOptions;
 import ghidra.app.decompiler.DecompileOptions;
+import ghidra.app.decompiler.component.DecompileData;
 import ghidra.app.events.ProgramSelectionPluginEvent;
 import ghidra.app.nav.DecoratorPanel;
 import ghidra.app.nav.LocationMemento;
@@ -43,6 +46,7 @@ import ghidra.app.plugin.core.decompile.DecompilePlugin;
 import ghidra.app.services.ClipboardService;
 import ghidra.app.services.GoToService;
 import ghidra.app.services.ProgramManager;
+import ghidra.app.util.HelpTopics;
 import ghidra.app.util.ListingHighlightProvider;
 import ghidra.framework.options.OptionsChangeListener;
 import ghidra.framework.options.SaveState;
@@ -53,6 +57,7 @@ import ghidra.program.model.listing.Program;
 import ghidra.program.model.symbol.Symbol;
 import ghidra.program.util.ProgramLocation;
 import ghidra.program.util.ProgramSelection;
+import ghidra.util.HelpLocation;
 import ghidra.util.Swing;
 import ghidra.util.bean.field.AnnotatedTextFieldElement;
 import ghidra.util.task.SwingUpdateManager;
@@ -81,11 +86,25 @@ import ghidraevt.location.EvtLocation;
 import ghidraevt.location.EvtLocationMemento;
 import ghidraevt.token.EvtToken;
 import resources.Icons;
+import resources.MultiIconBuilder;
 import utility.function.Callback;
 
 public class EvtProvider extends NavigatableComponentProviderAdapter
         implements OptionsChangeListener, EvtCallbackHandler {
 	private static final Icon REFRESH_ICON = Icons.REFRESH_ICON;
+
+    private static final Icon SLASH_ICON = new GIcon("icon.decompiler.action.slash");
+
+    private static final Icon TOGGLE_MACRO_ICON = new GIcon("icon.decompiler.action.provider");
+	private static final Icon TOGGLE_MACRO_DISABLED_ICON =
+		new MultiIconBuilder(TOGGLE_MACRO_ICON).addCenteredIcon(SLASH_ICON).build();
+
+
+	private static final Icon TOGGLE_STRICT_MODE_ICON =
+		new GIcon("icon.decompiler.action.provider.unreachable");
+
+	private static final Icon TOGGLE_STRICT_MODE_DISABLED_ICON =
+		new MultiIconBuilder(TOGGLE_STRICT_MODE_ICON).addCenteredIcon(SLASH_ICON).build();
 
     private final GhidraEvtPlugin plugin;
     private ClipboardService clipboardService;
@@ -115,12 +134,8 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
     // only used by disconnected providers
     private boolean allowOutgoingEvents = false;
 
-
-    // TODO: connect to settings
-    private DockingToggle strictMode;
-    private DockingToggle showAddresses;
-    private DockingToggle showLineNumbers;
-    private DockingToggle snapToSymbol;
+    private ToggleDockingAction strictModeToggle;
+    private ToggleDockingAction cMacroModeToggle;
 
     public EvtProvider(GhidraEvtPlugin plugin, boolean isConnected) {
         super(plugin.getTool(), "Evt Disassembler", plugin.getName(), EvtActionContext.class);
@@ -289,16 +304,14 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         }
 
         // Current values of toggle buttons
-        // boolean decompilerEliminatesUnreachable = decompilerOptions.isEliminateUnreachable();
-        // boolean decompilerRespectsReadOnlyFlags = decompilerOptions.isRespectReadOnly();
+        boolean strictMode = options.isStrictMode();
 
         options.grabFromToolAndProgram(tool, program);
 
         // If the tool options were not changed
         if (!optionsChanged) {
             // Keep these analysis options the same
-            // decompilerOptions.setEliminateUnreachable(decompilerEliminatesUnreachable);
-            // decompilerOptions.setRespectReadOnly(decompilerRespectsReadOnlyFlags);
+            options.setStrictMode(strictMode);
         }
         else {
             // Otherwise, keep the new analysis options and update the state of the toggle buttons
@@ -313,8 +326,8 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
     }
 
     private void refreshToggleButtons() {
-        // displayUnreachableCodeToggle.setSelected(!decompilerOptions.isEliminateUnreachable());
-        // respectReadOnlyFlags.setSelected(!decompilerOptions.isRespectReadOnly());
+        strictModeToggle.setSelected(options.isStrictMode());
+        cMacroModeToggle.setSelected(options.isCMacroMode());
     }
 
     private void doFollowUpWork() {
@@ -674,7 +687,60 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         refreshAction.setToolBarData(new ToolBarData(REFRESH_ICON, "A" /* first on toolbar */));
         refreshAction.setDescription("Push at any time to trigger a re-disassemble");
 
-        // Set the selected state and icon for the above two toggle icons
+		strictModeToggle = new ToggleDockingAction("Toggle Strict Mode", owner) {
+			@Override
+			public void actionPerformed(ActionContext context) {
+				boolean isSelected = this.isSelected();
+
+				// Set the option based on the button state
+				options.setStrictMode(!isSelected);
+
+				updateOptionsAndRefresh();
+			}
+
+			@Override
+			public void setSelected(boolean isSelected) {
+				super.setSelected(isSelected);
+
+				// Update the icon to have a slash or not
+				if (!isSelected) {
+					setToolBarData(new ToolBarData(TOGGLE_STRICT_MODE_ICON, "A"));
+				}
+				else {
+					setToolBarData(
+						new ToolBarData(TOGGLE_STRICT_MODE_DISABLED_ICON, "A"));
+				}
+			}
+		};
+		strictModeToggle.setDescription("Toggle off to disable strict mode");
+
+		cMacroModeToggle = new ToggleDockingAction("Toggle C Macro Mode", owner) {
+			@Override
+			public void actionPerformed(ActionContext context) {
+				boolean isSelected = this.isSelected();
+
+				// Set the option based on the button state
+				options.setCMacroMode(!isSelected);
+
+				updateOptionsAndRefresh();
+			}
+
+			@Override
+			public void setSelected(boolean isSelected) {
+				super.setSelected(isSelected);
+
+				// Update the icon to have a slash or not
+				if (!isSelected) {
+					setToolBarData(new ToolBarData(TOGGLE_MACRO_ICON, "A"));
+				}
+				else {
+					setToolBarData(new ToolBarData(TOGGLE_MACRO_DISABLED_ICON, "A"));
+				}
+			}
+		};
+		cMacroModeToggle.setDescription("Toggle on to display in evt_cmd.h C Macro form");
+
+        // Set the selected state and icon for the above toggle icons
         refreshToggleButtons();
 
         //
@@ -847,6 +913,8 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 
         addLocalAction(selectAllAction);
         addLocalAction(refreshAction);
+        addLocalAction(strictModeToggle);
+        addLocalAction(cMacroModeToggle);
         addLocalAction(renameSymbolAction);
         addLocalAction(retypeGlobalAction);
         addLocalAction(editDataTypeAction);
