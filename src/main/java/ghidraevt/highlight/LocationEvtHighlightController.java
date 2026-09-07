@@ -20,8 +20,6 @@
  */
 package ghidraevt.highlight;
 
-import java.awt.Color;
-
 import org.apache.commons.lang3.StringUtils;
 
 import docking.widgets.EventTrigger;
@@ -57,12 +55,12 @@ public class LocationEvtHighlightController extends EvtHighlightController {
             return; // do not highlight whitespace
         }
 
-		if (tok instanceof EvtOpcodeToken instr && isBraceLike(instr)) {
+        if (tok instanceof EvtOpcodeToken instr && isBraceLike(instr)) {
             addPrimaryHighlightToTokensForBraceLike(instr, defaultParenColor);
         }
         if (tok instanceof EvtParenToken paren) {
-			addPrimaryHighlightToTokensForParenthesis(paren, defaultParenColor);
-		}
+            addPrimaryHighlightToTokensForParenthesis(paren, defaultParenColor);
+        }
         addPrimaryHighlight(tok, defaultHighlightColor);
     }
 

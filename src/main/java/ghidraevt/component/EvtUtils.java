@@ -315,14 +315,14 @@ public class EvtUtils {
         Traverse backwards to the instruction that created this level of indentation
     */
     public static EvtToken getOpeningBraceLike(EvtOpcodeToken startToken) {
-		Iterator<EvtToken> iter = startToken.iterator(false);
+        Iterator<EvtToken> iter = startToken.iterator(false);
 
         int curIndent = startToken.getOpcode().unindent();
         iter.next();
 
         while (iter.hasNext()) {
-			EvtToken token = iter.next();
-			if (!(token instanceof EvtOpcodeToken instr))
+            EvtToken token = iter.next();
+            if (!(token instanceof EvtOpcodeToken instr))
                 continue;
 
             Opcode opc = instr.getOpcode();
@@ -338,8 +338,8 @@ public class EvtUtils {
                     return token;
                 }
             }
-		}
-		return null;
+        }
+        return null;
     }
 
     /*
@@ -347,14 +347,14 @@ public class EvtUtils {
     */
     public static EvtToken getClosingBraceLike(EvtOpcodeToken startToken) {
         Msg.info(startToken, "Closing");
-		Iterator<EvtToken> iter = startToken.iterator(true);
+        Iterator<EvtToken> iter = startToken.iterator(true);
 
         int curIndent = startToken.getOpcode().indent();
         iter.next();
 
         while (iter.hasNext()) {
-			EvtToken token = iter.next();
-			if (!(token instanceof EvtOpcodeToken instr))
+            EvtToken token = iter.next();
+            if (!(token instanceof EvtOpcodeToken instr))
                 continue;
 
             Opcode opc = instr.getOpcode();
@@ -371,8 +371,8 @@ public class EvtUtils {
                 }
             }
         }
-		return null;
-	}
+        return null;
+    }
 
     public static List<EvtToken> gatherContentsOfParenthesis(EvtParenToken startToken) {
         List<EvtToken> results = new ArrayList<>();
@@ -380,7 +380,7 @@ public class EvtUtils {
 
         Iterator<EvtToken> iter = startToken.iterator(startToken.isOpening());
         while (iter.hasNext()) {
-			EvtToken token = iter.next();
+            EvtToken token = iter.next();
             results.add(token);
             if (!(token instanceof EvtParenToken paren))
                 continue;
@@ -393,6 +393,6 @@ public class EvtUtils {
             if (parenCount == 0)
                 break;
         }
-		return results;
-	}
+        return results;
+    }
 }

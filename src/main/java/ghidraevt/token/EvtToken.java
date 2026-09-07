@@ -135,7 +135,7 @@ public sealed class EvtToken permits
         return maxAddress;
     }
 
-	public Iterator<EvtToken> iterator(boolean forward) {
-		return new EvtTokenIterator(this, forward);
-	}
+    public Iterator<EvtToken> iterator(boolean forward) {
+        return new EvtTokenIterator(this, forward);
+    }
 }
