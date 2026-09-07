@@ -25,11 +25,11 @@ import ghidraevt.token.EvtToken;
 
 public interface EvtColorProvider {
 
-	/**
-	 * Returns a color for the given token
-	 * 
-	 * @param token the token
-	 * @return the color
-	 */
-	public Color getColor(EvtToken token);
+    /**
+     * Returns a color for the given token
+     * 
+     * @param token the token
+     * @return the color
+     */
+    public Color getColor(EvtToken token);
 }

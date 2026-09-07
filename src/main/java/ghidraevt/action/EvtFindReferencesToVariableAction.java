@@ -36,79 +36,79 @@ import jevt.Arg;
  */
 public class EvtFindReferencesToVariableAction extends AbstractEvtAction {
 
-	private static final String MENU_ITEM_TEXT = "Find References to";
-	public static final String NAME = "Find References to Evt Variable";
-	private EvtOptions options;
+    private static final String MENU_ITEM_TEXT = "Find References to";
+    public static final String NAME = "Find References to Evt Variable";
+    private EvtOptions options;
 
-	public EvtFindReferencesToVariableAction(EvtOptions options) {
-		super(NAME);
-		this.options = options;
-		setPopupMenuData(
-			new MenuData(new String[] { LocationReferencesService.MENU_GROUP, MENU_ITEM_TEXT }));
-	}
+    public EvtFindReferencesToVariableAction(EvtOptions options) {
+        super(NAME);
+        this.options = options;
+        setPopupMenuData(
+            new MenuData(new String[] { LocationReferencesService.MENU_GROUP, MENU_ITEM_TEXT }));
+    }
 
-	private void updateMenuName(String newName) {
-		String menuName = MENU_ITEM_TEXT + ' ' + newName;
-		MenuData data = getPopupMenuData().cloneData();
-		data.setMenuPath(new String[] { LocationReferencesService.MENU_GROUP, menuName });
-		setPopupMenuData(data);
-	}
+    private void updateMenuName(String newName) {
+        String menuName = MENU_ITEM_TEXT + ' ' + newName;
+        MenuData data = getPopupMenuData().cloneData();
+        data.setMenuPath(new String[] { LocationReferencesService.MENU_GROUP, menuName });
+        setPopupMenuData(data);
+    }
 
-	private boolean shouldXrefVar(Arg.Variable var) {
-		switch (var) {
-			case null:
-				return false;
+    private boolean shouldXrefVar(Arg.Variable var) {
+        switch (var) {
+            case null:
+                return false;
 
-			// Disable script-local variables by default to avoid confusion
-			case Arg.LW v:
-				return options.isAllowLocalVarXrefs();
-			case Arg.LF eq:
-				return options.isAllowLocalVarXrefs();
-			case Arg.UW v:
-				return options.isAllowLocalVarXrefs();
-			case Arg.UF eq:
-				return options.isAllowLocalVarXrefs();
+            // Disable script-local variables by default to avoid confusion
+            case Arg.LW v:
+                return options.isAllowLocalVarXrefs();
+            case Arg.LF eq:
+                return options.isAllowLocalVarXrefs();
+            case Arg.UW v:
+                return options.isAllowLocalVarXrefs();
+            case Arg.UF eq:
+                return options.isAllowLocalVarXrefs();
 
-			default:
-				return true;
-		}
+            default:
+                return true;
+        }
 
-	}
+    }
 
-	@Override
-	protected boolean isEnabledForEvtContext(EvtActionContext context) {
-		Arg.Variable var = getVariableHighlighted(context);
-		boolean ret = shouldXrefVar(var);
-		if (ret)
-			updateMenuName(var.getName());
-		return ret;
-	}
+    @Override
+    protected boolean isEnabledForEvtContext(EvtActionContext context) {
+        Arg.Variable var = getVariableHighlighted(context);
+        boolean ret = shouldXrefVar(var);
+        if (ret)
+            updateMenuName(var.getName());
+        return ret;
+    }
 
-	@Override
-	protected void evtActionPerformed(EvtActionContext context) {
-		Program program = context.getProgram();
-		Arg.Variable var = getVariableHighlighted(context);
-		int encoded = var.encode(options.getGame());
-		Address asAddr = program.getAddressFactory().getDefaultAddressSpace().getAddress(encoded);
-		Symbol symbol = program.getSymbolTable().getPrimarySymbol(asAddr);
-		if (symbol == null) {
-			Msg.showError(this, null, "Missing Symbol",
-				"Finding references to " + var.getName() +
-				" requires a symbol to be created at address " + asAddr);
-			return;
-		}
+    @Override
+    protected void evtActionPerformed(EvtActionContext context) {
+        Program program = context.getProgram();
+        Arg.Variable var = getVariableHighlighted(context);
+        int encoded = var.encode(options.getGame());
+        Address asAddr = program.getAddressFactory().getDefaultAddressSpace().getAddress(encoded);
+        Symbol symbol = program.getSymbolTable().getPrimarySymbol(asAddr);
+        if (symbol == null) {
+            Msg.showError(this, null, "Missing Symbol",
+                "Finding references to " + var.getName() +
+                " requires a symbol to be created at address " + asAddr);
+            return;
+        }
 
-		LocationReferencesService service =
-			context.getTool().getService(LocationReferencesService.class);
-		if (service == null) {
-			Msg.showError(this, null, "Missing Plugin",
-				"The " + LocationReferencesService.class.getSimpleName() + " is not installed.\n" +
-					"Please add the plugin implementing this service.");
-			return;
-		}
+        LocationReferencesService service =
+            context.getTool().getService(LocationReferencesService.class);
+        if (service == null) {
+            Msg.showError(this, null, "Missing Plugin",
+                "The " + LocationReferencesService.class.getSimpleName() + " is not installed.\n" +
+                    "Please add the plugin implementing this service.");
+            return;
+        }
 
-		LabelFieldLocation location = new LabelFieldLocation(symbol);
-		EvtProvider provider = context.getComponentProvider();
-		service.showReferencesToLocation(location, provider);
-	}
+        LabelFieldLocation location = new LabelFieldLocation(symbol);
+        EvtProvider provider = context.getComponentProvider();
+        service.showReferencesToLocation(location, provider);
+    }
 }

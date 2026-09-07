@@ -92,21 +92,21 @@ import utility.function.Callback;
 
 public class EvtProvider extends NavigatableComponentProviderAdapter
         implements OptionsChangeListener, EvtCallbackHandler {
-	private static final Icon REFRESH_ICON = new GIcon("icon.ghidraevt.action.refresh");
+    private static final Icon REFRESH_ICON = new GIcon("icon.ghidraevt.action.refresh");
     private static final Icon PROPERTIES_ICON = new GIcon("icon.ghidraevt.action.properties");
 
     private static final Icon SLASH_ICON = new GIcon("icon.ghidraevt.action.slash");
 
     private static final Icon TOGGLE_MACRO_ICON = new GIcon("icon.ghidraevt.action.c-macro-mode");
-	private static final Icon TOGGLE_MACRO_DISABLED_ICON =
-		new MultiIconBuilder(TOGGLE_MACRO_ICON).addCenteredIcon(SLASH_ICON).build();
+    private static final Icon TOGGLE_MACRO_DISABLED_ICON =
+        new MultiIconBuilder(TOGGLE_MACRO_ICON).addCenteredIcon(SLASH_ICON).build();
 
 
-	private static final Icon TOGGLE_STRICT_MODE_ICON =
-		new GIcon("icon.ghidraevt.action.strict-mode");
+    private static final Icon TOGGLE_STRICT_MODE_ICON =
+        new GIcon("icon.ghidraevt.action.strict-mode");
 
-	private static final Icon TOGGLE_STRICT_MODE_DISABLED_ICON =
-		new MultiIconBuilder(TOGGLE_STRICT_MODE_ICON).addCenteredIcon(SLASH_ICON).build();
+    private static final Icon TOGGLE_STRICT_MODE_DISABLED_ICON =
+        new MultiIconBuilder(TOGGLE_STRICT_MODE_ICON).addCenteredIcon(SLASH_ICON).build();
 
     private final GhidraEvtPlugin plugin;
     private ClipboardService clipboardService;
@@ -229,7 +229,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
             return null;
         }
 
-		Address entryPoint = script.getStartAddress();
+        Address entryPoint = script.getStartAddress();
         int lineNumber =
             event != null ? getEvtPanel().getLineNumber(event.getY()) : 0;
         return new EvtActionContext(this, entryPoint, lineNumber);
@@ -689,58 +689,58 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         refreshAction.setToolBarData(new ToolBarData(REFRESH_ICON, "A" /* first on toolbar */));
         refreshAction.setDescription("Push at any time to trigger a re-disassemble");
 
-		strictModeToggle = new ToggleDockingAction("Toggle Strict Script Detection", owner) {
-			@Override
-			public void actionPerformed(ActionContext context) {
-				boolean isSelected = this.isSelected();
+        strictModeToggle = new ToggleDockingAction("Toggle Strict Script Detection", owner) {
+            @Override
+            public void actionPerformed(ActionContext context) {
+                boolean isSelected = this.isSelected();
 
-				// Set the option based on the button state
-				options.setStrictMode(!isSelected);
+                // Set the option based on the button state
+                options.setStrictMode(!isSelected);
 
-				updateOptionsAndRefresh();
-			}
+                updateOptionsAndRefresh();
+            }
 
-			@Override
-			public void setSelected(boolean isSelected) {
-				super.setSelected(isSelected);
+            @Override
+            public void setSelected(boolean isSelected) {
+                super.setSelected(isSelected);
 
-				// Update the icon to have a slash or not
-				if (!isSelected) {
-					setToolBarData(new ToolBarData(TOGGLE_STRICT_MODE_ICON, "A"));
-				}
-				else {
-					setToolBarData(
-						new ToolBarData(TOGGLE_STRICT_MODE_DISABLED_ICON, "A"));
-				}
-			}
-		};
-		strictModeToggle.setDescription("Toggle on to enable strict script detection (may risk false-negatives)");
+                // Update the icon to have a slash or not
+                if (!isSelected) {
+                    setToolBarData(new ToolBarData(TOGGLE_STRICT_MODE_ICON, "A"));
+                }
+                else {
+                    setToolBarData(
+                        new ToolBarData(TOGGLE_STRICT_MODE_DISABLED_ICON, "A"));
+                }
+            }
+        };
+        strictModeToggle.setDescription("Toggle on to enable strict script detection (may risk false-negatives)");
 
-		cMacroModeToggle = new ToggleDockingAction("Toggle C Macro Mode", owner) {
-			@Override
-			public void actionPerformed(ActionContext context) {
-				boolean isSelected = this.isSelected();
+        cMacroModeToggle = new ToggleDockingAction("Toggle C Macro Mode", owner) {
+            @Override
+            public void actionPerformed(ActionContext context) {
+                boolean isSelected = this.isSelected();
 
-				// Set the option based on the button state
-				options.setCMacroMode(!isSelected);
+                // Set the option based on the button state
+                options.setCMacroMode(!isSelected);
 
-				updateOptionsAndRefresh();
-			}
+                updateOptionsAndRefresh();
+            }
 
-			@Override
-			public void setSelected(boolean isSelected) {
-				super.setSelected(isSelected);
+            @Override
+            public void setSelected(boolean isSelected) {
+                super.setSelected(isSelected);
 
-				// Update the icon to have a slash or not
-				if (!isSelected) {
-					setToolBarData(new ToolBarData(TOGGLE_MACRO_ICON, "A"));
-				}
-				else {
-					setToolBarData(new ToolBarData(TOGGLE_MACRO_DISABLED_ICON, "A"));
-				}
-			}
-		};
-		cMacroModeToggle.setDescription("Toggle on to render scripts in the evt_cmd.h C Macro format");
+                // Update the icon to have a slash or not
+                if (!isSelected) {
+                    setToolBarData(new ToolBarData(TOGGLE_MACRO_ICON, "A"));
+                }
+                else {
+                    setToolBarData(new ToolBarData(TOGGLE_MACRO_DISABLED_ICON, "A"));
+                }
+            }
+        };
+        cMacroModeToggle.setDescription("Toggle on to render scripts in the evt_cmd.h C Macro format");
 
         // Set the selected state and icon for the above toggle icons
         refreshToggleButtons();
@@ -779,7 +779,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         // Highlight
         //
         String highlightGroup = "4a - Highlight Group";
-		subGroupPosition = 0; // reset for the next group
+        subGroupPosition = 0; // reset for the next group
         tool.setMenuGroup(new String[] { "Highlight" }, highlightGroup);
         // EvtHighlightDefinedUseAction defUseHighlightAction = new EvtHighlightDefinedUseAction();
         // setGroupInfo(defUseHighlightAction, highlightGroup, subGroupPosition++);
@@ -1026,13 +1026,13 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         // currently unsupported
     }
 
-	public void tokenRenamed(EvtToken tokenAtCursor, String newName) {
-		plugin.handleTokenRenamed(tokenAtCursor, newName);
-	}
+    public void tokenRenamed(EvtToken tokenAtCursor, String newName) {
+        plugin.handleTokenRenamed(tokenAtCursor, newName);
+    }
 
-	public void handleTokenRenamed(EvtToken tokenAtCursor, String newName) {
-		controller.getEvtPanel().tokenRenamed(tokenAtCursor, newName);
-	}
+    public void handleTokenRenamed(EvtToken tokenAtCursor, String newName) {
+        controller.getEvtPanel().tokenRenamed(tokenAtCursor, newName);
+    }
 
     // // Customize GUI
     // private void buildPanel() {

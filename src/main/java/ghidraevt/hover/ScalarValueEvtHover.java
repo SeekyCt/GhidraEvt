@@ -37,62 +37,62 @@ import ghidraevt.token.EvtScalarToken;
 import ghidraevt.token.EvtToken;
 
 public class ScalarValueEvtHover extends AbstractScalarOperandHover
-		implements EvtHoverService {
+        implements EvtHoverService {
 
-	// note: this is relative to other EvtHovers; a higher priority gets called first
-	// Use high value so this hover gets called first.  The method for determining what the user
-	// is hovering is less then perfect.  We choose to allow the more precise hovers to get a chance
+    // note: this is relative to other EvtHovers; a higher priority gets called first
+    // Use high value so this hover gets called first.  The method for determining what the user
+    // is hovering is less then perfect.  We choose to allow the more precise hovers to get a chance
     // to process the request first.
-	private static final int PRIORITY = 30;
+    private static final int PRIORITY = 30;
 
-	private static final String NAME = "Scalar Operand Display (evt)";
-	private static final String DESCRIPTION =
-		"Scalars are shown as 1-, 2-, 4-, and 8-byte values, each in decimal, hexadecimal, and " +
-			"as ASCII character sequences.";
+    private static final String NAME = "Scalar Operand Display (evt)";
+    private static final String DESCRIPTION =
+        "Scalars are shown as 1-, 2-, 4-, and 8-byte values, each in decimal, hexadecimal, and " +
+            "as ASCII character sequences.";
 
-	public ScalarValueEvtHover(PluginTool tool) {
-		super(tool, PRIORITY);
-	}
+    public ScalarValueEvtHover(PluginTool tool) {
+        super(tool, PRIORITY);
+    }
 
-	@Override
-	protected String getName() {
-		return NAME;
-	}
+    @Override
+    protected String getName() {
+        return NAME;
+    }
 
-	@Override
-	protected String getDescription() {
-		return DESCRIPTION;
-	}
+    @Override
+    protected String getDescription() {
+        return DESCRIPTION;
+    }
 
-	@Override
-	protected String getOptionsCategory() {
-		return GhidraEvtPlugin.POPUP_OPTIONS_TITLE;
-	}
+    @Override
+    protected String getOptionsCategory() {
+        return GhidraEvtPlugin.POPUP_OPTIONS_TITLE;
+    }
 
-	@Override
-	public JComponent getHoverComponent(Program program, ProgramLocation programLocation,
-			FieldLocation fieldLocation, Field field) {
+    @Override
+    public JComponent getHoverComponent(Program program, ProgramLocation programLocation,
+            FieldLocation fieldLocation, Field field) {
 
-		if (!enabled) {
-			return null;
-		}
+        if (!enabled) {
+            return null;
+        }
 
-		if (!(field instanceof EvtTextField)) {
-			return null;
-		}
+        if (!(field instanceof EvtTextField)) {
+            return null;
+        }
 
-		EvtToken token = ((EvtTextField) field).getToken(fieldLocation);
+        EvtToken token = ((EvtTextField) field).getToken(fieldLocation);
         if (!(token instanceof EvtScalarToken)) {
             return null;
         }
 
         Scalar scalar = ((EvtScalarToken) token).getScalar();
-		if (scalar == null) {
-			return null;
-		}
-		Address addr = token.getMinAddress();
-		String formatted = formatScalar(program, addr, scalar);
-		return createTooltipComponent(formatted);
-	}
+        if (scalar == null) {
+            return null;
+        }
+        Address addr = token.getMinAddress();
+        String formatted = formatScalar(program, addr, scalar);
+        return createTooltipComponent(formatted);
+    }
 
 }

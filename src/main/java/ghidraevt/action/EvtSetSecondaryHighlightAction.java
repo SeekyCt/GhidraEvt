@@ -30,19 +30,19 @@ import ghidraevt.token.EvtToken;
  */
 public class EvtSetSecondaryHighlightAction extends EvtAbstractSetSecondaryHighlightAction {
 
-	public static String NAME = "Set Secondary Highlight";
+    public static String NAME = "Set Secondary Highlight";
 
-	public EvtSetSecondaryHighlightAction() {
-		super(NAME);
+    public EvtSetSecondaryHighlightAction() {
+        super(NAME);
 
-		setPopupMenuData(
-			new MenuData(new String[] { "Secondary Highlight", "Set Highlight" }, "Evt Disassembler"));
-	}
+        setPopupMenuData(
+            new MenuData(new String[] { "Secondary Highlight", "Set Highlight" }, "Evt Disassembler"));
+    }
 
-	@Override
-	protected void evtActionPerformed(EvtActionContext context) {
+    @Override
+    protected void evtActionPerformed(EvtActionContext context) {
 
-		EvtToken token = context.getTokenAtCursor();
-		context.getEvtPanel().addSecondaryHighlight(token);
-	}
+        EvtToken token = context.getTokenAtCursor();
+        context.getEvtPanel().addSecondaryHighlight(token);
+    }
 }

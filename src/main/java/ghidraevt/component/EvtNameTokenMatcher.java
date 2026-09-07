@@ -30,24 +30,24 @@ import ghidraevt.token.EvtToken;
  */
 class EvtNameTokenMatcher implements EvtTokenHighlightMatcher {
 
-	private EvtColorProvider colorProvider;
-	private String name;
+    private EvtColorProvider colorProvider;
+    private String name;
 
-	EvtNameTokenMatcher(String name, EvtColorProvider colorProvider) {
-		this.name = name;
-		this.colorProvider = colorProvider;
-	}
+    EvtNameTokenMatcher(String name, EvtColorProvider colorProvider) {
+        this.name = name;
+        this.colorProvider = colorProvider;
+    }
 
-	@Override
-	public Color getTokenHighlight(EvtToken token) {
-		if (name.equals(token.getText())) {
-			return colorProvider.getColor(token);
-		}
-		return null;
-	}
+    @Override
+    public Color getTokenHighlight(EvtToken token) {
+        if (name.equals(token.getText())) {
+            return colorProvider.getColor(token);
+        }
+        return null;
+    }
 
-	@Override
-	public String toString() {
-		return Json.toString(this);
-	}
+    @Override
+    public String toString() {
+        return Json.toString(this);
+    }
 }

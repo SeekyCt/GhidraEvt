@@ -32,46 +32,46 @@ import ghidraevt.component.EvtProvider;
  */
 public class EvtFindReferencesToSymbolAction extends AbstractEvtAction {
 
-	private static final String MENU_ITEM_TEXT = "Find References to";
-	public static final String NAME = "Find References to Symbol";
+    private static final String MENU_ITEM_TEXT = "Find References to";
+    public static final String NAME = "Find References to Symbol";
 
-	public EvtFindReferencesToSymbolAction() {
-		super(NAME);
-		setPopupMenuData(
-			new MenuData(new String[] { LocationReferencesService.MENU_GROUP, MENU_ITEM_TEXT }));
-	}
+    public EvtFindReferencesToSymbolAction() {
+        super(NAME);
+        setPopupMenuData(
+            new MenuData(new String[] { LocationReferencesService.MENU_GROUP, MENU_ITEM_TEXT }));
+    }
 
-	private void updateMenuName(String newName) {
-		String menuName = MENU_ITEM_TEXT + ' ' + newName;
-		MenuData data = getPopupMenuData().cloneData();
-		data.setMenuPath(new String[] { LocationReferencesService.MENU_GROUP, menuName });
-		setPopupMenuData(data);
-	}
+    private void updateMenuName(String newName) {
+        String menuName = MENU_ITEM_TEXT + ' ' + newName;
+        MenuData data = getPopupMenuData().cloneData();
+        data.setMenuPath(new String[] { LocationReferencesService.MENU_GROUP, menuName });
+        setPopupMenuData(data);
+    }
 
-	@Override
-	protected boolean isEnabledForEvtContext(EvtActionContext context) {
-		Symbol symbol = getSymbolHighlighted(context);
-		if (symbol == null) {
-			return false;
-		}
-		updateMenuName(symbol.getName());
-		return true;
-	}
+    @Override
+    protected boolean isEnabledForEvtContext(EvtActionContext context) {
+        Symbol symbol = getSymbolHighlighted(context);
+        if (symbol == null) {
+            return false;
+        }
+        updateMenuName(symbol.getName());
+        return true;
+    }
 
-	@Override
-	protected void evtActionPerformed(EvtActionContext context) {
-		Symbol symbol = getSymbolHighlighted(context);
-		LocationReferencesService service =
-			context.getTool().getService(LocationReferencesService.class);
-		if (service == null) {
-			Msg.showError(this, null, "Missing Plugin",
-				"The " + LocationReferencesService.class.getSimpleName() + " is not installed.\n" +
-					"Please add the plugin implementing this service.");
-			return;
-		}
+    @Override
+    protected void evtActionPerformed(EvtActionContext context) {
+        Symbol symbol = getSymbolHighlighted(context);
+        LocationReferencesService service =
+            context.getTool().getService(LocationReferencesService.class);
+        if (service == null) {
+            Msg.showError(this, null, "Missing Plugin",
+                "The " + LocationReferencesService.class.getSimpleName() + " is not installed.\n" +
+                    "Please add the plugin implementing this service.");
+            return;
+        }
 
-		LabelFieldLocation location = new LabelFieldLocation(symbol);
-		EvtProvider provider = context.getComponentProvider();
-		service.showReferencesToLocation(location, provider);
-	}
+        LabelFieldLocation location = new LabelFieldLocation(symbol);
+        EvtProvider provider = context.getComponentProvider();
+        service.showReferencesToLocation(location, provider);
+    }
 }

@@ -39,115 +39,115 @@ import ghidraevt.token.EvtToken;
  */
 public class EvtUserHighlights {
 
-	private Map<EvtScript, List<EvtHighlighter>> secondaryHighlightersByScript =
-		LazyMap.lazyMap(new HashMap<>(), f -> new ArrayList<>());
+    private Map<EvtScript, List<EvtHighlighter>> secondaryHighlightersByScript =
+        LazyMap.lazyMap(new HashMap<>(), f -> new ArrayList<>());
 
-	// store the secondary highlighters here in addition to the map below so that we may discern
-	// between secondary highlights and highlight service highlights
-	private Set<EvtHighlighter> secondaryHighlighters = new HashSet<>();
+    // store the secondary highlighters here in addition to the map below so that we may discern
+    // between secondary highlights and highlight service highlights
+    private Set<EvtHighlighter> secondaryHighlighters = new HashSet<>();
 
-	// all highlighters, including secondary and global highlight service highlighters and per 
-	// function highlight service highlighters
-	private Map<EvtHighlighter, EvtTokenHighlights> allHighlighterHighlights = new HashMap<>();
+    // all highlighters, including secondary and global highlight service highlighters and per 
+    // function highlight service highlighters
+    private Map<EvtHighlighter, EvtTokenHighlights> allHighlighterHighlights = new HashMap<>();
 
-	// color supplier for secondary highlights
-	private EvtTokenHighlightColors secondaryHighlightColors = new EvtTokenHighlightColors();
+    // color supplier for secondary highlights
+    private EvtTokenHighlightColors secondaryHighlightColors = new EvtTokenHighlightColors();
 
-	Color getSecondaryColor(String text) {
-		// Note: this call is used to generate colors for secondary highlighters that this API
-		// creates.  Client highlighters will create their own colors.
-		return secondaryHighlightColors.getColor(text);
-	}
+    Color getSecondaryColor(String text) {
+        // Note: this call is used to generate colors for secondary highlighters that this API
+        // creates.  Client highlighters will create their own colors.
+        return secondaryHighlightColors.getColor(text);
+    }
 
-	String getAppliedColorsString() {
-		return secondaryHighlightColors.getAppliedColorsString();
-	}
+    String getAppliedColorsString() {
+        return secondaryHighlightColors.getAppliedColorsString();
+    }
 
-	boolean hasSecondaryHighlights(EvtScript script) {
-		return !secondaryHighlightersByScript.get(script).isEmpty();
-	}
+    boolean hasSecondaryHighlights(EvtScript script) {
+        return !secondaryHighlightersByScript.get(script).isEmpty();
+    }
 
-	Color getSecondaryHighlight(EvtToken token) {
-		EvtHighlighter highlighter = getSecondaryHighlighter(token);
-		if (highlighter != null) {
-			EvtTokenHighlights highlights = allHighlighterHighlights.get(highlighter);
-			EvtHighlightToken hlToken = highlights.get(token);
-			return hlToken.getColor();
-		}
+    Color getSecondaryHighlight(EvtToken token) {
+        EvtHighlighter highlighter = getSecondaryHighlighter(token);
+        if (highlighter != null) {
+            EvtTokenHighlights highlights = allHighlighterHighlights.get(highlighter);
+            EvtHighlightToken hlToken = highlights.get(token);
+            return hlToken.getColor();
+        }
 
-		return null;
-	}
+        return null;
+    }
 
-	EvtTokenHighlightColors getSecondaryHighlightColors() {
-		return secondaryHighlightColors;
-	}
+    EvtTokenHighlightColors getSecondaryHighlightColors() {
+        return secondaryHighlightColors;
+    }
 
-	Set<EvtHighlighter> getSecondaryHighlighters(EvtScript script) {
-		return new HashSet<>(secondaryHighlightersByScript.get(script));
-	}
+    Set<EvtHighlighter> getSecondaryHighlighters(EvtScript script) {
+        return new HashSet<>(secondaryHighlightersByScript.get(script));
+    }
 
-	Set<EvtHighlighter> getServiceHighlighters() {
-		Set<EvtHighlighter> allHighlighters = allHighlighterHighlights.keySet();
-		Set<EvtHighlighter> results = new HashSet<>(allHighlighters);
-		results.removeAll(secondaryHighlighters);
-		return results;
-	}
+    Set<EvtHighlighter> getServiceHighlighters() {
+        Set<EvtHighlighter> allHighlighters = allHighlighterHighlights.keySet();
+        Set<EvtHighlighter> results = new HashSet<>(allHighlighters);
+        results.removeAll(secondaryHighlighters);
+        return results;
+    }
 
-	List<EvtHighlighter> getSecondaryHighlightersByFunction(EvtScript f) {
-		return secondaryHighlightersByScript.get(f);
-	}
+    List<EvtHighlighter> getSecondaryHighlightersByFunction(EvtScript f) {
+        return secondaryHighlightersByScript.get(f);
+    }
 
-	EvtTokenHighlights getHighlights(EvtHighlighter highlighter) {
-		return allHighlighterHighlights.get(highlighter);
-	}
+    EvtTokenHighlights getHighlights(EvtHighlighter highlighter) {
+        return allHighlighterHighlights.get(highlighter);
+    }
 
-	EvtHighlighter getSecondaryHighlighter(EvtToken token) {
-		for (EvtHighlighter highlighter : secondaryHighlighters) {
-			EvtTokenHighlights highlights = allHighlighterHighlights.get(highlighter);
-			EvtHighlightToken hlToken = highlights.get(token);
-			if (hlToken != null) {
-				return highlighter;
-			}
-		}
+    EvtHighlighter getSecondaryHighlighter(EvtToken token) {
+        for (EvtHighlighter highlighter : secondaryHighlighters) {
+            EvtTokenHighlights highlights = allHighlighterHighlights.get(highlighter);
+            EvtHighlightToken hlToken = highlights.get(token);
+            if (hlToken != null) {
+                return highlighter;
+            }
+        }
 
-		return null;
-	}
+        return null;
+    }
 
-	void addSecondaryHighlighter(EvtScript script, EvtHighlighter highlighter) {
+    void addSecondaryHighlighter(EvtScript script, EvtHighlighter highlighter) {
 
-		// Note: this highlighter has likely already been added to this class, but has not
-		//       yet been bound to the given function.
-		secondaryHighlightersByScript.get(script).add(highlighter);
-		secondaryHighlighters.add(highlighter);
-		allHighlighterHighlights.putIfAbsent(highlighter, new EvtTokenHighlights());
-	}
+        // Note: this highlighter has likely already been added to this class, but has not
+        //       yet been bound to the given function.
+        secondaryHighlightersByScript.get(script).add(highlighter);
+        secondaryHighlighters.add(highlighter);
+        allHighlighterHighlights.putIfAbsent(highlighter, new EvtTokenHighlights());
+    }
 
-	// This adds the given highlighter.  This is for global and secondary highlights.  Secondary
-	// highlights will be later registered to this class for the function they apply to.
-	EvtTokenHighlights add(EvtHighlighter highlighter) {
-		allHighlighterHighlights.putIfAbsent(highlighter, new EvtTokenHighlights());
-		return allHighlighterHighlights.get(highlighter);
-	}
+    // This adds the given highlighter.  This is for global and secondary highlights.  Secondary
+    // highlights will be later registered to this class for the function they apply to.
+    EvtTokenHighlights add(EvtHighlighter highlighter) {
+        allHighlighterHighlights.putIfAbsent(highlighter, new EvtTokenHighlights());
+        return allHighlighterHighlights.get(highlighter);
+    }
 
-	void remove(EvtHighlighter highlighter) {
-		allHighlighterHighlights.remove(highlighter);
-		secondaryHighlighters.remove(highlighter);
+    void remove(EvtHighlighter highlighter) {
+        allHighlighterHighlights.remove(highlighter);
+        secondaryHighlighters.remove(highlighter);
 
-		Collection<List<EvtHighlighter>> lists = secondaryHighlightersByScript.values();
-		for (List<EvtHighlighter> highlighters : lists) {
-			if (highlighters.remove(highlighter)) {
-				break;
-			}
-		}
-	}
+        Collection<List<EvtHighlighter>> lists = secondaryHighlightersByScript.values();
+        for (List<EvtHighlighter> highlighters : lists) {
+            if (highlighters.remove(highlighter)) {
+                break;
+            }
+        }
+    }
 
-	EvtTokenHighlights get(EvtHighlighter highlighter) {
-		return allHighlighterHighlights.get(highlighter);
-	}
+    EvtTokenHighlights get(EvtHighlighter highlighter) {
+        return allHighlighterHighlights.get(highlighter);
+    }
 
-	void dispose() {
-		secondaryHighlighters.clear();
-		secondaryHighlightersByScript.clear();
-		allHighlighterHighlights.clear();
-	}
+    void dispose() {
+        secondaryHighlighters.clear();
+        secondaryHighlightersByScript.clear();
+        allHighlighterHighlights.clear();
+    }
 }

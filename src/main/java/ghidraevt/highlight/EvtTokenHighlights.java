@@ -32,92 +32,92 @@ import ghidraevt.token.EvtTokenKey;
  */
 public class EvtTokenHighlights implements Iterable<EvtHighlightToken> {
 
-	private Map<EvtTokenKey, EvtHighlightToken> highlightsByToken = new HashMap<>();
+    private Map<EvtTokenKey, EvtHighlightToken> highlightsByToken = new HashMap<>();
 
-	public Map<String, Color> copyHighlightsByName() {
-		Map<String, Color> results = new HashMap<>();
+    public Map<String, Color> copyHighlightsByName() {
+        Map<String, Color> results = new HashMap<>();
 
-		Collection<EvtHighlightToken> values = highlightsByToken.values();
-		for (EvtHighlightToken hl : values) {
-			String name = hl.getToken().getText();
-			results.put(name, hl.getColor());
-		}
+        Collection<EvtHighlightToken> values = highlightsByToken.values();
+        for (EvtHighlightToken hl : values) {
+            String name = hl.getToken().getText();
+            results.put(name, hl.getColor());
+        }
 
-		return results;
-	}
+        return results;
+    }
 
-	private EvtTokenKey getKey(EvtHighlightToken ht) {
-		return new EvtTokenKey(ht);
-	}
+    private EvtTokenKey getKey(EvtHighlightToken ht) {
+        return new EvtTokenKey(ht);
+    }
 
-	private EvtTokenKey getKey(EvtToken t) {
-		return new EvtTokenKey(t);
-	}
+    private EvtTokenKey getKey(EvtToken t) {
+        return new EvtTokenKey(t);
+    }
 
-	/**
-	 * Returns true if there are not highlights
-	 * @return true if there are not highlights
-	 */
-	public boolean isEmpty() {
-		return size() == 0;
-	}
+    /**
+     * Returns true if there are not highlights
+     * @return true if there are not highlights
+     */
+    public boolean isEmpty() {
+        return size() == 0;
+    }
 
-	/**
-	 * Returns the number of highlights
-	 * @return the number of highlights
-	 */
-	public int size() {
-		return highlightsByToken.size();
-	}
+    /**
+     * Returns the number of highlights
+     * @return the number of highlights
+     */
+    public int size() {
+        return highlightsByToken.size();
+    }
 
-	/**
-	 * Adds the given highlight to this container
-	 * @param t the highlight
-	 */
-	public void add(EvtHighlightToken t) {
-		highlightsByToken.put(getKey(t), t);
-	}
+    /**
+     * Adds the given highlight to this container
+     * @param t the highlight
+     */
+    public void add(EvtHighlightToken t) {
+        highlightsByToken.put(getKey(t), t);
+    }
 
-	/**
-	 * Gets the current highlight for the given token
-	 * @param t the token
-	 * @return the highlight
-	 */
-	public EvtHighlightToken get(EvtToken t) {
-		return highlightsByToken.get(getKey(t));
-	}
+    /**
+     * Gets the current highlight for the given token
+     * @param t the token
+     * @return the highlight
+     */
+    public EvtHighlightToken get(EvtToken t) {
+        return highlightsByToken.get(getKey(t));
+    }
 
-	/**
-	 * Returns true if this class has a highlight for the given token
-	 * @param t the token
-	 * @return true if this class has a highlight for the given token
-	 */
-	public boolean contains(EvtToken t) {
-		return highlightsByToken.containsKey(getKey(t));
-	}
+    /**
+     * Returns true if this class has a highlight for the given token
+     * @param t the token
+     * @return true if this class has a highlight for the given token
+     */
+    public boolean contains(EvtToken t) {
+        return highlightsByToken.containsKey(getKey(t));
+    }
 
-	/**
-	 * Removes all highlights from this container
-	 */
-	public void clear() {
-		highlightsByToken.clear();
-	}
+    /**
+     * Removes all highlights from this container
+     */
+    public void clear() {
+        highlightsByToken.clear();
+    }
 
-	/**
-	 * Removes the highlight for the given token
-	 * @param t the token
-	 */
-	public void remove(EvtToken t) {
-		highlightsByToken.remove(getKey(t));
-	}
+    /**
+     * Removes the highlight for the given token
+     * @param t the token
+     */
+    public void remove(EvtToken t) {
+        highlightsByToken.remove(getKey(t));
+    }
 
-	@Override
-	public Iterator<EvtHighlightToken> iterator() {
-		return highlightsByToken.values().iterator();
-	}
+    @Override
+    public Iterator<EvtHighlightToken> iterator() {
+        return highlightsByToken.values().iterator();
+    }
 
-	@Override
-	public String toString() {
-		return highlightsByToken.values().toString();
-	}
+    @Override
+    public String toString() {
+        return highlightsByToken.values().toString();
+    }
 }

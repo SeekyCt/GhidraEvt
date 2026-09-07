@@ -295,15 +295,15 @@ public class EvtUtils {
     }
 
     public static DataType getDataType(EvtActionContext context) {
-		EvtToken tokenAtCursor = context.getTokenAtCursor();
+        EvtToken tokenAtCursor = context.getTokenAtCursor();
         if (!(tokenAtCursor instanceof EvtAddrToken))
             return null;
         EvtAddrToken addr = (EvtAddrToken) tokenAtCursor;
 
-		Data data = context.getProgram().getListing().getDataAt(addr.getTarget());
-		if (data == null) {
-			return null;
-		}
-		return data.getDataType();
+        Data data = context.getProgram().getListing().getDataAt(addr.getTarget());
+        if (data == null) {
+            return null;
+        }
+        return data.getDataType();
     }
 }

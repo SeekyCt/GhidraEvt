@@ -42,77 +42,77 @@ import jevt.Arg;
  */
 public abstract class AbstractEvtAction extends DockingAction {
 
-	protected AbstractEvtAction(String name) {
-		super(name, GhidraEvtPlugin.class.getSimpleName());
-	}
+    protected AbstractEvtAction(String name) {
+        super(name, GhidraEvtPlugin.class.getSimpleName());
+    }
 
-	protected AbstractEvtAction(String name, KeyBindingType kbType) {
-		super(name, GhidraEvtPlugin.class.getSimpleName(), kbType);
-	}
+    protected AbstractEvtAction(String name, KeyBindingType kbType) {
+        super(name, GhidraEvtPlugin.class.getSimpleName(), kbType);
+    }
 
-	@Override
-	public boolean isValidContext(ActionContext context) {
-		return context instanceof EvtActionContext;
-	}
+    @Override
+    public boolean isValidContext(ActionContext context) {
+        return context instanceof EvtActionContext;
+    }
 
-	@Override
-	public boolean isEnabledForContext(ActionContext context) {
-		return isEnabledForEvtContext((EvtActionContext) context);
-	}
+    @Override
+    public boolean isEnabledForContext(ActionContext context) {
+        return isEnabledForEvtContext((EvtActionContext) context);
+    }
 
-	@Override
-	public void actionPerformed(ActionContext context) {
-		evtActionPerformed((EvtActionContext) context);
-	}
+    @Override
+    public void actionPerformed(ActionContext context) {
+        evtActionPerformed((EvtActionContext) context);
+    }
 
-	protected static DataType chooseDataType(PluginTool tool, Program program,
-			DataType currentDataType) {
-		return chooseDataType(tool, program, currentDataType, AllowedDataTypes.FIXED_LENGTH);
-	}
+    protected static DataType chooseDataType(PluginTool tool, Program program,
+            DataType currentDataType) {
+        return chooseDataType(tool, program, currentDataType, AllowedDataTypes.FIXED_LENGTH);
+    }
 
-	protected static DataType chooseDataType(PluginTool tool, Program program,
-			DataType currentDataType, AllowedDataTypes allowed) {
-		DataTypeManager dataTypeManager = program.getDataTypeManager();
-		DataTypeSelectionDialog chooserDialog = new DataTypeSelectionDialog(tool, dataTypeManager,
-			Integer.MAX_VALUE, allowed);
-		chooserDialog.setInitialDataType(currentDataType);
-		tool.showDialog(chooserDialog);
-		return chooserDialog.getUserChosenDataType();
-	}
+    protected static DataType chooseDataType(PluginTool tool, Program program,
+            DataType currentDataType, AllowedDataTypes allowed) {
+        DataTypeManager dataTypeManager = program.getDataTypeManager();
+        DataTypeSelectionDialog chooserDialog = new DataTypeSelectionDialog(tool, dataTypeManager,
+            Integer.MAX_VALUE, allowed);
+        chooserDialog.setInitialDataType(currentDataType);
+        tool.showDialog(chooserDialog);
+        return chooserDialog.getUserChosenDataType();
+    }
 
-	protected Symbol getSymbolHighlighted(EvtActionContext context) {
-		EvtToken token = context.getTokenAtCursor();
-		if (token instanceof EvtAddrToken addr) {
-			Program program = context.getProgram();
-			SymbolTable symbolTable = program.getSymbolTable();
-			return symbolTable.getPrimarySymbol(addr.getTarget());
-		}
-		else {
-			return null;
-		}
-	}
+    protected Symbol getSymbolHighlighted(EvtActionContext context) {
+        EvtToken token = context.getTokenAtCursor();
+        if (token instanceof EvtAddrToken addr) {
+            Program program = context.getProgram();
+            SymbolTable symbolTable = program.getSymbolTable();
+            return symbolTable.getPrimarySymbol(addr.getTarget());
+        }
+        else {
+            return null;
+        }
+    }
 
-	protected Arg.Variable getVariableHighlighted(EvtActionContext context) {
-		EvtToken token = context.getTokenAtCursor();
-		if (token instanceof EvtVariableToken var) {
-			return var.getVar();
-		}
-		else {
-			return null;
-		}
-	}
+    protected Arg.Variable getVariableHighlighted(EvtActionContext context) {
+        EvtToken token = context.getTokenAtCursor();
+        if (token instanceof EvtVariableToken var) {
+            return var.getVar();
+        }
+        else {
+            return null;
+        }
+    }
 
-	/**
-	 * Subclasses return true if they are enabled for the given context
-	 * 
-	 * @param context the context
-	 * @return true if enabled
-	 */
-	protected abstract boolean isEnabledForEvtContext(EvtActionContext context);
+    /**
+     * Subclasses return true if they are enabled for the given context
+     * 
+     * @param context the context
+     * @return true if enabled
+     */
+    protected abstract boolean isEnabledForEvtContext(EvtActionContext context);
 
-	/**
-	 * Subclasses will perform their work in this method
-	 * @param context the context
-	 */
-	protected abstract void evtActionPerformed(EvtActionContext context);
+    /**
+     * Subclasses will perform their work in this method
+     * @param context the context
+     */
+    protected abstract void evtActionPerformed(EvtActionContext context);
 }

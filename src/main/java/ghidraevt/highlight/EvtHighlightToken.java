@@ -28,24 +28,24 @@ import ghidraevt.token.EvtToken;
  */
 public class EvtHighlightToken {
 
-	private EvtToken token;
-	private Color color;
+    private EvtToken token;
+    private Color color;
 
-	public EvtHighlightToken(EvtToken token, Color color) {
-		this.token = token;
-		this.color = color;
-	}
+    public EvtHighlightToken(EvtToken token, Color color) {
+        this.token = token;
+        this.color = color;
+    }
 
-	public EvtToken getToken() {
-		return token;
-	}
+    public EvtToken getToken() {
+        return token;
+    }
 
-	public Color getColor() {
-		return color;
-	}
+    public Color getColor() {
+        return color;
+    }
 
-	@Override
-	public String toString() {
-		return token.toString() + "; highlight=" + color;
-	}
+    @Override
+    public String toString() {
+        return token.toString() + "; highlight=" + color;
+    }
 }

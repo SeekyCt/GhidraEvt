@@ -30,49 +30,49 @@ import ghidraevt.token.EvtToken;
 
 public class EvtFieldElement extends AbstractTextFieldElement {
 
-	private final EvtToken token;
+    private final EvtToken token;
 
-	public EvtFieldElement(EvtToken token, AttributedString as, int col) {
-		super(as, 0, col);
-		this.token = token;
-	}
+    public EvtFieldElement(EvtToken token, AttributedString as, int col) {
+        super(as, 0, col);
+        this.token = token;
+    }
 
-	EvtToken getToken() {
-		return token;
-	}
+    EvtToken getToken() {
+        return token;
+    }
 
-	@Override
-	public void paint(JComponent c, Graphics g, int x, int y) {
-		Color highlightColor = token.getHighlight();
-		if (highlightColor != null) {
-			g.setColor(highlightColor);
-			g.fillRect(x, y - getHeightAbove(), getStringWidth(),
-				getHeightAbove() + getHeightBelow());
-		}
+    @Override
+    public void paint(JComponent c, Graphics g, int x, int y) {
+        Color highlightColor = token.getHighlight();
+        if (highlightColor != null) {
+            g.setColor(highlightColor);
+            g.fillRect(x, y - getHeightAbove(), getStringWidth(),
+                getHeightAbove() + getHeightBelow());
+        }
 
-		super.paint(c, g, x, y);
+        super.paint(c, g, x, y);
 
-		if (token.isMatchingToken()) {
-			// paint a bounding box around the token
-			g.setColor(Palette.GRAY);
-			int offset = 1;
-			g.drawRect(x - offset, y - getHeightAbove() - offset, getStringWidth() + (offset * 2),
-				getHeightAbove() + getHeightBelow() + (offset * 2));
-		}
-	}
+        if (token.isMatchingToken()) {
+            // paint a bounding box around the token
+            g.setColor(Palette.GRAY);
+            int offset = 1;
+            g.drawRect(x - offset, y - getHeightAbove() - offset, getStringWidth() + (offset * 2),
+                getHeightAbove() + getHeightBelow() + (offset * 2));
+        }
+    }
 
-	@Override
-	public FieldElement substring(int start, int end) {
-		AttributedString as = attributedString.substring(start, end);
-		if (as == attributedString) {
-			return this;
-		}
-		return new EvtFieldElement(token, as, column + start);
-	}
+    @Override
+    public FieldElement substring(int start, int end) {
+        AttributedString as = attributedString.substring(start, end);
+        if (as == attributedString) {
+            return this;
+        }
+        return new EvtFieldElement(token, as, column + start);
+    }
 
-	@Override
-	public FieldElement replaceAll(char[] targets, char replacement) {
-		return new EvtFieldElement(token, attributedString.replaceAll(targets, replacement),
-			column);
-	}
+    @Override
+    public FieldElement replaceAll(char[] targets, char replacement) {
+        return new EvtFieldElement(token, attributedString.replaceAll(targets, replacement),
+            column);
+    }
 }

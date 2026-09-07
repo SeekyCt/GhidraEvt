@@ -26,80 +26,80 @@ import ghidraevt.highlight.EvtHighlightToken;
 // a key that allows us to equate tokens that are not the same instance
 public class EvtTokenKey {
 
-	private EvtToken token;
-	private int hash;
-	private int lineNumber = -1;
-	private int indexInParent = Integer.MAX_VALUE;
+    private EvtToken token;
+    private int hash;
+    private int lineNumber = -1;
+    private int indexInParent = Integer.MAX_VALUE;
 
-	public  EvtTokenKey(EvtToken token) {
-		this.token = Objects.requireNonNull(token);
+    public  EvtTokenKey(EvtToken token) {
+        this.token = Objects.requireNonNull(token);
 
-		EvtLine lineParent = token.getLineParent();
-		if (lineParent != null) {
-			lineNumber = lineParent.getLineNumber();
-		}
+        EvtLine lineParent = token.getLineParent();
+        if (lineParent != null) {
+            lineNumber = lineParent.getLineNumber();
+        }
 
-		// have the hash be more than just the token text, otherwise, the number of hash collisions
-		// can become quite large if the user is matching on the same token text for multiple tokens
-		hash = Objects.hash(token.getText());
-		hash += lineNumber;
-	}
+        // have the hash be more than just the token text, otherwise, the number of hash collisions
+        // can become quite large if the user is matching on the same token text for multiple tokens
+        hash = Objects.hash(token.getText());
+        hash += lineNumber;
+    }
 
-	public EvtTokenKey(EvtHighlightToken t) {
-		this(t.getToken());
-	}
+    public EvtTokenKey(EvtHighlightToken t) {
+        this(t.getToken());
+    }
 
-	private int getIndexInParent() {
-		if (indexInParent == Integer.MAX_VALUE) {
-			EvtLine lineParent = token.getLineParent();
-			if (lineParent != null) {
-				indexInParent = lineParent.indexOfToken(token);
-			}
-			else {
-				indexInParent = -1;
-			}
-		}
-		return indexInParent;
-	}
+    private int getIndexInParent() {
+        if (indexInParent == Integer.MAX_VALUE) {
+            EvtLine lineParent = token.getLineParent();
+            if (lineParent != null) {
+                indexInParent = lineParent.indexOfToken(token);
+            }
+            else {
+                indexInParent = -1;
+            }
+        }
+        return indexInParent;
+    }
 
-	public EvtToken getToken() {
-		return token;
-	}
+    public EvtToken getToken() {
+        return token;
+    }
 
-	@Override
-	public int hashCode() {
-		return hash;
-	}
+    @Override
+    public int hashCode() {
+        return hash;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
 
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
 
-		EvtTokenKey otherKey = (EvtTokenKey) obj;
-		EvtToken otherToken = otherKey.token;
-		if (token.getClass() != otherToken.getClass()) {
-			return false;
-		}
+        EvtTokenKey otherKey = (EvtTokenKey) obj;
+        EvtToken otherToken = otherKey.token;
+        if (token.getClass() != otherToken.getClass()) {
+            return false;
+        }
 
-		if (!Objects.equals(token.getText(), otherToken.getText())) {
-			return false;
-		}
+        if (!Objects.equals(token.getText(), otherToken.getText())) {
+            return false;
+        }
 
-		if (lineNumber != otherKey.lineNumber) {
-			return false;
-		}
+        if (lineNumber != otherKey.lineNumber) {
+            return false;
+        }
 
-		return getIndexInParent() == otherKey.getIndexInParent();
-	}
+        return getIndexInParent() == otherKey.getIndexInParent();
+    }
 
-	@Override
-	public String toString() {
-		return token.toString();
-	}
+    @Override
+    public String toString() {
+        return token.toString();
+    }
 }

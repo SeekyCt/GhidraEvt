@@ -24,7 +24,7 @@ import ghidraevt.component.EvtPanel;
 
 public class EvtFindDialog extends FindDialog {
 
-	public EvtFindDialog(EvtPanel evtPanel) {
-		super("Evt Disassembler Find", new EvtSearcher(evtPanel));
-	}
+    public EvtFindDialog(EvtPanel evtPanel) {
+        super("Evt Disassembler Find", new EvtSearcher(evtPanel));
+    }
 }

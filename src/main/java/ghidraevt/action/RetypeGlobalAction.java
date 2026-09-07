@@ -46,59 +46,59 @@ import ghidraevt.token.EvtToken;
  */
 public class RetypeGlobalAction extends AbstractEvtAction {
 
-	public RetypeGlobalAction() {
-		super("Retype Global");
-		setPopupMenuData(new MenuData(new String[] { "Retype Global" }, "Evt Disassembler"));
-		setKeyBindingData(
-			new KeyBindingData(KeyEvent.VK_L, DockingUtils.CONTROL_KEY_MODIFIER_MASK));
-	}
+    public RetypeGlobalAction() {
+        super("Retype Global");
+        setPopupMenuData(new MenuData(new String[] { "Retype Global" }, "Evt Disassembler"));
+        setKeyBindingData(
+            new KeyBindingData(KeyEvent.VK_L, DockingUtils.CONTROL_KEY_MODIFIER_MASK));
+    }
 
-	@Override
-	protected boolean isEnabledForEvtContext(EvtActionContext context) {
-		EvtScript script = context.getScript();
-		if (script == null) {
-			return false;
-		}
+    @Override
+    protected boolean isEnabledForEvtContext(EvtActionContext context) {
+        EvtScript script = context.getScript();
+        if (script == null) {
+            return false;
+        }
 
-		EvtToken tokenAtCursor = context.getTokenAtCursor();
-		if (tokenAtCursor == null) {
-			return false;
-		}
-		if (!(tokenAtCursor instanceof EvtAddrToken)) {
-			return false;
-		}
+        EvtToken tokenAtCursor = context.getTokenAtCursor();
+        if (tokenAtCursor == null) {
+            return false;
+        }
+        if (!(tokenAtCursor instanceof EvtAddrToken)) {
+            return false;
+        }
         Address addr = ((EvtAddrToken) tokenAtCursor).getTarget();
         if (context.getProgram().getFunctionManager().getFunctionAt(addr) != null)
             return false;
         else
             return true;
-	}
+    }
 
-	@Override
-	protected void evtActionPerformed(EvtActionContext context) {
-		Program program = context.getProgram();
-		PluginTool tool = context.getTool();
-		EvtToken tokenAtCursor = context.getTokenAtCursor();
+    @Override
+    protected void evtActionPerformed(EvtActionContext context) {
+        Program program = context.getProgram();
+        PluginTool tool = context.getTool();
+        EvtToken tokenAtCursor = context.getTokenAtCursor();
 
         if (!(tokenAtCursor instanceof EvtAddrToken))
             return;
         EvtAddrToken addr = (EvtAddrToken) tokenAtCursor;
-		Address address = addr.getTarget();
+        Address address = addr.getTarget();
 
-		DataType dataType = null;
+        DataType dataType = null;
         Data data = context.getProgram().getListing().getDataAt(address);
 
-		if (data == null) {
-			Msg.showError(this, tool.getToolFrame(), "Retype Failed",
-			    "Failed to re-type global at '" + address + "': no data found.");
-			return;
-		}
-		
-		dataType = chooseDataType(tool, program, data.getDataType(), AllowedDataTypes.ALL);
-		if (dataType == null)
-			return;
+        if (data == null) {
+            Msg.showError(this, tool.getToolFrame(), "Retype Failed",
+                "Failed to re-type global at '" + address + "': no data found.");
+            return;
+        }
+        
+        dataType = chooseDataType(tool, program, data.getDataType(), AllowedDataTypes.ALL);
+        if (dataType == null)
+            return;
 
-		Command<Program> cmd  = new CreateDataCmd(address, true, false, dataType);
-		context.getTool().execute(cmd, program);
-	}
+        Command<Program> cmd  = new CreateDataCmd(address, true, false, dataType);
+        context.getTool().execute(cmd, program);
+    }
 }

@@ -31,34 +31,34 @@ import ghidraevt.token.EvtToken;
  */
 public class EvtRemoveSecondaryHighlightAction extends AbstractEvtAction {
 
-	public static final String NAME = "Remove Secondary Highlight";
+    public static final String NAME = "Remove Secondary Highlight";
 
-	public EvtRemoveSecondaryHighlightAction() {
-		super(NAME);
+    public EvtRemoveSecondaryHighlightAction() {
+        super(NAME);
 
-		setPopupMenuData(
-			new MenuData(new String[] { "Secondary Highlight", "Remove Highlight" }, "Evt Disassembler"));
-	}
+        setPopupMenuData(
+            new MenuData(new String[] { "Secondary Highlight", "Remove Highlight" }, "Evt Disassembler"));
+    }
 
-	@Override
-	protected boolean isEnabledForEvtContext(EvtActionContext context) {
-		if (context.getScript() == null) {
-			return false;
-		}
+    @Override
+    protected boolean isEnabledForEvtContext(EvtActionContext context) {
+        if (context.getScript() == null) {
+            return false;
+        }
 
-		EvtToken token = context.getTokenAtCursor();
-		if (token == null) {
-			return false;
-		}
+        EvtToken token = context.getTokenAtCursor();
+        if (token == null) {
+            return false;
+        }
 
-		EvtPanel panel = context.getEvtPanel();
-		return panel.hasSecondaryHighlight(token);
-	}
+        EvtPanel panel = context.getEvtPanel();
+        return panel.hasSecondaryHighlight(token);
+    }
 
-	@Override
-	protected void evtActionPerformed(EvtActionContext context) {
-		EvtToken token = context.getTokenAtCursor();
-		EvtPanel panel = context.getEvtPanel();
-		panel.removeSecondaryHighlight(token);
-	}
+    @Override
+    protected void evtActionPerformed(EvtActionContext context) {
+        EvtToken token = context.getTokenAtCursor();
+        EvtPanel panel = context.getEvtPanel();
+        panel.removeSecondaryHighlight(token);
+    }
 }

@@ -30,43 +30,43 @@ import ghidraevt.component.EvtUtils;
 
 public class EvtFindReferencesToDataTypeAction extends AbstractFindReferencesDataTypeAction {
 
-	public EvtFindReferencesToDataTypeAction(String owner, PluginTool tool) {
-		super(tool, NAME, owner, DEFAULT_KEY_STROKE);
+    public EvtFindReferencesToDataTypeAction(String owner, PluginTool tool) {
+        super(tool, NAME, owner, DEFAULT_KEY_STROKE);
 
-		setPopupMenuData(
-			new MenuData(new String[] { LocationReferencesService.MENU_GROUP, "Find Uses of " }));
-	}
+        setPopupMenuData(
+            new MenuData(new String[] { LocationReferencesService.MENU_GROUP, "Find Uses of " }));
+    }
 
-	@Override
-	public DataType getDataType(ActionContext context) {
-		return EvtUtils.getDataType((EvtActionContext) context);
-	}
+    @Override
+    public DataType getDataType(ActionContext context) {
+        return EvtUtils.getDataType((EvtActionContext) context);
+    }
 
-	@Override
-	public boolean isEnabledForContext(ActionContext context) {
-		if (!(context instanceof EvtActionContext)) {
-			return false;
-		}
+    @Override
+    public boolean isEnabledForContext(ActionContext context) {
+        if (!(context instanceof EvtActionContext)) {
+            return false;
+        }
 
-		DataType dataType = getDataType(context);
-		updateMenuName(dataType);
-		return super.isEnabledForContext(context);
-	}
+        DataType dataType = getDataType(context);
+        updateMenuName(dataType);
+        return super.isEnabledForContext(context);
+    }
 
-	private void updateMenuName(DataType type) {
-		if (type == null) {
-			return; // not sure if this can happen
-		}
+    private void updateMenuName(DataType type) {
+        if (type == null) {
+            return; // not sure if this can happen
+        }
 
-		String typeName = type.getName();
-		String menuName = "Find Uses of " + typeName;
-		String fieldName = getDataTypeField(type);
-		if (fieldName != null) {
-			menuName += '.' + fieldName;
-		}
+        String typeName = type.getName();
+        String menuName = "Find Uses of " + typeName;
+        String fieldName = getDataTypeField(type);
+        if (fieldName != null) {
+            menuName += '.' + fieldName;
+        }
 
-		MenuData data = getPopupMenuData().cloneData();
-		data.setMenuPath(new String[] { LocationReferencesService.MENU_GROUP, menuName });
-		setPopupMenuData(data);
-	}
+        MenuData data = getPopupMenuData().cloneData();
+        data.setMenuPath(new String[] { LocationReferencesService.MENU_GROUP, menuName });
+        setPopupMenuData(data);
+    }
 }

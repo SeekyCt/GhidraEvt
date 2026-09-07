@@ -37,68 +37,68 @@ import ghidraevt.token.EvtTokenIterator;
  */
 public class EvtPreviousHighlightedTokenAction extends AbstractEvtAction {
 
-	public EvtPreviousHighlightedTokenAction() {
-		super("Previous Highlighted Token");
+    public EvtPreviousHighlightedTokenAction() {
+        super("Previous Highlighted Token");
 
-		setPopupMenuData(new MenuData(new String[] { "Previous Highlight" }, "Evt Disassembler"));
-		setKeyBindingData(new KeyBindingData("Ctrl comma"));
-	}
+        setPopupMenuData(new MenuData(new String[] { "Previous Highlight" }, "Evt Disassembler"));
+        setKeyBindingData(new KeyBindingData("Ctrl comma"));
+    }
 
-	@Override
-	protected boolean isEnabledForEvtContext(EvtActionContext context) {
-		if (context.getScript() == null) {
-			return false;
-		}
-		EvtPanel panel = context.getEvtPanel();
-		EvtTokenHighlights highlights = panel.getMiddleMouseHighlights();
-		if (highlights != null) {
-			return highlights.size() > 1;
-		}
-		return false;
-	}
+    @Override
+    protected boolean isEnabledForEvtContext(EvtActionContext context) {
+        if (context.getScript() == null) {
+            return false;
+        }
+        EvtPanel panel = context.getEvtPanel();
+        EvtTokenHighlights highlights = panel.getMiddleMouseHighlights();
+        if (highlights != null) {
+            return highlights.size() > 1;
+        }
+        return false;
+    }
 
-	@Override
-	protected void evtActionPerformed(EvtActionContext context) {
+    @Override
+    protected void evtActionPerformed(EvtActionContext context) {
 
-		EvtPanel panel = context.getEvtPanel();
-		EvtTokenHighlights highlights = panel.getMiddleMouseHighlights();
-		EvtToken cursorToken = context.getTokenAtCursor();
-		EvtTokenIterator it = new EvtTokenIterator(cursorToken, false);
-		it.next(); // ignore the current token
+        EvtPanel panel = context.getEvtPanel();
+        EvtTokenHighlights highlights = panel.getMiddleMouseHighlights();
+        EvtToken cursorToken = context.getTokenAtCursor();
+        EvtTokenIterator it = new EvtTokenIterator(cursorToken, false);
+        it.next(); // ignore the current token
 
-		if (goToNexToken(panel, it, highlights)) {
-			return; // found another token in the current direction
-		}
+        if (goToNexToken(panel, it, highlights)) {
+            return; // found another token in the current direction
+        }
 
-		// this means there are no more occurrences in the current direction; wrap the search
-		EvtToken lastToken = getLastToken(panel);
-		it = new EvtTokenIterator(lastToken, false);
-		goToNexToken(panel, it, highlights);
-	}
+        // this means there are no more occurrences in the current direction; wrap the search
+        EvtToken lastToken = getLastToken(panel);
+        it = new EvtTokenIterator(lastToken, false);
+        goToNexToken(panel, it, highlights);
+    }
 
-	private EvtToken getLastToken(EvtPanel panel) {
-		List<Field> fields = panel.getFields();
-		int lastLine = fields.size();
-		Field line = fields.get(lastLine - 1);
-		EvtTextField tf = (EvtTextField) line;
-		return tf.getLastToken();
-	}
+    private EvtToken getLastToken(EvtPanel panel) {
+        List<Field> fields = panel.getFields();
+        int lastLine = fields.size();
+        Field line = fields.get(lastLine - 1);
+        EvtTextField tf = (EvtTextField) line;
+        return tf.getLastToken();
+    }
 
-	private boolean goToNexToken(EvtPanel panel, EvtTokenIterator it,
-			EvtTokenHighlights highlights) {
+    private boolean goToNexToken(EvtPanel panel, EvtTokenIterator it,
+            EvtTokenHighlights highlights) {
 
-		while (it.hasNext()) {
-			EvtToken nextToken = it.next();
-			EvtHighlightToken hlToken = highlights.get(nextToken);
-			if (hlToken == null) {
-				continue;
-			}
+        while (it.hasNext()) {
+            EvtToken nextToken = it.next();
+            EvtHighlightToken hlToken = highlights.get(nextToken);
+            if (hlToken == null) {
+                continue;
+            }
 
-			EvtToken token = hlToken.getToken();
-			panel.goToToken(token);
-			return true;
-		}
+            EvtToken token = hlToken.getToken();
+            panel.goToToken(token);
+            return true;
+        }
 
-		return false;
-	}
+        return false;
+    }
 }

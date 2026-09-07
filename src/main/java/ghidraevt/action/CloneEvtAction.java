@@ -32,22 +32,22 @@ import generic.theme.GIcon;
 
 public class CloneEvtAction extends AbstractEvtAction {
 
-	public CloneEvtAction() {
-		super("Disassembler Clone");
-		Icon image = new GIcon("icon.decompiler.action.provider.clone");
-		setToolBarData(new ToolBarData(image, "ZZZ"));
-		setDescription("Create a snapshot (disconnected) copy of this Disassembler window ");
-		setKeyBindingData(new KeyBindingData(KeyEvent.VK_T,
-			DockingUtils.CONTROL_KEY_MODIFIER_MASK | InputEvent.SHIFT_DOWN_MASK));
-	}
+    public CloneEvtAction() {
+        super("Disassembler Clone");
+        Icon image = new GIcon("icon.decompiler.action.provider.clone");
+        setToolBarData(new ToolBarData(image, "ZZZ"));
+        setDescription("Create a snapshot (disconnected) copy of this Disassembler window ");
+        setKeyBindingData(new KeyBindingData(KeyEvent.VK_T,
+            DockingUtils.CONTROL_KEY_MODIFIER_MASK | InputEvent.SHIFT_DOWN_MASK));
+    }
 
-	@Override
-	protected boolean isEnabledForEvtContext(EvtActionContext context) {
-		return context.getScript() != null;
-	}
+    @Override
+    protected boolean isEnabledForEvtContext(EvtActionContext context) {
+        return context.getScript() != null;
+    }
 
-	@Override
-	protected void evtActionPerformed(EvtActionContext context) {
-		context.getComponentProvider().cloneWindow();
-	}
+    @Override
+    protected void evtActionPerformed(EvtActionContext context) {
+        context.getComponentProvider().cloneWindow();
+    }
 }

@@ -34,19 +34,19 @@ import ghidraevt.token.EvtToken;
  * @see DecompilerHighlightService
  */
 public interface EvtTokenHighlightMatcher {
-	public default void start(EvtDocument root) {
-		// stub; provided for clients that may wish to work from the root
-	}
+    public default void start(EvtDocument root) {
+        // stub; provided for clients that may wish to work from the root
+    }
 
-	public default void end() {
-		// stub; provided for clients that may wish to perform cleanup when highlighting is finished
-	}
+    public default void end() {
+        // stub; provided for clients that may wish to perform cleanup when highlighting is finished
+    }
 
-	/**
-	 * The basic method clients must implement to determine if a token should be highlighted.
-	 * Returning a non-null Color will trigger the given token to be highlighted.
-	 * @param token the token
-	 * @return the highlight color or null
-	 */
-	public Color getTokenHighlight(EvtToken token);
+    /**
+     * The basic method clients must implement to determine if a token should be highlighted.
+     * Returning a non-null Color will trigger the given token to be highlighted.
+     * @param token the token
+     * @return the highlight color or null
+     */
+    public Color getTokenHighlight(EvtToken token);
 }

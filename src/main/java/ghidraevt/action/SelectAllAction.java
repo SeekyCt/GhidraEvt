@@ -33,17 +33,17 @@ import ghidraevt.component.EvtPanel;
  * Action for adding all fields to the current format.
  */
 public class SelectAllAction extends DockingAction {
-	EvtPanel panel;
+    EvtPanel panel;
 
-	public SelectAllAction(String owner, EvtPanel panel) {
-		super("Select All", owner);
-		this.panel = panel;
-		setKeyBindingData(
-			new KeyBindingData(KeyEvent.VK_A, DockingUtils.CONTROL_KEY_MODIFIER_MASK));
-	}
+    public SelectAllAction(String owner, EvtPanel panel) {
+        super("Select All", owner);
+        this.panel = panel;
+        setKeyBindingData(
+            new KeyBindingData(KeyEvent.VK_A, DockingUtils.CONTROL_KEY_MODIFIER_MASK));
+    }
 
-	@Override
-	public void actionPerformed(ActionContext context) {
-		panel.selectAll(EventTrigger.GUI_ACTION);
-	}
+    @Override
+    public void actionPerformed(ActionContext context) {
+        panel.selectAll(EventTrigger.GUI_ACTION);
+    }
 }

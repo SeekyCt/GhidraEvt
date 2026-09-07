@@ -34,92 +34,92 @@ import ghidra.program.model.listing.Program;
 import ghidraevt.token.EvtLine;
 
 public class LineNumberEvtMarginProvider extends JPanel
-		implements EvtMarginProvider, LayoutModelListener {
+        implements EvtMarginProvider, LayoutModelListener {
 
-	private LayoutPixelIndexMap pixmap;
-	private EvtLayoutModel model;
+    private LayoutPixelIndexMap pixmap;
+    private EvtLayoutModel model;
 
-	public LineNumberEvtMarginProvider() {
-		setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 2));
-	}
+    public LineNumberEvtMarginProvider() {
+        setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 2));
+    }
 
-	@Override
-	public void setProgram(Program program, EvtLayoutModel model, LayoutPixelIndexMap pixmap) {
-		setLayoutManager(model);
-		this.pixmap = pixmap;
-		repaint();
-	}
+    @Override
+    public void setProgram(Program program, EvtLayoutModel model, LayoutPixelIndexMap pixmap) {
+        setLayoutManager(model);
+        this.pixmap = pixmap;
+        repaint();
+    }
 
-	private void setLayoutManager(EvtLayoutModel model) {
-		if (this.model == model) {
-			return;
-		}
-		if (this.model != null) {
-			this.model.removeLayoutModelListener(this);
-		}
-		this.model = model;
-		setWidthForLastLine();
-		if (this.model != null) {
-			this.model.addLayoutModelListener(this);
-		}
-	}
+    private void setLayoutManager(EvtLayoutModel model) {
+        if (this.model == model) {
+            return;
+        }
+        if (this.model != null) {
+            this.model.removeLayoutModelListener(this);
+        }
+        this.model = model;
+        setWidthForLastLine();
+        if (this.model != null) {
+            this.model.addLayoutModelListener(this);
+        }
+    }
 
-	@Override
-	public void setOptions(EvtOptions options) {
-		this.setFont(options.getDefaultFont());
-		setWidthForLastLine();
-		repaint();
-	}
+    @Override
+    public void setOptions(EvtOptions options) {
+        this.setFont(options.getDefaultFont());
+        setWidthForLastLine();
+        repaint();
+    }
 
-	@Override
-	public Component getComponent() {
-		return this;
-	}
+    @Override
+    public Component getComponent() {
+        return this;
+    }
 
-	@Override
-	public void modelSizeChanged(IndexMapper indexMapper) {
-		setWidthForLastLine();
-		repaint();
-	}
+    @Override
+    public void modelSizeChanged(IndexMapper indexMapper) {
+        setWidthForLastLine();
+        repaint();
+    }
 
-	@Override
-	public void dataChanged(BigInteger start, BigInteger end) {
-		repaint();
-	}
+    @Override
+    public void dataChanged(BigInteger start, BigInteger end) {
+        repaint();
+    }
 
-	private void setWidthForLastLine() {
-		if (model == null) {
-			return;
-		}
-		int lastLine = model.getNumIndexes().intValueExact();
-		int width = getFontMetrics(getFont()).stringWidth(Integer.toString(lastLine));
-		Insets insets = getInsets();
-		width += insets.left + insets.right;
-		setPreferredSize(new Dimension(Math.max(16, width), 0));
-		invalidate();
-	}
+    private void setWidthForLastLine() {
+        if (model == null) {
+            return;
+        }
+        int lastLine = model.getNumIndexes().intValueExact();
+        int width = getFontMetrics(getFont()).stringWidth(Integer.toString(lastLine));
+        Insets insets = getInsets();
+        width += insets.left + insets.right;
+        setPreferredSize(new Dimension(Math.max(16, width), 0));
+        invalidate();
+    }
 
-	@Override
-	public void paint(Graphics g) {
-		super.paint(g);
+    @Override
+    public void paint(Graphics g) {
+        super.paint(g);
 
-		Insets insets = getInsets();
-		int rightEdge = getWidth() - insets.right;
-		Rectangle visible = getVisibleRect();
-		BigInteger startIdx = pixmap.getIndex(visible.y);
-		BigInteger endIdx = pixmap.getIndex(visible.y + visible.height);
-		int ascent = g.getFontMetrics().getMaxAscent();
-		for (BigInteger i = startIdx; i.compareTo(endIdx) <= 0; i = i.add(BigInteger.ONE)) {
-			EvtLine line = model.getDocument().getLine(i.intValueExact());
-			
-			// Only render real line numbers
-			int lineNumber = line.getDisplayLineNumber();
-			if (lineNumber <= 0)
-				continue;
+        Insets insets = getInsets();
+        int rightEdge = getWidth() - insets.right;
+        Rectangle visible = getVisibleRect();
+        BigInteger startIdx = pixmap.getIndex(visible.y);
+        BigInteger endIdx = pixmap.getIndex(visible.y + visible.height);
+        int ascent = g.getFontMetrics().getMaxAscent();
+        for (BigInteger i = startIdx; i.compareTo(endIdx) <= 0; i = i.add(BigInteger.ONE)) {
+            EvtLine line = model.getDocument().getLine(i.intValueExact());
+            
+            // Only render real line numbers
+            int lineNumber = line.getDisplayLineNumber();
+            if (lineNumber <= 0)
+                continue;
 
-			String text = Integer.toString(lineNumber);
-			int width = g.getFontMetrics().stringWidth(text);
-			GraphicsUtils.drawString(this, g, text, rightEdge - width, pixmap.getPixel(i) + ascent);
-		}
-	}
+            String text = Integer.toString(lineNumber);
+            int width = g.getFontMetrics().stringWidth(text);
+            GraphicsUtils.drawString(this, g, text, rightEdge - width, pixmap.getPixel(i) + ascent);
+        }
+    }
 }

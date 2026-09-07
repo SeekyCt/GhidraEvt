@@ -29,63 +29,63 @@ import docking.widgets.FindDialog;
 import ghidraevt.component.EvtPanel;
 
 public class FindAction extends AbstractEvtAction {
-	private EvtFindDialog findDialog;
+    private EvtFindDialog findDialog;
 
-	public FindAction() {
-		super("Find");
-		setPopupMenuData(new MenuData(new String[] { "Find..." }, "Evt Disassembler"));
-		setKeyBindingData(
-			new KeyBindingData(KeyEvent.VK_F, DockingUtils.CONTROL_KEY_MODIFIER_MASK));
-		setEnabled(true);
-	}
+    public FindAction() {
+        super("Find");
+        setPopupMenuData(new MenuData(new String[] { "Find..." }, "Evt Disassembler"));
+        setKeyBindingData(
+            new KeyBindingData(KeyEvent.VK_F, DockingUtils.CONTROL_KEY_MODIFIER_MASK));
+        setEnabled(true);
+    }
 
-	@Override
-	public KeyBindingType getKeyBindingType() {
-		return KeyBindingType.SHARED;
-	}
+    @Override
+    public KeyBindingType getKeyBindingType() {
+        return KeyBindingType.SHARED;
+    }
 
-	@Override
-	public void dispose() {
-		if (findDialog != null) {
-			findDialog.dispose();
-		}
-		super.dispose();
-	}
+    @Override
+    public void dispose() {
+        if (findDialog != null) {
+            findDialog.dispose();
+        }
+        super.dispose();
+    }
 
-	protected FindDialog getFindDialog(EvtPanel evtPanel) {
-		if (findDialog == null) {
-			findDialog = new EvtFindDialog(evtPanel);
-		}
-		return findDialog;
-	}
+    protected FindDialog getFindDialog(EvtPanel evtPanel) {
+        if (findDialog == null) {
+            findDialog = new EvtFindDialog(evtPanel);
+        }
+        return findDialog;
+    }
 
-	@Override
-	protected boolean isEnabledForEvtContext(EvtActionContext context) {
-		return true;
-	}
+    @Override
+    protected boolean isEnabledForEvtContext(EvtActionContext context) {
+        return true;
+    }
 
-	@Override
-	protected void evtActionPerformed(EvtActionContext context) {
-		EvtPanel evtPanel = context.getEvtPanel();
-		FindDialog dialog = getFindDialog(evtPanel);
-		String text = evtPanel.getSelectedText();
-		if (text == null) {
-			text = evtPanel.getHighlightedText();
+    @Override
+    protected void evtActionPerformed(EvtActionContext context) {
+        EvtPanel evtPanel = context.getEvtPanel();
+        FindDialog dialog = getFindDialog(evtPanel);
+        String text = evtPanel.getSelectedText();
+        if (text == null) {
+            text = evtPanel.getHighlightedText();
 
-			// note: if we decide to grab the text under the cursor, then use
-			// text = decompilerPanel.getTextUnderCursor();
-		}
+            // note: if we decide to grab the text under the cursor, then use
+            // text = decompilerPanel.getTextUnderCursor();
+        }
 
-		if (!StringUtils.isBlank(text)) {
-			dialog.setSearchText(text);
-		}
+        if (!StringUtils.isBlank(text)) {
+            dialog.setSearchText(text);
+        }
 
-		if (dialog.isShowing()) {
-			dialog.toFront();
-			return;
-		}
+        if (dialog.isShowing()) {
+            dialog.toFront();
+            return;
+        }
 
-		// show over the root frame, so the user can still see the Decompiler window
-		context.getTool().showDialog(dialog);
-	}
+        // show over the root frame, so the user can still see the Decompiler window
+        context.getTool().showDialog(dialog);
+    }
 }

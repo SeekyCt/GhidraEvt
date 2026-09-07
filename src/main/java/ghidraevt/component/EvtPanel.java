@@ -90,17 +90,17 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
     private final VerticalLayoutPixelIndexMap pixmap = new VerticalLayoutPixelIndexMap();
 
     private FieldHighlightFactory hlFactory;
-	private EvtHighlightController highlightController;
-	private Map<String, EvtHighlighter> highlightersById = new HashMap<>();
-	private PendingHighlightUpdate pendingHighlightUpdate;
-	private SwingUpdateManager highlighCursorUpdater = new SwingUpdateManager(() -> {
-		if (pendingHighlightUpdate != null) {
-			pendingHighlightUpdate.doUpdate();
-			pendingHighlightUpdate = null;
-		}
-	});
+    private EvtHighlightController highlightController;
+    private Map<String, EvtHighlighter> highlightersById = new HashMap<>();
+    private PendingHighlightUpdate pendingHighlightUpdate;
+    private SwingUpdateManager highlighCursorUpdater = new SwingUpdateManager(() -> {
+        if (pendingHighlightUpdate != null) {
+            pendingHighlightUpdate.doUpdate();
+            pendingHighlightUpdate = null;
+        }
+    });
 
-	private ActiveMiddleMouse activeMiddleMouse;
+    private ActiveMiddleMouse activeMiddleMouse;
     private int middleMouseHighlightButton;
     private Color middleMouseHighlightColor;
     private Color currentVariableHighlightColor;
@@ -908,10 +908,10 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
             return null;
         }
 
-		// ClangToken token = textField.getToken(location);
-		// if (!(token instanceof ClangCommentToken)) {
-		// 	return token.getText(); // non-comment tokens are not multi-word; use the token's text
-		// }
+        // ClangToken token = textField.getToken(location);
+        // if (!(token instanceof ClangCommentToken)) {
+        //     return token.getText(); // non-comment tokens are not multi-word; use the token's text
+        // }
 
         FieldElement clickedElement = textField.getClickedObject(location);
         if (clickedElement instanceof AnnotatedTextFieldElement) {
@@ -1226,83 +1226,83 @@ public class EvtPanel extends JPanel implements FieldMouseListener, FieldLocatio
         }
     }
 
-	/**
-	 * A class to track pending location updates. This allows us to buffer updates, only sending the
-	 * last one received.
-	 */
-	private class PendingHighlightUpdate {
+    /**
+     * A class to track pending location updates. This allows us to buffer updates, only sending the
+     * last one received.
+     */
+    private class PendingHighlightUpdate {
 
-		private FieldLocation location;
-		private Field field;
-		private EventTrigger trigger;
-		private long updateId;
+        private FieldLocation location;
+        private Field field;
+        private EventTrigger trigger;
+        private long updateId;
 
-		PendingHighlightUpdate(FieldLocation location, Field field, EventTrigger trigger) {
-			this.location = location;
-			this.field = field;
-			this.trigger = trigger;
-			this.updateId = highlightController.getUpdateId();
-		}
+        PendingHighlightUpdate(FieldLocation location, Field field, EventTrigger trigger) {
+            this.location = location;
+            this.field = field;
+            this.trigger = trigger;
+            this.updateId = highlightController.getUpdateId();
+        }
 
-		void doUpdate() {
-			// Note: don't send this buffered cursor change highlight if some other highlight
-			//       has been applied.  Otherwise, this highlight would overwrite the last
-			//       applied highlight.
-			long lastUpdateId = highlightController.getUpdateId();
-			if (updateId == lastUpdateId) {
-				highlightController.fieldLocationChanged(location, field, trigger);
-			}
-		}
-	}
+        void doUpdate() {
+            // Note: don't send this buffered cursor change highlight if some other highlight
+            //       has been applied.  Otherwise, this highlight would overwrite the last
+            //       applied highlight.
+            long lastUpdateId = highlightController.getUpdateId();
+            if (updateId == lastUpdateId) {
+                highlightController.fieldLocationChanged(location, field, trigger);
+            }
+        }
+    }
 
-	private class MiddleMouseColorProvider implements EvtColorProvider {
+    private class MiddleMouseColorProvider implements EvtColorProvider {
 
-		@Override
-		public Color getColor(EvtToken token) {
-			return middleMouseHighlightColor;
-		}
+        @Override
+        public Color getColor(EvtToken token) {
+            return middleMouseHighlightColor;
+        }
 
-		@Override
-		public String toString() {
-			return "Middle Mouse Color Provider " + middleMouseHighlightColor;
-		}
-	}
+        @Override
+        public String toString() {
+            return "Middle Mouse Color Provider " + middleMouseHighlightColor;
+        }
+    }
 
-	/**
-	 * A class to track the current middle moused token.
-	 */
-	private class ActiveMiddleMouse {
+    /**
+     * A class to track the current middle moused token.
+     */
+    private class ActiveMiddleMouse {
 
-		private String tokenText;
-		private EvtHighlighter highlighter;
+        private String tokenText;
+        private EvtHighlighter highlighter;
 
-		ActiveMiddleMouse(String tokenText) {
-			this.tokenText = tokenText;
+        ActiveMiddleMouse(String tokenText) {
+            this.tokenText = tokenText;
 
-			EvtColorProvider cp = new MiddleMouseColorProvider();
-			EvtNameTokenMatcher matcher = new EvtNameTokenMatcher(tokenText, cp);
-			this.highlighter = createHighlighter(matcher);
-		}
+            EvtColorProvider cp = new MiddleMouseColorProvider();
+            EvtNameTokenMatcher matcher = new EvtNameTokenMatcher(tokenText, cp);
+            this.highlighter = createHighlighter(matcher);
+        }
 
-		EvtTokenHighlights getHighlights() {
-			return highlightController.getHighlighterHighlights(highlighter);
-		}
+        EvtTokenHighlights getHighlights() {
+            return highlightController.getHighlighterHighlights(highlighter);
+        }
 
-		boolean matches(EvtToken other) {
-			return tokenText.equals(other.getText());
-		}
+        boolean matches(EvtToken other) {
+            return tokenText.equals(other.getText());
+        }
 
-		void clear() {
-			highlightController.removeHighlighter(highlighter);
-		}
+        void clear() {
+            highlightController.removeHighlighter(highlighter);
+        }
 
-		void apply() {
-			applySecondaryHighlights(highlighter);
-		}
+        void apply() {
+            applySecondaryHighlights(highlighter);
+        }
 
-		@Override
-		public String toString() {
-			return "Middle Mouse Token " + tokenText;
-		}
-	}
+        @Override
+        public String toString() {
+            return "Middle Mouse Token " + tokenText;
+        }
+    }
 }

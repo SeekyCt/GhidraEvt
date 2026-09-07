@@ -37,46 +37,46 @@ import jevt.Arg;
  */
 public class EvtSliceHighlightColorProvider implements EvtColorProvider {
 
-	private Set<Arg.Variable> varnodes;
-	private Arg.Variable specialVn;
-	private EvtToken specialToken;
-	private Color hlColor;
-	private Color specialHlColor;
+    private Set<Arg.Variable> varnodes;
+    private Arg.Variable specialVn;
+    private EvtToken specialToken;
+    private Color hlColor;
+    private Color specialHlColor;
 
-	EvtSliceHighlightColorProvider(EvtPanel panel, Set<Arg.Variable> varnodes, Arg.Variable specialVn,
-			EvtToken specialToken) {
-		this.varnodes = varnodes;
-		this.specialVn = specialVn;
-		this.specialToken = specialToken;
+    EvtSliceHighlightColorProvider(EvtPanel panel, Set<Arg.Variable> varnodes, Arg.Variable specialVn,
+            EvtToken specialToken) {
+        this.varnodes = varnodes;
+        this.specialVn = specialVn;
+        this.specialToken = specialToken;
 
-		hlColor = panel.getCurrentVariableHighlightColor();
-		specialHlColor = panel.getSpecialHighlightColor();
-	}
+        hlColor = panel.getCurrentVariableHighlightColor();
+        specialHlColor = panel.getSpecialHighlightColor();
+    }
 
-	@Override
-	public Color getColor(EvtToken token) {
-		if (!(token instanceof EvtVariableToken))
-			return null;
-		Arg.Variable vn = ((EvtVariableToken) token).getVar();
+    @Override
+    public Color getColor(EvtToken token) {
+        if (!(token instanceof EvtVariableToken))
+            return null;
+        Arg.Variable vn = ((EvtVariableToken) token).getVar();
 
-		Color c = null;
-		if (varnodes.contains(vn)) {
-			c = hlColor;
-		}
+        Color c = null;
+        if (varnodes.contains(vn)) {
+            c = hlColor;
+        }
 
-		if (specialToken == null) {
-			return c;
-		}
+        if (specialToken == null) {
+            return c;
+        }
 
-		// look for specific varnode to label with special color
-		if (vn == specialVn && token == specialToken) {
-			c = specialHlColor;
-		}
-		return c;
-	}
+        // look for specific varnode to label with special color
+        if (vn == specialVn && token == specialToken) {
+            c = specialHlColor;
+        }
+        return c;
+    }
 
-	@Override
-	public String toString() {
-		return "Slice Color Provider " + hlColor;
-	}
+    @Override
+    public String toString() {
+        return "Slice Color Provider " + hlColor;
+    }
 }

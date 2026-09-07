@@ -33,25 +33,25 @@ import ghidraevt.token.EvtToken;
  */
 public class LocationEvtHighlightController extends EvtHighlightController {
 
-	@Override
-	public void fieldLocationChanged(FieldLocation location, Field field, EventTrigger trigger) {
+    @Override
+    public void fieldLocationChanged(FieldLocation location, Field field, EventTrigger trigger) {
 
-		clearPrimaryHighlights();
+        clearPrimaryHighlights();
 
-		if (!(field instanceof EvtTextField)) {
-			return;
-		}
+        if (!(field instanceof EvtTextField)) {
+            return;
+        }
 
-		EvtToken tok = ((EvtTextField) field).getToken(location);
-		if (tok == null) {
-			return;
-		}
+        EvtToken tok = ((EvtTextField) field).getToken(location);
+        if (tok == null) {
+            return;
+        }
 
-		String text = tok.getText();
-		if (StringUtils.isBlank(text)) {
-			return; // do not highlight whitespace
-		}
+        String text = tok.getText();
+        if (StringUtils.isBlank(text)) {
+            return; // do not highlight whitespace
+        }
 
-		addPrimaryHighlight(tok, defaultHighlightColor);
-	}
+        addPrimaryHighlight(tok, defaultHighlightColor);
+    }
 }

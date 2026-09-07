@@ -48,566 +48,566 @@ import util.CollectionUtils;
  * 
  * <p>This class maintains the following types of highlights:
  * <UL>
- * 	<LI>Context Highlights - triggered by user clicking and some user actions; considered transient
- *  	and get cleared whenever the location changes.  These highlights show state such as the
- * 		current field, impact of a variable (via a slicing action), or related syntax (such as
- * 		matching braces)
+ *     <LI>Context Highlights - triggered by user clicking and some user actions; considered transient
+ *      and get cleared whenever the location changes.  These highlights show state such as the
+ *         current field, impact of a variable (via a slicing action), or related syntax (such as
+ *         matching braces)
  *  </LI>
  *  <LI>Secondary Highlights - triggered by the user to show all occurrences of a particular
- *  	variable; they will stay until they are manually cleared by a user action.  The user can
- *  	apply multiple secondary highlights at the same time, with different colors for each
- *  	highlight.
- *   	<B>These highlights apply to the function in use when the highlight is created.  Thus,
- *  	each function has a unique set of highlights that is maintained between decompilation.</B>
+ *      variable; they will stay until they are manually cleared by a user action.  The user can
+ *      apply multiple secondary highlights at the same time, with different colors for each
+ *      highlight.
+ *       <B>These highlights apply to the function in use when the highlight is created.  Thus,
+ *      each function has a unique set of highlights that is maintained between decompilation.</B>
  *  </LI>
  * </UL>
  * 
  * <p>When multiple highlights overlap, their colors will be blended.
  */
 public abstract class EvtHighlightController {
-	public static Color DEFAULT_HIGHLIGHT_COLOR =
-		new GColor("color.bg.decompiler.highlights.default");
+    public static Color DEFAULT_HIGHLIGHT_COLOR =
+        new GColor("color.bg.decompiler.highlights.default");
 
-	public static EvtHighlightController dummyIfNull(EvtHighlightController c) {
-		if (c == null) {
-			return new NullEvtHighlightController();
-		}
-		return c;
-	}
+    public static EvtHighlightController dummyIfNull(EvtHighlightController c) {
+        if (c == null) {
+            return new NullEvtHighlightController();
+        }
+        return c;
+    }
 
-	protected Color defaultHighlightColor = DEFAULT_HIGHLIGHT_COLOR;
-	protected Color defaultParenColor = DEFAULT_HIGHLIGHT_COLOR;
+    protected Color defaultHighlightColor = DEFAULT_HIGHLIGHT_COLOR;
+    protected Color defaultParenColor = DEFAULT_HIGHLIGHT_COLOR;
 
-	private EvtTokenHighlights contextHighlightTokens = new EvtTokenHighlights();
-	private EvtUserHighlights userHighlights = new EvtUserHighlights();
+    private EvtTokenHighlights contextHighlightTokens = new EvtTokenHighlights();
+    private EvtUserHighlights userHighlights = new EvtUserHighlights();
 
-	/**
-	 * A counter to track updates so that clients know when a buffered highlight request is invalid
-	 */
-	private long updateId;
+    /**
+     * A counter to track updates so that clients know when a buffered highlight request is invalid
+     */
+    private long updateId;
 
-	// arbitrary value chosen by guessing; this can be changed if needed
-	private int maxColorBlendSize = 5;
-	private boolean isRebuilding;
+    // arbitrary value chosen by guessing; this can be changed if needed
+    private int maxColorBlendSize = 5;
+    private boolean isRebuilding;
 
-	private List<EvtHighlightListener> listeners = new ArrayList<>();
+    private List<EvtHighlightListener> listeners = new ArrayList<>();
 
-	public abstract void fieldLocationChanged(FieldLocation location, Field field,
-			EventTrigger trigger);
+    public abstract void fieldLocationChanged(FieldLocation location, Field field,
+            EventTrigger trigger);
 
-	public void setHighlightColor(Color c) {
-		defaultHighlightColor = c;
-	}
+    public void setHighlightColor(Color c) {
+        defaultHighlightColor = c;
+    }
 
-	/**
-	 * Returns the color provider used by this class to generate colors.  The initial color
-	 * selection is random.  Repeated calls to get a color for the same token will return the same
-	 * color.
-	 * @return the color provider
-	 */
-	public EvtColorProvider getGeneratedColorProvider() {
-		return new GeneratedColorProvider();
-	}
+    /**
+     * Returns the color provider used by this class to generate colors.  The initial color
+     * selection is random.  Repeated calls to get a color for the same token will return the same
+     * color.
+     * @return the color provider
+     */
+    public EvtColorProvider getGeneratedColorProvider() {
+        return new GeneratedColorProvider();
+    }
 
-	/**
-	 * An value that is updated every time a new highlight is added.  This allows clients to
-	 * determine if a buffered update request is still valid.
-	 * @return the value
-	 */
-	public long getUpdateId() {
-		return updateId;
-	}
+    /**
+     * An value that is updated every time a new highlight is added.  This allows clients to
+     * determine if a buffered update request is still valid.
+     * @return the value
+     */
+    public long getUpdateId() {
+        return updateId;
+    }
 
-	public boolean hasContextHighlight(EvtToken token) {
-		return contextHighlightTokens.contains(token);
-	}
+    public boolean hasContextHighlight(EvtToken token) {
+        return contextHighlightTokens.contains(token);
+    }
 
-	public boolean hasSecondaryHighlight(EvtToken token) {
-		return getSecondaryHighlight(token) != null;
-	}
+    public boolean hasSecondaryHighlight(EvtToken token) {
+        return getSecondaryHighlight(token) != null;
+    }
 
-	public boolean hasSecondaryHighlights(EvtScript script) {
-		return userHighlights.hasSecondaryHighlights(script);
-	}
+    public boolean hasSecondaryHighlights(EvtScript script) {
+        return userHighlights.hasSecondaryHighlights(script);
+    }
 
-	public Color getSecondaryHighlight(EvtToken token) {
-		return userHighlights.getSecondaryHighlight(token);
-	}
+    public Color getSecondaryHighlight(EvtToken token) {
+        return userHighlights.getSecondaryHighlight(token);
+    }
 
-	public EvtTokenHighlightColors getSecondaryHighlightColors() {
-		return userHighlights.getSecondaryHighlightColors();
-	}
+    public EvtTokenHighlightColors getSecondaryHighlightColors() {
+        return userHighlights.getSecondaryHighlightColors();
+    }
 
-	public EvtTokenHighlights getPrimaryHighlights() {
-		return contextHighlightTokens;
-	}
+    public EvtTokenHighlights getPrimaryHighlights() {
+        return contextHighlightTokens;
+    }
 
-	/**
-	 * Returns all secondary highlighters for the given function.   This allows clients to update
-	 * the secondary highlight state of a given function without affecting highlights applied to
-	 * other functions.
-	 * @param script the function
-	 * @return the highlighters
-	 */
-	public Set<EvtHighlighter> getSecondaryHighlighters(EvtScript script) {
-		return userHighlights.getSecondaryHighlighters(script);
-	}
+    /**
+     * Returns all secondary highlighters for the given function.   This allows clients to update
+     * the secondary highlight state of a given function without affecting highlights applied to
+     * other functions.
+     * @param script the function
+     * @return the highlighters
+     */
+    public Set<EvtHighlighter> getSecondaryHighlighters(EvtScript script) {
+        return userHighlights.getSecondaryHighlighters(script);
+    }
 
-	/**
-	 * Returns all highlight service highlighters installed in this controller.  The global
-	 * highlighters apply to all functions.  This is in contrast to secondary highlighters, which 
-	 * are function-specific.
-	 * @return the highlighters
-	 */
-	public Set<EvtHighlighter> getServiceHighlighters() {
-		return userHighlights.getServiceHighlighters();
-	}
+    /**
+     * Returns all highlight service highlighters installed in this controller.  The global
+     * highlighters apply to all functions.  This is in contrast to secondary highlighters, which 
+     * are function-specific.
+     * @return the highlighters
+     */
+    public Set<EvtHighlighter> getServiceHighlighters() {
+        return userHighlights.getServiceHighlighters();
+    }
 
-	public void reapplyAllHighlights(EvtScript script) {
-		//
-		// Under normal operation, we rebuild colors as highlighters are added and removed.  Doing
-		// this for one highlighter is fast.  Doing it for a large number of highlighters can be 
-		// slow.  When rebuilding all highlights, disable color calculation until the rebuild is
-		// finished.  This allows all highlights to calculate their matches without the color 
-		// blending affecting performance.
-		//
-		isRebuilding = true;
-		Set<EvtHighlighter> service = getServiceHighlighters();
-		Set<EvtHighlighter> secondary = getSecondaryHighlighters(script);
-		Iterable<EvtHighlighter> it = CollectionUtils.asIterable(service, secondary);
+    public void reapplyAllHighlights(EvtScript script) {
+        //
+        // Under normal operation, we rebuild colors as highlighters are added and removed.  Doing
+        // this for one highlighter is fast.  Doing it for a large number of highlighters can be 
+        // slow.  When rebuilding all highlights, disable color calculation until the rebuild is
+        // finished.  This allows all highlights to calculate their matches without the color 
+        // blending affecting performance.
+        //
+        isRebuilding = true;
+        Set<EvtHighlighter> service = getServiceHighlighters();
+        Set<EvtHighlighter> secondary = getSecondaryHighlighters(script);
+        Iterable<EvtHighlighter> it = CollectionUtils.asIterable(service, secondary);
 
-		try {
-			for (EvtHighlighter highlighter : it) {
-				highlighter.clearHighlights();
-				highlighter.applyHighlights();
-			}
-		}
-		finally {
-			isRebuilding = false;
-		}
+        try {
+            for (EvtHighlighter highlighter : it) {
+                highlighter.clearHighlights();
+                highlighter.applyHighlights();
+            }
+        }
+        finally {
+            isRebuilding = false;
+        }
 
-		// gather all highlighted tokens and then update their color
-		Set<EvtToken> allTokens = new HashSet<>();
-		it = CollectionUtils.asIterable(service, secondary);
-		for (EvtHighlighter highlighter : it) {
-			EvtTokenHighlights hlTokens = userHighlights.add(highlighter);
-			for (EvtHighlightToken hlToken : hlTokens) {
-				allTokens.add(hlToken.getToken());
-			}
-		}
+        // gather all highlighted tokens and then update their color
+        Set<EvtToken> allTokens = new HashSet<>();
+        it = CollectionUtils.asIterable(service, secondary);
+        for (EvtHighlighter highlighter : it) {
+            EvtTokenHighlights hlTokens = userHighlights.add(highlighter);
+            for (EvtHighlightToken hlToken : hlTokens) {
+                allTokens.add(hlToken.getToken());
+            }
+        }
 
-		for (EvtToken token : allTokens) {
-			updateHighlightColor(token);
-		}
-	}
+        for (EvtToken token : allTokens) {
+            updateHighlightColor(token);
+        }
+    }
 
-	/**
-	 * Gets all highlights for the given highlighter.
-	 * @param highlighter the highlighter
-	 * @return the highlights
-	 * @see #getPrimaryHighlights()
-	 */
-	public EvtTokenHighlights getHighlighterHighlights(EvtHighlighter highlighter) {
-		return userHighlights.getHighlights(highlighter);
-	}
+    /**
+     * Gets all highlights for the given highlighter.
+     * @param highlighter the highlighter
+     * @return the highlights
+     * @see #getPrimaryHighlights()
+     */
+    public EvtTokenHighlights getHighlighterHighlights(EvtHighlighter highlighter) {
+        return userHighlights.getHighlights(highlighter);
+    }
 
-	/**
-	 * Return the current highlighted token (if exists and unique)
-	 * @return token or null
-	 */
-	public EvtToken getHighlightedToken() {
-		if (contextHighlightTokens.size() == 1) {
-			EvtHighlightToken hlToken = CollectionUtils.any(contextHighlightTokens);
-			return hlToken.getToken();
-		}
-		return null;
-	}
+    /**
+     * Return the current highlighted token (if exists and unique)
+     * @return token or null
+     */
+    public EvtToken getHighlightedToken() {
+        if (contextHighlightTokens.size() == 1) {
+            EvtHighlightToken hlToken = CollectionUtils.any(contextHighlightTokens);
+            return hlToken.getToken();
+        }
+        return null;
+    }
 
-	private void gatherAllTokens(EvtDocument docroot, Set<EvtToken> results) {
-		for (EvtLine line : docroot) {
+    private void gatherAllTokens(EvtDocument docroot, Set<EvtToken> results) {
+        for (EvtLine line : docroot) {
             results.addAll(line.getAllTokens());
-		}
-	}
+        }
+    }
 
-	public void clearPrimaryHighlights() {
-		Consumer<EvtToken> clearAll = token -> {
-			token.setMatchingToken(false);
-			updateHighlightColor(token);
-		};
+    public void clearPrimaryHighlights() {
+        Consumer<EvtToken> clearAll = token -> {
+            token.setMatchingToken(false);
+            updateHighlightColor(token);
+        };
 
-		doClearHighlights(contextHighlightTokens, clearAll);
-		notifyListeners();
-	}
+        doClearHighlights(contextHighlightTokens, clearAll);
+        notifyListeners();
+    }
 
-	private void doClearHighlights(EvtTokenHighlights tokenHighlights, Consumer<EvtToken> clearer) {
-		Iterator<EvtHighlightToken> it = tokenHighlights.iterator();
-		while (it.hasNext()) {
-			EvtHighlightToken highlight = it.next();
+    private void doClearHighlights(EvtTokenHighlights tokenHighlights, Consumer<EvtToken> clearer) {
+        Iterator<EvtHighlightToken> it = tokenHighlights.iterator();
+        while (it.hasNext()) {
+            EvtHighlightToken highlight = it.next();
 
-			// must remove the highlight before calling the clearer as that may call back into the
-			// TokenHighlights we are clearing
-			it.remove();
-			EvtToken token = highlight.getToken();
-			clearer.accept(token);
-		}
-	}
+            // must remove the highlight before calling the clearer as that may call back into the
+            // TokenHighlights we are clearing
+            it.remove();
+            EvtToken token = highlight.getToken();
+            clearer.accept(token);
+        }
+    }
 
-	/**
-	 * Toggles the primary highlight state of the given set of tokens.  If the given tokens do not
-	 * all have the same highlight state (highlights on or off), then the highlights will be
-	 * cleared.  If all tokens are not highlighted, then they will all become highlighted.
-	 * 
-	 * @param hlColor the highlight color
-	 * @param tokens the tokens
-	 */
-	public void togglePrimaryHighlights(Color hlColor, Supplier<List<EvtToken>> tokens) {
-		boolean isAllHighlighted = true;
-		for (EvtToken token : tokens.get()) {
-			if (!hasContextHighlight(token)) {
-				isAllHighlighted = false;
-				break;
-			}
-		}
+    /**
+     * Toggles the primary highlight state of the given set of tokens.  If the given tokens do not
+     * all have the same highlight state (highlights on or off), then the highlights will be
+     * cleared.  If all tokens are not highlighted, then they will all become highlighted.
+     * 
+     * @param hlColor the highlight color
+     * @param tokens the tokens
+     */
+    public void togglePrimaryHighlights(Color hlColor, Supplier<List<EvtToken>> tokens) {
+        boolean isAllHighlighted = true;
+        for (EvtToken token : tokens.get()) {
+            if (!hasContextHighlight(token)) {
+                isAllHighlighted = false;
+                break;
+            }
+        }
 
-		// this is a bit odd, but whenever we change the primary highlights, we always reset any
-		// previous primary highlight (see javadoc header)
-		clearPrimaryHighlights();
+        // this is a bit odd, but whenever we change the primary highlights, we always reset any
+        // previous primary highlight (see javadoc header)
+        clearPrimaryHighlights();
 
-		if (isAllHighlighted) {
-			return; // nothing to do; we toggled from 'all on' to 'all off'
-		}
+        if (isAllHighlighted) {
+            return; // nothing to do; we toggled from 'all on' to 'all off'
+        }
 
-		addPrimaryHighlights(tokens, hlColor);
-	}
+        addPrimaryHighlights(tokens, hlColor);
+    }
 
-	/**
-	 * Removes all secondary highlights for the given function
-	 * @param f the function
-	 */
-	public void removeSecondaryHighlights(EvtScript script) {
+    /**
+     * Removes all secondary highlights for the given function
+     * @param f the function
+     */
+    public void removeSecondaryHighlights(EvtScript script) {
 
-		List<EvtHighlighter> highlighters =
-			userHighlights.getSecondaryHighlightersByFunction(script);
+        List<EvtHighlighter> highlighters =
+            userHighlights.getSecondaryHighlightersByFunction(script);
 
-		for (EvtHighlighter highlighter : highlighters) {
-			EvtTokenHighlights highlights = userHighlights.getHighlights(highlighter);
-			Consumer<EvtToken> clearHighlight = token -> updateHighlightColor(token);
-			doClearHighlights(highlights, clearHighlight);
-		}
-		highlighters.clear();
-		notifyListeners();
-	}
+        for (EvtHighlighter highlighter : highlighters) {
+            EvtTokenHighlights highlights = userHighlights.getHighlights(highlighter);
+            Consumer<EvtToken> clearHighlight = token -> updateHighlightColor(token);
+            doClearHighlights(highlights, clearHighlight);
+        }
+        highlighters.clear();
+        notifyListeners();
+    }
 
-	/**
-	 * Removes all secondary highlights for the given token
-	 * @param token the token
-	 * @see #removeSecondaryHighlights(Function)
-	 */
-	public void removeSecondaryHighlights(EvtToken token) {
-		EvtHighlighter highlighter = userHighlights.getSecondaryHighlighter(token);
-		if (highlighter != null) {
-			highlighter.dispose(); // this will call removeHighlighterHighlights()
-		}
-		notifyListeners();
-	}
+    /**
+     * Removes all secondary highlights for the given token
+     * @param token the token
+     * @see #removeSecondaryHighlights(Function)
+     */
+    public void removeSecondaryHighlights(EvtToken token) {
+        EvtHighlighter highlighter = userHighlights.getSecondaryHighlighter(token);
+        if (highlighter != null) {
+            highlighter.dispose(); // this will call removeHighlighterHighlights()
+        }
+        notifyListeners();
+    }
 
-	public void removeHighlighter(EvtHighlighter highlighter) {
-		removeHighlighterHighlights(highlighter);
-		userHighlights.remove(highlighter);
-	}
+    public void removeHighlighter(EvtHighlighter highlighter) {
+        removeHighlighterHighlights(highlighter);
+        userHighlights.remove(highlighter);
+    }
 
-	/**
-	 * Removes all highlights for this highlighter across all functions
-	 * @param highlighter the highlighter
-	 */
-	public void removeHighlighterHighlights(EvtHighlighter highlighter) {
+    /**
+     * Removes all highlights for this highlighter across all functions
+     * @param highlighter the highlighter
+     */
+    public void removeHighlighterHighlights(EvtHighlighter highlighter) {
 
-		EvtTokenHighlights highlighterTokens = userHighlights.get(highlighter);
-		if (highlighterTokens == null) {
-			return;
-		}
+        EvtTokenHighlights highlighterTokens = userHighlights.get(highlighter);
+        if (highlighterTokens == null) {
+            return;
+        }
 
-		Consumer<EvtToken> clearHighlight = token -> updateHighlightColor(token);
-		doClearHighlights(highlighterTokens, clearHighlight);
-		notifyListeners();
-	}
+        Consumer<EvtToken> clearHighlight = token -> updateHighlightColor(token);
+        doClearHighlights(highlighterTokens, clearHighlight);
+        notifyListeners();
+    }
 
-	/**
-	 * Adds the given secondary highlighter, but does not create any highlights.  All secondary
-	 * highlighters pertain to a given function.
-	 * @param script the function
-	 * @param highlighter the highlighter
-	 */
-	public void addSecondaryHighlighter(EvtScript script, EvtHighlighter highlighter) {
-		userHighlights.addSecondaryHighlighter(script, highlighter);
-	}
+    /**
+     * Adds the given secondary highlighter, but does not create any highlights.  All secondary
+     * highlighters pertain to a given function.
+     * @param script the function
+     * @param highlighter the highlighter
+     */
+    public void addSecondaryHighlighter(EvtScript script, EvtHighlighter highlighter) {
+        userHighlights.addSecondaryHighlighter(script, highlighter);
+    }
 
-	// Note: this is used for all highlight types, secondary and highlighter service highlighters
-	public void addHighlighter(EvtTokenHighlighter highlighter) {
-		userHighlights.add(highlighter);
-	}
+    // Note: this is used for all highlight types, secondary and highlighter service highlighters
+    public void addHighlighter(EvtTokenHighlighter highlighter) {
+        userHighlights.add(highlighter);
+    }
 
-	// Note: this is used for all highlight types, secondary and highlighter service highlights
-	public void addHighlighterHighlights(EvtHighlighter highlighter,
-			Supplier<? extends Collection<EvtToken>> tokens, EvtColorProvider colorProvider) {
+    // Note: this is used for all highlight types, secondary and highlighter service highlights
+    public void addHighlighterHighlights(EvtHighlighter highlighter,
+            Supplier<? extends Collection<EvtToken>> tokens, EvtColorProvider colorProvider) {
 
-		Objects.requireNonNull(highlighter);
-		EvtTokenHighlights highlighterTokens = userHighlights.add(highlighter);
-		addTokensToHighlights(tokens.get(), colorProvider, highlighterTokens);
-	}
+        Objects.requireNonNull(highlighter);
+        EvtTokenHighlights highlighterTokens = userHighlights.add(highlighter);
+        addTokensToHighlights(tokens.get(), colorProvider, highlighterTokens);
+    }
 
-	private void addPrimaryHighlights(Supplier<? extends Collection<EvtToken>> tokens,
-			Color hlColor) {
-		addPrimaryHighlights(tokens.get(), hlColor);
-	}
+    private void addPrimaryHighlights(Supplier<? extends Collection<EvtToken>> tokens,
+            Color hlColor) {
+        addPrimaryHighlights(tokens.get(), hlColor);
+    }
 
-	private void addPrimaryHighlights(Collection<EvtToken> tokens, Color hlColor) {
-		EvtColorProvider colorProvider = new DefaultEvtColorProvider("Tokens Highlight Color", hlColor);
-		addTokensToHighlights(tokens, colorProvider, contextHighlightTokens);
-	}
+    private void addPrimaryHighlights(Collection<EvtToken> tokens, Color hlColor) {
+        EvtColorProvider colorProvider = new DefaultEvtColorProvider("Tokens Highlight Color", hlColor);
+        addTokensToHighlights(tokens, colorProvider, contextHighlightTokens);
+    }
 
-	public void addPrimaryHighlights(EvtDocument document, EvtColorProvider colorProvider) {
+    public void addPrimaryHighlights(EvtDocument document, EvtColorProvider colorProvider) {
 
-		Set<EvtToken> tokens = new HashSet<>();
-		gatherAllTokens(document, tokens);
-		addTokensToHighlights(tokens, colorProvider, contextHighlightTokens);
-	}
+        Set<EvtToken> tokens = new HashSet<>();
+        gatherAllTokens(document, tokens);
+        addTokensToHighlights(tokens, colorProvider, contextHighlightTokens);
+    }
 
-	private void addTokensToHighlights(Collection<EvtToken> tokens, EvtColorProvider colorProvider,
-			EvtTokenHighlights currentHighlights) {
+    private void addTokensToHighlights(Collection<EvtToken> tokens, EvtColorProvider colorProvider,
+            EvtTokenHighlights currentHighlights) {
 
-		updateId++;
+        updateId++;
 
-		for (EvtToken EvtToken : tokens) {
-			Color color = colorProvider.getColor(EvtToken);
-			doAddHighlight(EvtToken, color, currentHighlights);
-		}
-		notifyListeners();
-	}
+        for (EvtToken EvtToken : tokens) {
+            Color color = colorProvider.getColor(EvtToken);
+            doAddHighlight(EvtToken, color, currentHighlights);
+        }
+        notifyListeners();
+    }
 
-	protected void addPrimaryHighlight(EvtToken token, Color highlightColor) {
-		addPrimaryHighlights(Set.of(token), highlightColor);
-	}
+    protected void addPrimaryHighlight(EvtToken token, Color highlightColor) {
+        addPrimaryHighlights(Set.of(token), highlightColor);
+    }
 
-	private void doAddHighlight(EvtToken EvtToken, Color highlightColor,
-			EvtTokenHighlights currentHighlights) {
+    private void doAddHighlight(EvtToken EvtToken, Color highlightColor,
+            EvtTokenHighlights currentHighlights) {
 
-		if (highlightColor == null) {
-			return;
-		}
+        if (highlightColor == null) {
+            return;
+        }
 
-		// store the actual requested color
-		currentHighlights.add(new EvtHighlightToken(EvtToken, highlightColor));
-		updateHighlightColor(EvtToken);
-	}
+        // store the actual requested color
+        currentHighlights.add(new EvtHighlightToken(EvtToken, highlightColor));
+        updateHighlightColor(EvtToken);
+    }
 
-	private void updateHighlightColor(EvtToken t) {
+    private void updateHighlightColor(EvtToken t) {
 
-		if (isRebuilding) {
-			return;
-		}
+        if (isRebuilding) {
+            return;
+        }
 
-		// set the color to the current combined value of all highlight types
-		Color combinedColor = getCombinedColor(t);
-		t.setHighlight(combinedColor);
-	}
+        // set the color to the current combined value of all highlight types
+        Color combinedColor = getCombinedColor(t);
+        t.setHighlight(combinedColor);
+    }
 
-	private void add(Set<Color> colors, EvtHighlightToken hlToken) {
-		if (hlToken != null) {
-			colors.add(hlToken.getColor());
-		}
-	}
+    private void add(Set<Color> colors, EvtHighlightToken hlToken) {
+        if (hlToken != null) {
+            colors.add(hlToken.getColor());
+        }
+    }
 
-	private void add(Set<Color> colors, Color c) {
-		if (c != null) {
-			colors.add(c);
-		}
-	}
+    private void add(Set<Color> colors, Color c) {
+        if (c != null) {
+            colors.add(c);
+        }
+    }
 
-	/**
-	 * Returns the current highlight color for the given token, based upon all known highlights,
-	 * primary, secondary and highlighters
-	 * @param t the token
-	 * @return the color
-	 */
-	public Color getCombinedColor(EvtToken t) {
+    /**
+     * Returns the current highlight color for the given token, based upon all known highlights,
+     * primary, secondary and highlighters
+     * @param t the token
+     * @return the color
+     */
+    public Color getCombinedColor(EvtToken t) {
 
-		// note: not sure whether we should always blend all colors or decide to allow some
-		//       highlighters have precedence for highlighting
+        // note: not sure whether we should always blend all colors or decide to allow some
+        //       highlighters have precedence for highlighting
 
-		EvtHighlightToken primaryHl = contextHighlightTokens.get(t);
-		Color blendedHlColor = blendHighlighterColors(t);
+        EvtHighlightToken primaryHl = contextHighlightTokens.get(t);
+        Color blendedHlColor = blendHighlighterColors(t);
 
-		Set<Color> allColors = new HashSet<>();
-		add(allColors, primaryHl);
-		add(allColors, blendedHlColor);
+        Set<Color> allColors = new HashSet<>();
+        add(allColors, primaryHl);
+        add(allColors, blendedHlColor);
 
-		return blend(allColors);
-	}
+        return blend(allColors);
+    }
 
-	public Color blend(Set<Color> colors) {
+    public Color blend(Set<Color> colors) {
 
-		if (colors.isEmpty()) {
-			return null;
-		}
+        if (colors.isEmpty()) {
+            return null;
+        }
 
-		Iterator<Color> it = colors.iterator();
-		Color lastColor = it.next();
-		while (it.hasNext()) {
-			Color nextColor = it.next();
-			lastColor = ColorUtils.blend(lastColor, nextColor, .8f);
-		}
-		return lastColor;
-	}
+        Iterator<Color> it = colors.iterator();
+        Color lastColor = it.next();
+        while (it.hasNext()) {
+            Color nextColor = it.next();
+            lastColor = ColorUtils.blend(lastColor, nextColor, .8f);
+        }
+        return lastColor;
+    }
 
-	private Color blendHighlighterColors(EvtToken token) {
+    private Color blendHighlighterColors(EvtToken token) {
 
-		EvtScript function = getScript(token);
-		if (function == null) {
-			return null; // not sure if this can happen
-		}
+        EvtScript function = getScript(token);
+        if (function == null) {
+            return null; // not sure if this can happen
+        }
 
-		Set<EvtHighlighter> service = getServiceHighlighters();
-		Set<EvtHighlighter> secondary = getSecondaryHighlighters(function);
-		Iterable<EvtHighlighter> it = CollectionUtils.asIterable(service, secondary);
-		Set<Color> colors = new HashSet<>();
-		for (EvtHighlighter highlighter : it) {
-			EvtTokenHighlights highlights = userHighlights.get(highlighter);
-			EvtHighlightToken hlToken = highlights.get(token);
-			if (hlToken == null) {
-				continue;
-			}
+        Set<EvtHighlighter> service = getServiceHighlighters();
+        Set<EvtHighlighter> secondary = getSecondaryHighlighters(function);
+        Iterable<EvtHighlighter> it = CollectionUtils.asIterable(service, secondary);
+        Set<Color> colors = new HashSet<>();
+        for (EvtHighlighter highlighter : it) {
+            EvtTokenHighlights highlights = userHighlights.get(highlighter);
+            EvtHighlightToken hlToken = highlights.get(token);
+            if (hlToken == null) {
+                continue;
+            }
 
-			Color nextColor = hlToken.getColor();
-			colors.add(nextColor);
-			if (colors.size() == maxColorBlendSize) {
-				break;
-			}
-		}
+            Color nextColor = hlToken.getColor();
+            colors.add(nextColor);
+            if (colors.size() == maxColorBlendSize) {
+                break;
+            }
+        }
 
-		return blend(colors);
-	}
+        return blend(colors);
+    }
 
-	private EvtScript getScript(EvtToken t) {
+    private EvtScript getScript(EvtToken t) {
         return t.getScript();
-	}
+    }
 
-	// protected void addPrimaryHighlightToTokensForBrace(ClangSyntaxToken token,
-	// 		Color highlightColor) {
+    // protected void addPrimaryHighlightToTokensForBrace(ClangSyntaxToken token,
+    //         Color highlightColor) {
 
-	// 	if (DecompilerUtils.isBrace(token)) {
-	// 		highlightBrace(token, highlightColor);
-	// 		notifyListeners();
-	// 	}
-	// }
+    //     if (DecompilerUtils.isBrace(token)) {
+    //         highlightBrace(token, highlightColor);
+    //         notifyListeners();
+    //     }
+    // }
 
-	// private void highlightBrace(ClangSyntaxToken startToken, Color highlightColor) {
+    // private void highlightBrace(ClangSyntaxToken startToken, Color highlightColor) {
 
-	// 	ClangSyntaxToken matchingBrace = DecompilerUtils.getMatchingBrace(startToken);
-	// 	if (matchingBrace != null) {
-	// 		matchingBrace.setMatchingToken(true); // this is a signal to the painter
-	// 		addPrimaryHighlights(Set.of(matchingBrace), highlightColor);
-	// 	}
-	// }
+    //     ClangSyntaxToken matchingBrace = DecompilerUtils.getMatchingBrace(startToken);
+    //     if (matchingBrace != null) {
+    //         matchingBrace.setMatchingToken(true); // this is a signal to the painter
+    //         addPrimaryHighlights(Set.of(matchingBrace), highlightColor);
+    //     }
+    // }
 
-	/**
-	 * If input token is a parenthesis, highlight all tokens between it and its match
-	 * @param tok potential parenthesis token
-	 * @param highlightColor the highlight color
-	 * @return a list of all tokens that were highlighted.
-	 */
-	// protected List<EvtToken> addPrimaryHighlightToTokensForParenthesis(ClangSyntaxToken tok,
-	// 		Color highlightColor) {
+    /**
+     * If input token is a parenthesis, highlight all tokens between it and its match
+     * @param tok potential parenthesis token
+     * @param highlightColor the highlight color
+     * @return a list of all tokens that were highlighted.
+     */
+    // protected List<EvtToken> addPrimaryHighlightToTokensForParenthesis(ClangSyntaxToken tok,
+    //         Color highlightColor) {
 
-	// 	int paren = tok.getOpen();
-	// 	if (paren == -1) {
-	// 		paren = tok.getClose();
-	// 	}
+    //     int paren = tok.getOpen();
+    //     if (paren == -1) {
+    //         paren = tok.getClose();
+    //     }
 
-	// 	if (paren == -1) {
-	// 		return new ArrayList<>(); // Not a parenthesis
-	// 	}
+    //     if (paren == -1) {
+    //         return new ArrayList<>(); // Not a parenthesis
+    //     }
 
-	// 	List<EvtToken> results = gatherContentsOfParenthesis(tok, paren);
-	// 	addPrimaryHighlights(results, highlightColor);
-	// 	return results;
-	// }
+    //     List<EvtToken> results = gatherContentsOfParenthesis(tok, paren);
+    //     addPrimaryHighlights(results, highlightColor);
+    //     return results;
+    // }
 
-	// private List<EvtToken> gatherContentsOfParenthesis(ClangSyntaxToken tok, int parenId) {
+    // private List<EvtToken> gatherContentsOfParenthesis(ClangSyntaxToken tok, int parenId) {
 
-	// 	List<EvtToken> results = new ArrayList<>();
-	// 	int parenCount = 0;
-	// 	ClangNode par = tok.Parent();
-	// 	while (par != null) {
-	// 		boolean outside = true;
-	// 		if (!(par instanceof EvtTokenGroup)) {
-	// 			par = par.Parent();
-	// 			continue;
-	// 		}
+    //     List<EvtToken> results = new ArrayList<>();
+    //     int parenCount = 0;
+    //     ClangNode par = tok.Parent();
+    //     while (par != null) {
+    //         boolean outside = true;
+    //         if (!(par instanceof EvtTokenGroup)) {
+    //             par = par.Parent();
+    //             continue;
+    //         }
 
-	// 		List<ClangNode> list = new ArrayList<>();
-	// 		((EvtTokenGroup) par).flatten(list);
+    //         List<ClangNode> list = new ArrayList<>();
+    //         ((EvtTokenGroup) par).flatten(list);
 
-	// 		for (ClangNode node : list) {
-	// 			EvtToken tk = (EvtToken) node;
-	// 			if (tk instanceof ClangSyntaxToken) {
-	// 				ClangSyntaxToken syn = (ClangSyntaxToken) tk;
-	// 				if (syn.getOpen() == parenId) {
-	// 					parenCount++;
-	// 					outside = false;
-	// 				}
-	// 				else if (syn.getClose() == parenId) {
-	// 					parenCount++;
-	// 					outside = true;
-	// 					results.add(syn);
-	// 				}
-	// 			}
+    //         for (ClangNode node : list) {
+    //             EvtToken tk = (EvtToken) node;
+    //             if (tk instanceof ClangSyntaxToken) {
+    //                 ClangSyntaxToken syn = (ClangSyntaxToken) tk;
+    //                 if (syn.getOpen() == parenId) {
+    //                     parenCount++;
+    //                     outside = false;
+    //                 }
+    //                 else if (syn.getClose() == parenId) {
+    //                     parenCount++;
+    //                     outside = true;
+    //                     results.add(syn);
+    //                 }
+    //             }
 
-	// 			if (!outside) {
-	// 				results.add(tk);
-	// 			}
+    //             if (!outside) {
+    //                 results.add(tk);
+    //             }
 
-	// 			if (parenCount == 2) {
-	// 				return results; // found both parens; break out early
-	// 			}
-	// 		}
-	// 		par = par.Parent();
-	// 	}
+    //             if (parenCount == 2) {
+    //                 return results; // found both parens; break out early
+    //             }
+    //         }
+    //         par = par.Parent();
+    //     }
 
-	// 	return results;
-	// }
+    //     return results;
+    // }
 
-	public void addListener(EvtHighlightListener listener) {
-		listeners.add(listener);
-	}
+    public void addListener(EvtHighlightListener listener) {
+        listeners.add(listener);
+    }
 
-	public void removeListener(EvtHighlightListener listener) {
-		listeners.remove(listener);
-	}
+    public void removeListener(EvtHighlightListener listener) {
+        listeners.remove(listener);
+    }
 
-	protected void notifyListeners() {
-		for (EvtHighlightListener listener : listeners) {
-			listener.tokenHighlightsChanged();
-		}
-	}
+    protected void notifyListeners() {
+        for (EvtHighlightListener listener : listeners) {
+            listener.tokenHighlightsChanged();
+        }
+    }
 
-	public void dispose() {
-		listeners.clear();
-		contextHighlightTokens.clear();
-		userHighlights.dispose();
-	}
+    public void dispose() {
+        listeners.clear();
+        contextHighlightTokens.clear();
+        userHighlights.dispose();
+    }
 
-	private class GeneratedColorProvider implements EvtColorProvider {
+    private class GeneratedColorProvider implements EvtColorProvider {
 
-		@Override
-		public Color getColor(EvtToken token) {
-			return userHighlights.getSecondaryColor(token.getText());
-		}
+        @Override
+        public Color getColor(EvtToken token) {
+            return userHighlights.getSecondaryColor(token.getText());
+        }
 
-		@Override
-		public String toString() {
-			return "Generated Color Provider " + userHighlights.getAppliedColorsString();
-		}
-	}
+        @Override
+        public String toString() {
+            return "Generated Color Provider " + userHighlights.getAppliedColorsString();
+        }
+    }
 
 }

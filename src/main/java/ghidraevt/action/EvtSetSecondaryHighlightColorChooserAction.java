@@ -30,34 +30,34 @@ import ghidraevt.highlight.EvtTokenHighlightColors;
 import ghidraevt.token.EvtToken;
 
 public class EvtSetSecondaryHighlightColorChooserAction extends EvtAbstractSetSecondaryHighlightAction {
-	public static String NAME = "Set Secondary Highlight With Color";
+    public static String NAME = "Set Secondary Highlight With Color";
 
-	public EvtSetSecondaryHighlightColorChooserAction() {
-		super(NAME);
+    public EvtSetSecondaryHighlightColorChooserAction() {
+        super(NAME);
 
-		setPopupMenuData(
-			new MenuData(new String[] { "Secondary Highlight", "Set Highlight..." }, "Evt Disassembler"));
-	}
+        setPopupMenuData(
+            new MenuData(new String[] { "Secondary Highlight", "Set Highlight..." }, "Evt Disassembler"));
+    }
 
-	@Override
-	protected void evtActionPerformed(EvtActionContext context) {
-		EvtToken token = context.getTokenAtCursor();
-		EvtPanel panel = context.getEvtPanel();
-		EvtTokenHighlightColors colors = panel.getSecondaryHighlightColors();
-		List<Color> recentColors = colors.getRecentColors();
+    @Override
+    protected void evtActionPerformed(EvtActionContext context) {
+        EvtToken token = context.getTokenAtCursor();
+        EvtPanel panel = context.getEvtPanel();
+        EvtTokenHighlightColors colors = panel.getSecondaryHighlightColors();
+        List<Color> recentColors = colors.getRecentColors();
 
-		String name = token.getText();
-		Color currentColor = colors.getColor(name);
-		GhidraColorChooser chooser = new GhidraColorChooser(currentColor);
-		chooser.setColorHistory(recentColors);
-		chooser.setActiveTab("RGB");
+        String name = token.getText();
+        Color currentColor = colors.getColor(name);
+        GhidraColorChooser chooser = new GhidraColorChooser(currentColor);
+        chooser.setColorHistory(recentColors);
+        chooser.setActiveTab("RGB");
 
-		Color colorChoice = chooser.showDialog(null);
-		if (colorChoice == null) {
-			return; // cancelled
-		}
+        Color colorChoice = chooser.showDialog(null);
+        if (colorChoice == null) {
+            return; // cancelled
+        }
 
-		colors.setColor(name, colorChoice);
-		panel.addSecondaryHighlight(token, colorChoice);
-	}
+        colors.setColor(name, colorChoice);
+        panel.addSecondaryHighlight(token, colorChoice);
+    }
 }

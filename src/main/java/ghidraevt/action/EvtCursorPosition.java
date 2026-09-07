@@ -24,24 +24,24 @@ import docking.widgets.CursorPosition;
 import docking.widgets.fieldpanel.support.FieldLocation;
 
 public class EvtCursorPosition extends CursorPosition {
-	private FieldLocation location;
+    private FieldLocation location;
 
-	EvtCursorPosition(FieldLocation location) {
-		super(location.col);
-		this.location = location;
-	}
+    EvtCursorPosition(FieldLocation location) {
+        super(location.col);
+        this.location = location;
+    }
 
-	FieldLocation getFieldLocation() {
-		return location;
-	}
+    FieldLocation getFieldLocation() {
+        return location;
+    }
 
-	@Override
-	public void setOffset(int offset) {
-		location.col += offset;
-	}
+    @Override
+    public void setOffset(int offset) {
+        location.col += offset;
+    }
 
-	@Override
-	public String toString() {
-		return location.toString();
-	}
+    @Override
+    public String toString() {
+        return location.toString();
+    }
 }

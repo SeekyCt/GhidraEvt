@@ -28,26 +28,26 @@ import ghidraevt.token.EvtToken;
  */
 public class DefaultEvtColorProvider implements EvtColorProvider {
 
-	private Color color;
-	private String prefix;
+    private Color color;
+    private String prefix;
 
-	/**
-	 * Constructor
-	 * @param prefix a descriptive prefix used in the {@link #toString()} method
-	 * @param color the color
-	 */
-	public DefaultEvtColorProvider(String prefix, Color color) {
-		this.prefix = prefix;
-		this.color = color;
-	}
+    /**
+     * Constructor
+     * @param prefix a descriptive prefix used in the {@link #toString()} method
+     * @param color the color
+     */
+    public DefaultEvtColorProvider(String prefix, Color color) {
+        this.prefix = prefix;
+        this.color = color;
+    }
 
-	@Override
-	public Color getColor(EvtToken token) {
-		return color;
-	}
+    @Override
+    public Color getColor(EvtToken token) {
+        return color;
+    }
 
-	@Override
-	public String toString() {
-		return prefix + ' ' + color;
-	}
+    @Override
+    public String toString() {
+        return prefix + ' ' + color;
+    }
 }

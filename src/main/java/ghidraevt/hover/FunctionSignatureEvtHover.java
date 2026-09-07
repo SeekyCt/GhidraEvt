@@ -41,55 +41,55 @@ import ghidraevt.token.EvtToken;
  * The tooltip shows the function signature per the listing.
 */
 public class FunctionSignatureEvtHover extends AbstractConfigurableHover
-		implements EvtHoverService {
-	private static final String NAME = "Function Signature Display (evt)";
-	private static final String DESCRIPTION =
-		"Show function signatures when hovering over a function name.";
+        implements EvtHoverService {
+    private static final String NAME = "Function Signature Display (evt)";
+    private static final String DESCRIPTION =
+        "Show function signatures when hovering over a function name.";
 
-	// note: this is relative to other EvtHovers; a higher priority gets called first
-	private static final int PRIORITY = 20;
+    // note: this is relative to other EvtHovers; a higher priority gets called first
+    private static final int PRIORITY = 20;
 
-	public FunctionSignatureEvtHover(PluginTool tool) {
-		super(tool, PRIORITY);
-	}
+    public FunctionSignatureEvtHover(PluginTool tool) {
+        super(tool, PRIORITY);
+    }
 
-	@Override
-	protected String getName() {
-		return NAME;
-	}
+    @Override
+    protected String getName() {
+        return NAME;
+    }
 
-	@Override
-	protected String getDescription() {
-		return DESCRIPTION;
-	}
+    @Override
+    protected String getDescription() {
+        return DESCRIPTION;
+    }
 
-	@Override
-	protected String getOptionsCategory() {
-		return GhidraEvtPlugin.POPUP_OPTIONS_TITLE;
-	}
+    @Override
+    protected String getOptionsCategory() {
+        return GhidraEvtPlugin.POPUP_OPTIONS_TITLE;
+    }
 
-	@Override
-	public JComponent getHoverComponent(Program program, ProgramLocation programLocation,
-			FieldLocation fieldLocation, Field field) {
+    @Override
+    public JComponent getHoverComponent(Program program, ProgramLocation programLocation,
+            FieldLocation fieldLocation, Field field) {
 
-		if (!enabled) {
-			return null;
-		}
+        if (!enabled) {
+            return null;
+        }
 
-		if (!(field instanceof EvtTextField)) {
-			return null;
-		}
+        if (!(field instanceof EvtTextField)) {
+            return null;
+        }
 
-		EvtToken token = ((EvtTextField) field).getToken(fieldLocation);
-		if (token instanceof EvtAddrToken addr) {
-			Function function = program.getFunctionManager().getFunctionAt(addr.getTarget());
-			if (function == null) {
-				return null; // no function in program; maybe bad address
-			}
-			String content = ToolTipUtils.getToolTipText(function, false);
-			return createTooltipComponent(content);
-		}
+        EvtToken token = ((EvtTextField) field).getToken(fieldLocation);
+        if (token instanceof EvtAddrToken addr) {
+            Function function = program.getFunctionManager().getFunctionAt(addr.getTarget());
+            if (function == null) {
+                return null; // no function in program; maybe bad address
+            }
+            String content = ToolTipUtils.getToolTipText(function, false);
+            return createTooltipComponent(content);
+        }
 
-		return null;
-	}
+        return null;
+    }
 }

@@ -31,48 +31,48 @@ import ghidraevt.component.EvtUtils;
 
 public class EvtEditDataTypeAction extends AbstractEvtAction {
 
-	public EvtEditDataTypeAction() {
-		super("Edit Data Type");
-		setPopupMenuData(new MenuData(new String[] { "Edit Data Type" }, "Evt Disassembler"));
-	}
+    public EvtEditDataTypeAction() {
+        super("Edit Data Type");
+        setPopupMenuData(new MenuData(new String[] { "Edit Data Type" }, "Evt Disassembler"));
+    }
 
-	@Override
-	public boolean isValidContext(ActionContext context) {
-		return (context instanceof EvtActionContext);
-	}
+    @Override
+    public boolean isValidContext(ActionContext context) {
+        return (context instanceof EvtActionContext);
+    }
 
-	private boolean hasCustomEditorForBaseDataType(PluginTool tool, DataType dataType) {
-		DataType baseDataType = DataTypeUtils.getBaseDataType(dataType);
-		final DataTypeManagerService service = tool.getService(DataTypeManagerService.class);
-		return baseDataType != null && service.isEditable(baseDataType);
-	}
+    private boolean hasCustomEditorForBaseDataType(PluginTool tool, DataType dataType) {
+        DataType baseDataType = DataTypeUtils.getBaseDataType(dataType);
+        final DataTypeManagerService service = tool.getService(DataTypeManagerService.class);
+        return baseDataType != null && service.isEditable(baseDataType);
+    }
 
-	@Override
-	protected boolean isEnabledForEvtContext(EvtActionContext context) {
-		DataType dataType = EvtUtils.getDataType(context);
-		if (dataType == null) {
-			return false;
-		}
+    @Override
+    protected boolean isEnabledForEvtContext(EvtActionContext context) {
+        DataType dataType = EvtUtils.getDataType(context);
+        if (dataType == null) {
+            return false;
+        }
 
-		return hasCustomEditorForBaseDataType(context.getTool(), dataType);
-	}
+        return hasCustomEditorForBaseDataType(context.getTool(), dataType);
+    }
 
-	@Override
-	protected void evtActionPerformed(EvtActionContext context) {
-		DataType dataType = EvtUtils.getDataType(context);
-		if (dataType == null)
-			return;
+    @Override
+    protected void evtActionPerformed(EvtActionContext context) {
+        DataType dataType = EvtUtils.getDataType(context);
+        if (dataType == null)
+            return;
 
-		DataType baseDataType = DataTypeUtils.getBaseDataType(dataType);
-		DataTypeManager dataTypeManager = context.getProgram().getDataTypeManager();
-		DataTypeManager baseDtDTM = baseDataType.getDataTypeManager();
-		if (baseDtDTM != dataTypeManager) {
-			baseDataType = baseDataType.clone(dataTypeManager);
-		}
+        DataType baseDataType = DataTypeUtils.getBaseDataType(dataType);
+        DataTypeManager dataTypeManager = context.getProgram().getDataTypeManager();
+        DataTypeManager baseDtDTM = baseDataType.getDataTypeManager();
+        if (baseDtDTM != dataTypeManager) {
+            baseDataType = baseDataType.clone(dataTypeManager);
+        }
 
-		DataTypeManagerService service =
-			context.getTool().getService(DataTypeManagerService.class);
+        DataTypeManagerService service =
+            context.getTool().getService(DataTypeManagerService.class);
 
-		service.edit(baseDataType);
-	}
+        service.edit(baseDataType);
+    }
 }

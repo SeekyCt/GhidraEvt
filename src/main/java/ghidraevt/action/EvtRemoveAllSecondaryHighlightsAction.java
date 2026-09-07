@@ -31,30 +31,30 @@ import ghidraevt.component.EvtScript;
  */
 public class EvtRemoveAllSecondaryHighlightsAction extends AbstractEvtAction {
 
-	public static final String NAME = "Remove All Secondary Highlights";
+    public static final String NAME = "Remove All Secondary Highlights";
 
-	public EvtRemoveAllSecondaryHighlightsAction() {
-		super(NAME);
+    public EvtRemoveAllSecondaryHighlightsAction() {
+        super(NAME);
 
-		setPopupMenuData(new MenuData(
-			new String[] { "Secondary Highlight", "Remove All Highlights" }, "Evt Disassembler"));
-	}
+        setPopupMenuData(new MenuData(
+            new String[] { "Secondary Highlight", "Remove All Highlights" }, "Evt Disassembler"));
+    }
 
-	@Override
-	protected boolean isEnabledForEvtContext(EvtActionContext context) {
-		if (context.getScript() == null) {
-			return false;
-		}
+    @Override
+    protected boolean isEnabledForEvtContext(EvtActionContext context) {
+        if (context.getScript() == null) {
+            return false;
+        }
 
-		EvtPanel panel = context.getEvtPanel();
-		EvtScript script = context.getScript();
-		return panel.hasSecondaryHighlights(script);
-	}
+        EvtPanel panel = context.getEvtPanel();
+        EvtScript script = context.getScript();
+        return panel.hasSecondaryHighlights(script);
+    }
 
-	@Override
-	protected void evtActionPerformed(EvtActionContext context) {
-		EvtPanel panel = context.getEvtPanel();
-		EvtScript script = context.getScript();
-		panel.removeSecondaryHighlights(script);
-	}
+    @Override
+    protected void evtActionPerformed(EvtActionContext context) {
+        EvtPanel panel = context.getEvtPanel();
+        EvtScript script = context.getScript();
+        panel.removeSecondaryHighlights(script);
+    }
 }

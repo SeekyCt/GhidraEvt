@@ -60,13 +60,13 @@ public class EvtLine {
         return displayLineNumber;
     }
 
-	public EvtToken getToken(int i) {
-		return tokens.get(i);
-	}
+    public EvtToken getToken(int i) {
+        return tokens.get(i);
+    }
 
     public int indexOfToken(EvtToken token) {
-		return tokens.indexOf(token);
-	}
+        return tokens.indexOf(token);
+    }
 
     public int getIndent() {
         return indent;

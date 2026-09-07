@@ -28,22 +28,22 @@ import ghidra.framework.plugintool.PluginTool;
 import ghidraevt.GhidraEvtPlugin;
 
 public class EvtEditPropertiesAction extends DockingAction {
-	private final PluginTool tool;
+    private final PluginTool tool;
 
-	public EvtEditPropertiesAction(String owner, PluginTool tool) {
-		super("EvtProperties", owner);
-		this.tool = tool;
-		setPopupMenuData( new MenuData( new String[]{ "Properties"}, "ZED" ) );
-	}
+    public EvtEditPropertiesAction(String owner, PluginTool tool) {
+        super("EvtProperties", owner);
+        this.tool = tool;
+        setPopupMenuData( new MenuData( new String[]{ "Properties"}, "ZED" ) );
+    }
 
-	@Override
-	public boolean isEnabledForContext(ActionContext context) {
-		return tool.getService(OptionsService.class) != null;
-	}
-	
-	@Override
-	public void actionPerformed(ActionContext context) {
+    @Override
+    public boolean isEnabledForContext(ActionContext context) {
+        return tool.getService(OptionsService.class) != null;
+    }
+    
+    @Override
+    public void actionPerformed(ActionContext context) {
         OptionsService service = tool.getService( OptionsService.class );
         service.showOptionsDialog( GhidraEvtPlugin.OPTIONS_TITLE, "" );
-	}
+    }
 }

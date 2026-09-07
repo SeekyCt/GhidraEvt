@@ -184,23 +184,23 @@ public class EvtOptions {
         TTYD("TTYD", "Paper Mario: The Thousand-Year Door"),
         SPM("SPM", "Super Paper Mario");
 
-		private String label;
-		private String optionString;
+        private String label;
+        private String optionString;
 
-		private GameChoice(String optString, String label) {
-			this.label = label;
-			this.optionString = optString;
-		}
+        private GameChoice(String optString, String label) {
+            this.label = label;
+            this.optionString = optString;
+        }
 
-		public String getOptionString() {
-			return optionString;
-		}
+        public String getOptionString() {
+            return optionString;
+        }
 
-		@Override
-		public String toString() {
-			return label;
-		}
-	}
+        @Override
+        public String toString() {
+            return label;
+        }
+    }
     private Game game;
 
     public Game getGame() {

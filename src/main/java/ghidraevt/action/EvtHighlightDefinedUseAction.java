@@ -34,33 +34,33 @@ import jevt.Arg;
  * disabled for now.
  */
 public class EvtHighlightDefinedUseAction extends AbstractEvtAction {
-	public EvtHighlightDefinedUseAction() {
-		super("Highlight Defined Use");
-		setPopupMenuData(new MenuData(new String[] { "Highlight", "Def-use" }, "Evt Disassembler"));
-	}
+    public EvtHighlightDefinedUseAction() {
+        super("Highlight Defined Use");
+        setPopupMenuData(new MenuData(new String[] { "Highlight", "Def-use" }, "Evt Disassembler"));
+    }
 
-	@Override
-	protected boolean isEnabledForEvtContext(EvtActionContext context) {
-		EvtToken tokenAtCursor = context.getTokenAtCursor();
-		return tokenAtCursor instanceof EvtVariableToken;
-	}
+    @Override
+    protected boolean isEnabledForEvtContext(EvtActionContext context) {
+        EvtToken tokenAtCursor = context.getTokenAtCursor();
+        return tokenAtCursor instanceof EvtVariableToken;
+    }
 
-	@Override
-	protected void evtActionPerformed(EvtActionContext context) {
-		EvtToken tokenAtCursor = context.getTokenAtCursor();
-		if (!(tokenAtCursor instanceof EvtVariableToken)) {
-			return;
-		}
-		Arg.Variable varnode = ((EvtVariableToken) tokenAtCursor).getVar();
+    @Override
+    protected void evtActionPerformed(EvtActionContext context) {
+        EvtToken tokenAtCursor = context.getTokenAtCursor();
+        if (!(tokenAtCursor instanceof EvtVariableToken)) {
+            return;
+        }
+        Arg.Variable varnode = ((EvtVariableToken) tokenAtCursor).getVar();
 
-		EvtPanel evtPanel = context.getEvtPanel();
-		evtPanel.clearPrimaryHighlights();
+        EvtPanel evtPanel = context.getEvtPanel();
+        evtPanel.clearPrimaryHighlights();
 
-		Set<Arg.Variable> varnodes = Set.of(varnode);
-		EvtToken defToken = tokenAtCursor; // TODO
-		EvtSliceHighlightColorProvider colorProvider =
-			new EvtSliceHighlightColorProvider(evtPanel, varnodes, varnode, defToken);
-		evtPanel.addHighlights(colorProvider);
+        Set<Arg.Variable> varnodes = Set.of(varnode);
+        EvtToken defToken = tokenAtCursor; // TODO
+        EvtSliceHighlightColorProvider colorProvider =
+            new EvtSliceHighlightColorProvider(evtPanel, varnodes, varnode, defToken);
+        evtPanel.addHighlights(colorProvider);
 
-	}
+    }
 }

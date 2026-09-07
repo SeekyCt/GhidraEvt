@@ -27,44 +27,44 @@ import docking.widgets.search.SearchLocationContext;
 
 public class EvtSearchLocation extends SearchLocation {
 
-	private final FieldLocation fieldLocation;
-	private String textLine;
+    private final FieldLocation fieldLocation;
+    private String textLine;
 
-	public EvtSearchLocation(FieldLocation fieldLocation, int startIndexInclusive,
-			int endIndexInclusive, String text, boolean forwardDirection, String textLine,
-			int lineNumber, SearchLocationContext context) {
+    public EvtSearchLocation(FieldLocation fieldLocation, int startIndexInclusive,
+            int endIndexInclusive, String text, boolean forwardDirection, String textLine,
+            int lineNumber, SearchLocationContext context) {
 
-		super(startIndexInclusive, endIndexInclusive, text, lineNumber, context);
-		this.fieldLocation = fieldLocation;
-		this.textLine = textLine;
-	}
+        super(startIndexInclusive, endIndexInclusive, text, lineNumber, context);
+        this.fieldLocation = fieldLocation;
+        this.textLine = textLine;
+    }
 
-	public FieldLocation getFieldLocation() {
-		return fieldLocation;
-	}
+    public FieldLocation getFieldLocation() {
+        return fieldLocation;
+    }
 
-	public String getTextLine() {
-		return textLine;
-	}
+    public String getTextLine() {
+        return textLine;
+    }
 
-	@Override
-	public CursorPosition getCursorPosition() {
-		return new EvtCursorPosition(fieldLocation);
-	}
+    @Override
+    public CursorPosition getCursorPosition() {
+        return new EvtCursorPosition(fieldLocation);
+    }
 
-	@Override
-	protected String fieldsToString() {
-		return super.fieldsToString() + ", fieldLocation=" + fieldLocation;
-	}
+    @Override
+    protected String fieldsToString() {
+        return super.fieldsToString() + ", fieldLocation=" + fieldLocation;
+    }
 
-	public boolean contains(FieldLocation other) {
-		int line = getLineNumber();
-		int otherLine = other.getIndex().intValue() + 1; // +1 for zero based
-		if (line != otherLine) {
-			return false;
-		}
+    public boolean contains(FieldLocation other) {
+        int line = getLineNumber();
+        int otherLine = other.getIndex().intValue() + 1; // +1 for zero based
+        if (line != otherLine) {
+            return false;
+        }
 
-		int col = other.getCol();
-		return contains(col);
-	}
+        int col = other.getCol();
+        return contains(col);
+    }
 }

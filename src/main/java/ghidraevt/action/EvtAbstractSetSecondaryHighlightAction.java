@@ -25,22 +25,22 @@ import ghidraevt.token.EvtToken;
 
 public abstract class EvtAbstractSetSecondaryHighlightAction extends AbstractEvtAction {
 
-	EvtAbstractSetSecondaryHighlightAction(String name) {
-		super(name);
-	}
+    EvtAbstractSetSecondaryHighlightAction(String name) {
+        super(name);
+    }
 
-	@Override
-	protected boolean isEnabledForEvtContext(EvtActionContext context) {
-		if (context.getScript() == null) {
-			return false;
-		}
+    @Override
+    protected boolean isEnabledForEvtContext(EvtActionContext context) {
+        if (context.getScript() == null) {
+            return false;
+        }
 
-		EvtToken token = context.getTokenAtCursor();
-		if (token == null) {
-			return false;
-		}
+        EvtToken token = context.getTokenAtCursor();
+        if (token == null) {
+            return false;
+        }
 
-		EvtPanel panel = context.getEvtPanel();
-		return !panel.hasSecondaryHighlight(token);
-	}
+        EvtPanel panel = context.getEvtPanel();
+        return !panel.hasSecondaryHighlight(token);
+    }
 }

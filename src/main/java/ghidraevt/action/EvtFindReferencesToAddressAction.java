@@ -33,35 +33,35 @@ import ghidra.program.model.address.Address;
  */
 public class EvtFindReferencesToAddressAction extends AbstractFindReferencesToAddressAction {
 
-	public EvtFindReferencesToAddressAction(PluginTool tool, String owner) {
-		super(tool, owner);
+    public EvtFindReferencesToAddressAction(PluginTool tool, String owner) {
+        super(tool, owner);
 
-		setPopupMenuData(new MenuData(new String[] { LocationReferencesService.MENU_GROUP, NAME }));
-	}
+        setPopupMenuData(new MenuData(new String[] { LocationReferencesService.MENU_GROUP, NAME }));
+    }
 
-	@Override
-	protected boolean isMyNavigatable(NavigatableActionContext context) {
-		return context instanceof EvtActionContext;
-	}
+    @Override
+    protected boolean isMyNavigatable(NavigatableActionContext context) {
+        return context instanceof EvtActionContext;
+    }
 
-	@Override
-	public boolean isEnabledForContext(ActionContext context) {
-		if (!(context instanceof EvtActionContext eac)) {
-			return false;
-		}
+    @Override
+    public boolean isEnabledForContext(ActionContext context) {
+        if (!(context instanceof EvtActionContext eac)) {
+            return false;
+        }
 
-		Address address = eac.getAddress();
-		if (address == null) {
-			return false;
-		}
-		updateMenuName(address);
-		return super.isEnabledForContext(context);
-	}
+        Address address = eac.getAddress();
+        if (address == null) {
+            return false;
+        }
+        updateMenuName(address);
+        return super.isEnabledForContext(context);
+    }
 
-	private void updateMenuName(Address addr) {
-		String menuName = "Find References to " + addr.toString();
-		MenuData data = getPopupMenuData().cloneData();
-		data.setMenuPath(new String[] { LocationReferencesService.MENU_GROUP, menuName });
-		setPopupMenuData(data);
-	}
+    private void updateMenuName(Address addr) {
+        String menuName = "Find References to " + addr.toString();
+        MenuData data = getPopupMenuData().cloneData();
+        data.setMenuPath(new String[] { LocationReferencesService.MENU_GROUP, menuName });
+        setPopupMenuData(data);
+    }
 }

@@ -31,28 +31,28 @@ import ghidraevt.token.EvtDocument;
  */
 public class NullEvtHighlightController extends EvtHighlightController {
 
-	@Override
-	public void fieldLocationChanged(FieldLocation location, Field field, EventTrigger trigger) {
-		// stub
-	}
+    @Override
+    public void fieldLocationChanged(FieldLocation location, Field field, EventTrigger trigger) {
+        // stub
+    }
 
-	@Override
-	public void addPrimaryHighlights(EvtDocument parentNode, EvtColorProvider colorProvider) {
-		// stub
-	}
+    @Override
+    public void addPrimaryHighlights(EvtDocument parentNode, EvtColorProvider colorProvider) {
+        // stub
+    }
 
-	// @Override
-	// public void addPrimaryHighlightToTokensForBrace(EvtToken token, Color highlightColor) {
-	// 	// stub
-	// }
+    // @Override
+    // public void addPrimaryHighlightToTokensForBrace(EvtToken token, Color highlightColor) {
+    //     // stub
+    // }
 
-	@Override
-	public void addListener(EvtHighlightListener listener) {
-		// stub
-	}
+    @Override
+    public void addListener(EvtHighlightListener listener) {
+        // stub
+    }
 
-	@Override
-	public void removeListener(EvtHighlightListener listener) {
-		// stub
-	}
+    @Override
+    public void removeListener(EvtHighlightListener listener) {
+        // stub
+    }
 }

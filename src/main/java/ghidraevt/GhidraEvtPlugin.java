@@ -126,8 +126,8 @@ public class GhidraEvtPlugin extends Plugin {
         connectedProvider = new EvtProvider(this, true);
 
         // Merged from separate hover plugins
-		functionNameHoverService = new FunctionSignatureEvtHover(tool);
-		registerServiceProvided(EvtHoverService.class, functionNameHoverService);
+        functionNameHoverService = new FunctionSignatureEvtHover(tool);
+        registerServiceProvided(EvtHoverService.class, functionNameHoverService);
         scalarValueHoverService = new ScalarValueEvtHover(tool);
         registerServiceProvided(EvtHoverService.class, scalarValueHoverService);
         referenceHoverService = new ReferenceEvtHover(tool);
@@ -324,25 +324,25 @@ public class GhidraEvtPlugin extends Plugin {
         return currentLocation;
     }
 
-	@Override
-	public void serviceAdded(Class<?> interfaceClass, Object service) {
-		if (interfaceClass == EvtHoverService.class) {
-			EvtHoverService hoverService = (EvtHoverService) service;
-			connectedProvider.getEvtPanel().addHoverService(hoverService);
-			for (EvtProvider provider : disconnectedProviders) {
-				provider.getEvtPanel().addHoverService(hoverService);
-			}
-		}
-	}
+    @Override
+    public void serviceAdded(Class<?> interfaceClass, Object service) {
+        if (interfaceClass == EvtHoverService.class) {
+            EvtHoverService hoverService = (EvtHoverService) service;
+            connectedProvider.getEvtPanel().addHoverService(hoverService);
+            for (EvtProvider provider : disconnectedProviders) {
+                provider.getEvtPanel().addHoverService(hoverService);
+            }
+        }
+    }
 
-	@Override
-	public void serviceRemoved(Class<?> interfaceClass, Object service) {
-		if (interfaceClass == EvtHoverService.class) {
-			EvtHoverService hoverService = (EvtHoverService) service;
-			connectedProvider.getEvtPanel().removeHoverService(hoverService);
-			for (EvtProvider provider : disconnectedProviders) {
-				provider.getEvtPanel().removeHoverService(hoverService);
-			}
-		}
-	}
+    @Override
+    public void serviceRemoved(Class<?> interfaceClass, Object service) {
+        if (interfaceClass == EvtHoverService.class) {
+            EvtHoverService hoverService = (EvtHoverService) service;
+            connectedProvider.getEvtPanel().removeHoverService(hoverService);
+            for (EvtProvider provider : disconnectedProviders) {
+                provider.getEvtPanel().removeHoverService(hoverService);
+            }
+        }
+    }
 }

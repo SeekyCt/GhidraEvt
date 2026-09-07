@@ -37,67 +37,67 @@ import ghidraevt.token.EvtTokenIterator;
  */
 public class EvtNextHighlightedTokenAction extends AbstractEvtAction {
 
-	public EvtNextHighlightedTokenAction() {
-		super("Next Highlighted Token");
+    public EvtNextHighlightedTokenAction() {
+        super("Next Highlighted Token");
 
-		setPopupMenuData(new MenuData(new String[] { "Next Highlight" }, "Evt Disassembler"));
-		setKeyBindingData(new KeyBindingData("Ctrl period"));
-	}
+        setPopupMenuData(new MenuData(new String[] { "Next Highlight" }, "Evt Disassembler"));
+        setKeyBindingData(new KeyBindingData("Ctrl period"));
+    }
 
-	@Override
-	protected boolean isEnabledForEvtContext(EvtActionContext context) {
-		if (context.getScript() == null) {
-			return false;
-		}
-		EvtPanel panel = context.getEvtPanel();
-		EvtTokenHighlights highlights = panel.getMiddleMouseHighlights();
-		if (highlights != null) {
-			return highlights.size() > 1;
-		}
-		return false;
-	}
+    @Override
+    protected boolean isEnabledForEvtContext(EvtActionContext context) {
+        if (context.getScript() == null) {
+            return false;
+        }
+        EvtPanel panel = context.getEvtPanel();
+        EvtTokenHighlights highlights = panel.getMiddleMouseHighlights();
+        if (highlights != null) {
+            return highlights.size() > 1;
+        }
+        return false;
+    }
 
-	@Override
-	protected void evtActionPerformed(EvtActionContext context) {
+    @Override
+    protected void evtActionPerformed(EvtActionContext context) {
 
-		EvtPanel panel = context.getEvtPanel();
-		EvtTokenHighlights highlights = panel.getMiddleMouseHighlights();
-		EvtToken cursorToken = context.getTokenAtCursor();
-		EvtTokenIterator it = new EvtTokenIterator(cursorToken, true);
-		it.next(); // ignore the current token
+        EvtPanel panel = context.getEvtPanel();
+        EvtTokenHighlights highlights = panel.getMiddleMouseHighlights();
+        EvtToken cursorToken = context.getTokenAtCursor();
+        EvtTokenIterator it = new EvtTokenIterator(cursorToken, true);
+        it.next(); // ignore the current token
 
-		if (goToNexToken(panel, it, highlights)) {
-			return; // found another token in the current direction
-		}
+        if (goToNexToken(panel, it, highlights)) {
+            return; // found another token in the current direction
+        }
 
-		// this means there are no more occurrences in the current direction; wrap the search
-		EvtToken firstToken = getFirstToken(panel);
-		it = new EvtTokenIterator(firstToken, true);
-		goToNexToken(panel, it, highlights);
-	}
+        // this means there are no more occurrences in the current direction; wrap the search
+        EvtToken firstToken = getFirstToken(panel);
+        it = new EvtTokenIterator(firstToken, true);
+        goToNexToken(panel, it, highlights);
+    }
 
-	private EvtToken getFirstToken(EvtPanel panel) {
-		List<Field> fields = panel.getFields();
-		Field line = fields.get(0);
-		EvtTextField tf = (EvtTextField) line;
-		return tf.getFirstToken();
-	}
+    private EvtToken getFirstToken(EvtPanel panel) {
+        List<Field> fields = panel.getFields();
+        Field line = fields.get(0);
+        EvtTextField tf = (EvtTextField) line;
+        return tf.getFirstToken();
+    }
 
-	private boolean goToNexToken(EvtPanel panel, EvtTokenIterator it,
-			EvtTokenHighlights highlights) {
+    private boolean goToNexToken(EvtPanel panel, EvtTokenIterator it,
+            EvtTokenHighlights highlights) {
 
-		while (it.hasNext()) {
-			EvtToken nextToken = it.next();
-			EvtHighlightToken hlToken = highlights.get(nextToken);
-			if (hlToken == null) {
-				continue;
-			}
+        while (it.hasNext()) {
+            EvtToken nextToken = it.next();
+            EvtHighlightToken hlToken = highlights.get(nextToken);
+            if (hlToken == null) {
+                continue;
+            }
 
-			EvtToken token = hlToken.getToken();
-			panel.goToToken(token);
-			return true;
-		}
+            EvtToken token = hlToken.getToken();
+            panel.goToToken(token);
+            return true;
+        }
 
-		return false;
-	}
+        return false;
+    }
 }

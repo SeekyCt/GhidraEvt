@@ -33,38 +33,38 @@ import ghidraevt.token.EvtToken;
 
 public class EvtHoverProvider extends AbstractHoverProvider {
 
-	public EvtHoverProvider() {
-		super("EvtHoverProvider");
-	}
+    public EvtHoverProvider() {
+        super("EvtHoverProvider");
+    }
 
-	public void addHoverService(EvtHoverService hoverService) {
-		super.addHoverService(hoverService);
-	}
+    public void addHoverService(EvtHoverService hoverService) {
+        super.addHoverService(hoverService);
+    }
 
-	public void removeHoverService(EvtHoverService hoverService) {
-		super.removeHoverService(hoverService);
-	}
+    public void removeHoverService(EvtHoverService hoverService) {
+        super.removeHoverService(hoverService);
+    }
 
-	@Override
-	protected ProgramLocation getHoverLocation(FieldLocation fieldLocation, Field field,
-			Rectangle fieldBounds, MouseEvent event) {
+    @Override
+    protected ProgramLocation getHoverLocation(FieldLocation fieldLocation, Field field,
+            Rectangle fieldBounds, MouseEvent event) {
 
-		if (!(field instanceof EvtTextField)) {
-			return null;
-		}
+        if (!(field instanceof EvtTextField)) {
+            return null;
+        }
 
-		EvtTextField disassemblerField = (EvtTextField) field;
-		EvtToken token = disassemblerField.getToken(fieldLocation);
+        EvtTextField disassemblerField = (EvtTextField) field;
+        EvtToken token = disassemblerField.getToken(fieldLocation);
 
-		if (token.getMinAddress() == null) {
-			return null;
-		}
+        if (token.getMinAddress() == null) {
+            return null;
+        }
 
         Address reference = null;
         if (token instanceof EvtAddrToken addr) {
             reference = addr.getTarget();
         }
 
-		return new ProgramLocation(program, token.getMinAddress(), reference);
-	}
+        return new ProgramLocation(program, token.getMinAddress(), reference);
+    }
 }

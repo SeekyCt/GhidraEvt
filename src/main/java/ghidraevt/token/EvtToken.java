@@ -35,7 +35,7 @@ public sealed class EvtToken permits EvtAddrToken, EvtScalarToken, EvtVariableTo
     private Address maxAddress;
 
     private Color highlight; // Color to highlight with or null if no highlight
-	private boolean matchingToken;
+    private boolean matchingToken;
 
     public EvtToken(EvtScript script, String txt, Color color, Address minAddress, long size) {
         this.script = script;
@@ -73,33 +73,33 @@ public sealed class EvtToken permits EvtAddrToken, EvtScalarToken, EvtVariableTo
         return script;
     }
 
-	public void setHighlight(Color val) {
-		highlight = val;
-	}
+    public void setHighlight(Color val) {
+        highlight = val;
+    }
 
-	/**
-	 * Get the background highlight color used to render this token, or null if not highlighted
-	 * @return the Color or null
-	 */
-	public Color getHighlight() {
-		return highlight;
-	}
+    /**
+     * Get the background highlight color used to render this token, or null if not highlighted
+     * @return the Color or null
+     */
+    public Color getHighlight() {
+        return highlight;
+    }
 
-	/**
-	 * Set whether or not additional "matching" highlighting is applied to this token.
-	 * Currently this means a bounding box is drawn around the token.
-	 * @param matchingToken is true to enable highlighting, false to disable
-	 */
-	public void setMatchingToken(boolean matchingToken) {
-		this.matchingToken = matchingToken;
-	}
+    /**
+     * Set whether or not additional "matching" highlighting is applied to this token.
+     * Currently this means a bounding box is drawn around the token.
+     * @param matchingToken is true to enable highlighting, false to disable
+     */
+    public void setMatchingToken(boolean matchingToken) {
+        this.matchingToken = matchingToken;
+    }
 
-	/**
-	 * @return true if this token should be displayed with "matching" highlighting
-	 */
-	public boolean isMatchingToken() {
-		return matchingToken;
-	}
+    /**
+     * @return true if this token should be displayed with "matching" highlighting
+     */
+    public boolean isMatchingToken() {
+        return matchingToken;
+    }
 
     public String getText() {
         return text;
