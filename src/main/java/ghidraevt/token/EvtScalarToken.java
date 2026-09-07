@@ -25,7 +25,7 @@ import jevt.Arg;
 public final class EvtScalarToken extends EvtToken {
     private Scalar scalar;
 
-    public EvtScalarToken(EvtScript script, String txt, Color color, Address minAddress, long value, boolean signed) {
+    protected EvtScalarToken(EvtScript script, String txt, Color color, Address minAddress, long value, boolean signed) {
         super(script, txt, color, minAddress, Arg.bytesSize());
         this.scalar = new Scalar(32, value, signed);
     }

@@ -117,7 +117,7 @@ public class LineNumberEvtMarginProvider extends JPanel
             if (lineNumber <= 0)
                 continue;
 
-            String text = Integer.toString(lineNumber);
+            String text = Integer.toString(line.getIndent());
             int width = g.getFontMetrics().stringWidth(text);
             GraphicsUtils.drawString(this, g, text, rightEdge - width, pixmap.getPixel(i) + ascent);
         }

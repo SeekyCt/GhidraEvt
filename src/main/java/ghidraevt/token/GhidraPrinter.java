@@ -246,9 +246,9 @@ public abstract class GhidraPrinter {
     
     protected abstract int getMinIndent();
     protected abstract void buildHeader();
-    protected abstract void startInstr(Instr instr, List<EvtToken> tokens);
+    protected abstract void startInstr(Opcode opcode, List<EvtToken> tokens);
     protected abstract void buildArgSeparator(boolean first, List<EvtToken> tokens);
-    protected abstract void endInstr(Instr instr, List<EvtToken> tokens);
+    protected abstract void endInstr(List<EvtToken> tokens);
     protected abstract void buildFooter();
 
     private List<EvtToken> argToTokens(EvtScript script, Instr instr, Arg arg) {
@@ -282,7 +282,7 @@ public abstract class GhidraPrinter {
 
             List<EvtToken> tokens = new ArrayList<>();
 
-            startInstr(instr, tokens);
+            startInstr(opcode, tokens);
             currentAddr = currentAddr.add(Instr.HEADER_SIZE);
 
             boolean first = true;
@@ -294,7 +294,7 @@ public abstract class GhidraPrinter {
                 currentAddr = currentAddr.add(Arg.bytesSize());
             }
 
-            endInstr(instr, tokens);
+            endInstr(tokens);
 
             doc.addLine(new EvtLine(tokens, lineAddr, displayLine++, indent));
 

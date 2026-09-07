@@ -24,7 +24,7 @@ import jevt.Arg;
 public final class EvtVariableToken extends EvtToken {
     private Arg.Variable var;
 
-    public EvtVariableToken(EvtScript script, String txt, Color color, Address minAddress,
+    protected EvtVariableToken(EvtScript script, String txt, Color color, Address minAddress,
             long size, Arg.Variable ref) {
         super(script, txt, color, minAddress, size);
         this.var = ref;

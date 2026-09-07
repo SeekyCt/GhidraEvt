@@ -23,6 +23,7 @@ import ghidra.program.model.listing.Program;
 import ghidraevt.component.EvtOptions;
 import ghidraevt.component.EvtScript;
 import jevt.Instr;
+import jevt.Opcode;
 
 public class PrettyGhidraPrinter extends GhidraPrinter {
     protected PrettyGhidraPrinter(Program program, SymbolInspector symbolInspector,
@@ -47,9 +48,9 @@ public class PrettyGhidraPrinter extends GhidraPrinter {
     }
 
     @Override
-    protected void startInstr(Instr instr, List<EvtToken> tokens) {
+    protected void startInstr(Opcode opcode, List<EvtToken> tokens) {
         tokens.add(
-            EvtToken.instr(script, instr.opcode().prettyName(), COLOR_INSTR, currentAddr)
+            EvtToken.opcode(script, opcode.prettyName(), COLOR_INSTR, opcode, currentAddr)
         );
     }
 
@@ -60,7 +61,7 @@ public class PrettyGhidraPrinter extends GhidraPrinter {
     }
 
     @Override
-    protected void endInstr(Instr instr, List<EvtToken> tokens) {
+    protected void endInstr(List<EvtToken> tokens) {
     }
 
     @Override

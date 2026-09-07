@@ -20,6 +20,7 @@
 package ghidraevt.component;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import docking.widgets.fieldpanel.field.Field;
@@ -33,11 +34,14 @@ import ghidra.program.model.address.AddressSpace;
 import ghidra.program.model.data.DataType;
 import ghidra.program.model.listing.Data;
 import ghidra.program.model.listing.Program;
+import ghidra.util.Msg;
 import ghidraevt.action.EvtActionContext;
 import ghidraevt.token.EvtAddrToken;
 import ghidraevt.token.EvtDocument;
+import ghidraevt.token.EvtOpcodeToken;
 import ghidraevt.token.EvtLine;
 import ghidraevt.token.EvtToken;
+import jevt.Opcode;
 
 public class EvtUtils {
     private static boolean intersects(EvtToken token, AddressSetView addressSet) {
@@ -305,4 +309,67 @@ public class EvtUtils {
         }
         return data.getDataType();
     }
+
+    /*
+        Traverse backwards to the instruction that created this level of indentation
+    */
+    public static EvtToken getOpeningBraceLike(EvtOpcodeToken startToken) {
+		Iterator<EvtToken> iter = startToken.iterator(false);
+
+        int curIndent = startToken.getOpcode().unindent();
+        iter.next();
+
+        while (iter.hasNext()) {
+			EvtToken token = iter.next();
+			if (!(token instanceof EvtOpcodeToken instr))
+                continue;
+
+            Opcode opc = instr.getOpcode();
+            if (opc.indent() > 0) {
+                curIndent -= opc.indent();
+                if (curIndent <= 0) {
+                    return token;
+                }
+            }
+            if (opc.unindent() > 0) {
+                curIndent += opc.unindent();
+                if (curIndent <= 0) {
+                    return token;
+                }
+            }
+		}
+		return null;
+    }
+
+    /*
+        Traverse forward to the instruction that leaves this level of indentation
+    */
+    public static EvtToken getClosingBraceLike(EvtOpcodeToken startToken) {
+        Msg.info(startToken, "Closing");
+		Iterator<EvtToken> iter = startToken.iterator(true);
+
+        int curIndent = startToken.getOpcode().indent();
+        iter.next();
+
+        while (iter.hasNext()) {
+			EvtToken token = iter.next();
+			if (!(token instanceof EvtOpcodeToken instr))
+                continue;
+
+            Opcode opc = instr.getOpcode();
+            if (opc.unindent() > 0) {
+                curIndent -= opc.unindent();
+                if (curIndent <= 0) {
+                    return token;
+                }
+            }
+            if (opc.indent() > 0) {
+                curIndent += opc.indent();
+                if (curIndent <= 0) {
+                    return token;
+                }
+            }
+        }
+		return null;
+	}
 }

@@ -24,7 +24,6 @@ import javax.swing.JComponent;
 
 import docking.widgets.fieldpanel.field.Field;
 import docking.widgets.fieldpanel.support.FieldLocation;
-import ghidra.GhidraOptions;
 import ghidra.app.plugin.core.hover.AbstractReferenceHover;
 import ghidra.framework.plugintool.PluginTool;
 import ghidra.program.model.address.Address;

@@ -34,9 +34,12 @@ import ghidra.util.ColorUtils;
 import ghidraevt.component.DefaultEvtColorProvider;
 import ghidraevt.component.EvtColorProvider;
 import ghidraevt.component.EvtScript;
+import ghidraevt.component.EvtUtils;
 import ghidraevt.token.EvtDocument;
+import ghidraevt.token.EvtOpcodeToken;
 import ghidraevt.token.EvtLine;
 import ghidraevt.token.EvtToken;
+import jevt.Opcode;
 import util.CollectionUtils;
 
 /**
@@ -492,23 +495,31 @@ public abstract class EvtHighlightController {
         return t.getScript();
     }
 
-    // protected void addPrimaryHighlightToTokensForBrace(ClangSyntaxToken token,
-    //         Color highlightColor) {
+    protected void addPrimaryHighlightToTokensForBraceLike(EvtOpcodeToken token,
+            Color highlightColor) {
+        Opcode opc = token.getOpcode();
+        if (opc.indent() > 0)
+            highlightClosingBraceLike(token, highlightColor);
+        if (opc.unindent() > 0)
+            highlightOpeningBraceLike(token, highlightColor);
+        notifyListeners();
+    }
 
-    //     if (DecompilerUtils.isBrace(token)) {
-    //         highlightBrace(token, highlightColor);
-    //         notifyListeners();
-    //     }
-    // }
+    private void highlightClosingBraceLike(EvtOpcodeToken startToken, Color highlightColor) {
+        EvtToken matchingBraceLike = EvtUtils.getClosingBraceLike(startToken);
+        if (matchingBraceLike != null) {
+            matchingBraceLike.setMatchingToken(true); // this is a signal to the painter
+            addPrimaryHighlights(Set.of(matchingBraceLike), highlightColor);
+        }
+    }
 
-    // private void highlightBrace(ClangSyntaxToken startToken, Color highlightColor) {
-
-    //     ClangSyntaxToken matchingBrace = DecompilerUtils.getMatchingBrace(startToken);
-    //     if (matchingBrace != null) {
-    //         matchingBrace.setMatchingToken(true); // this is a signal to the painter
-    //         addPrimaryHighlights(Set.of(matchingBrace), highlightColor);
-    //     }
-    // }
+    private void highlightOpeningBraceLike(EvtOpcodeToken startToken, Color highlightColor) {
+        EvtToken matchingBraceLike = EvtUtils.getOpeningBraceLike(startToken);
+        if (matchingBraceLike != null) {
+            matchingBraceLike.setMatchingToken(true); // this is a signal to the painter
+            addPrimaryHighlights(Set.of(matchingBraceLike), highlightColor);
+        }
+    }
 
     /**
      * If input token is a parenthesis, highlight all tokens between it and its match

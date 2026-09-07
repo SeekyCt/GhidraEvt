@@ -25,6 +25,7 @@ import ghidraevt.component.EvtOptions;
 import ghidraevt.component.EvtScript;
 import jevt.Arg;
 import jevt.Instr;
+import jevt.Opcode;
 
 public class CMacroGhidraPrinter extends GhidraPrinter {
     protected CMacroGhidraPrinter(Program program, SymbolInspector symbolInspector, EvtOptions options,
@@ -73,9 +74,9 @@ public class CMacroGhidraPrinter extends GhidraPrinter {
         Print the instruction macro and open its bracket
     */
     @Override
-    protected void startInstr(Instr instr, List<EvtToken> tokens) {
+    protected void startInstr(Opcode opcode, List<EvtToken> tokens) {
         tokens.add(
-            EvtToken.instr(script, instr.opcode().macroName(), COLOR_INSTR, currentAddr)
+            EvtToken.opcode(script, opcode.macroName(), COLOR_INSTR, opcode, currentAddr)
         );
         tokens.add(openBracket());
     }
@@ -93,7 +94,7 @@ public class CMacroGhidraPrinter extends GhidraPrinter {
         Close the bracket for the instruction macro
     */
     @Override
-    protected void endInstr(Instr instr, List<EvtToken> tokens) {
+    protected void endInstr(List<EvtToken> tokens) {
         tokens.add(closeBracket());
     }
 

@@ -19,16 +19,18 @@ import java.awt.Color;
 
 import ghidra.program.model.address.Address;
 import ghidraevt.component.EvtScript;
+import jevt.Instr;
+import jevt.Opcode;
 
-public final class EvtAddrToken extends EvtToken {
-    private Address target;
+public final class EvtOpcodeToken extends EvtToken {
+    private Opcode opcode;
 
-    protected EvtAddrToken(EvtScript script, String txt, Color color, Address minAddress, Address target, long size) {
-        super(script, txt, color, minAddress, size);
-        this.target = target;
+    protected EvtOpcodeToken(EvtScript script, String txt, Color color, Opcode opcode, Address minAddress) {
+        super(script, txt, color, minAddress, Instr.HEADER_SIZE);
+        this.opcode = opcode;
     }
 
-    public Address getTarget() {
-        return target;
+    public Opcode getOpcode() {
+        return opcode;
     }
 }

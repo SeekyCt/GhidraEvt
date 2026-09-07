@@ -26,7 +26,9 @@ import docking.widgets.EventTrigger;
 import docking.widgets.fieldpanel.field.Field;
 import docking.widgets.fieldpanel.support.FieldLocation;
 import ghidraevt.component.EvtTextField;
+import ghidraevt.token.EvtOpcodeToken;
 import ghidraevt.token.EvtToken;
+import jevt.Opcode;
 
 /**
  * Class to handle location based highlights for a decompiled function.
@@ -52,6 +54,17 @@ public class LocationEvtHighlightController extends EvtHighlightController {
             return; // do not highlight whitespace
         }
 
+		if (tok instanceof EvtOpcodeToken instr && isBraceLike(instr)) {
+            addPrimaryHighlightToTokensForBraceLike(instr, defaultParenColor);
+        }
+        // else if (tok instanceof EvtParenToken instr) {
+			// addPrimaryHighlightToTokensForParenthesis(tok, defaultParenColor);
+		// }
         addPrimaryHighlight(tok, defaultHighlightColor);
+    }
+
+    private boolean isBraceLike(EvtOpcodeToken instr) {
+        Opcode opc = instr.getOpcode();
+        return opc.indent() > 0 || opc.unindent() > 0;
     }
 }

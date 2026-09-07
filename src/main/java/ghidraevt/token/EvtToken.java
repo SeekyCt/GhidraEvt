@@ -20,13 +20,15 @@
 package ghidraevt.token;
 
 import java.awt.Color;
+import java.util.Iterator;
 
 import ghidra.program.model.address.Address;
 import ghidraevt.component.EvtScript;
 import jevt.Arg;
-import jevt.Instr;
+import jevt.Opcode;
 
-public sealed class EvtToken permits EvtAddrToken, EvtScalarToken, EvtVariableToken  {
+public sealed class EvtToken permits
+    EvtOpcodeToken, EvtAddrToken, EvtScalarToken, EvtVariableToken {
     private EvtScript script;
     private String text;
     private Color color;
@@ -37,7 +39,7 @@ public sealed class EvtToken permits EvtAddrToken, EvtScalarToken, EvtVariableTo
     private Color highlight; // Color to highlight with or null if no highlight
     private boolean matchingToken;
 
-    public EvtToken(EvtScript script, String txt, Color color, Address minAddress, long size) {
+    protected EvtToken(EvtScript script, String txt, Color color, Address minAddress, long size) {
         this.script = script;
         this.text = txt;
         this.color = color;
@@ -49,8 +51,8 @@ public sealed class EvtToken permits EvtAddrToken, EvtScalarToken, EvtVariableTo
             this.maxAddress = null;
     }
 
-    public static EvtToken instr(EvtScript script, String txt, Color color, Address minAddress) {
-        return new EvtToken(script, txt, color, minAddress, Instr.HEADER_SIZE);
+    public static EvtToken opcode(EvtScript script, String txt, Color color, Opcode opcopde, Address minAddress) {
+        return new EvtOpcodeToken(script, txt, color, opcopde, minAddress);
     }
 
     public static EvtToken arg(EvtScript script, String txt, Color color, Address minAddress) {
@@ -67,6 +69,10 @@ public sealed class EvtToken permits EvtAddrToken, EvtScalarToken, EvtVariableTo
 
     public static EvtToken syntax(EvtScript script, String txt, Color color, Address minAddress) {
         return new EvtToken(script, txt, color, minAddress, 0);
+    }
+
+    public static EvtToken err(EvtScript script, String txt, Color color) {
+        return new EvtToken(script, txt, color, null, 0);
     }
 
     public EvtScript getScript() {
@@ -124,4 +130,8 @@ public sealed class EvtToken permits EvtAddrToken, EvtScalarToken, EvtVariableTo
     public Address getMaxAddress() {
         return maxAddress;
     }
+
+	public Iterator<EvtToken> iterator(boolean forward) {
+		return new EvtTokenIterator(this, forward);
+	}
 }

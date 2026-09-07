@@ -258,7 +258,7 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
         int i = 0;
         for (String errline : errlines) {
             document.addLine(i++, new EvtLine(
-                Arrays.asList(new EvtToken(script, errline, GhidraPrinter.COLOR_COMMENT, null, 0)),
+                Arrays.asList(EvtToken.err(script, errline, GhidraPrinter.COLOR_COMMENT)),
                 Address.NO_ADDRESS,
                 0,
                 0));
