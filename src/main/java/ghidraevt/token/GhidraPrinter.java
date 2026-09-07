@@ -120,6 +120,11 @@ public class GhidraPrinter {
         );
     }
 
+    private void emitNamespace(List<EvtToken> ret, EvtScript script, String name, Address atAddr, long size) {
+        ret.add(new EvtToken(script, name, decompileOptions.getGlobalColor(), atAddr, size));
+        ret.add(new EvtToken(script, "::", decompileOptions.getDefaultColor(), atAddr, size));
+    }
+
     private List<EvtToken> symbolToTokens(EvtScript script, Address atAddr, Color color, Address target, long size) {
         Symbol symbol = program.getSymbolTable().getPrimarySymbol(target);
         if (symbol == null) {
@@ -127,13 +132,17 @@ public class GhidraPrinter {
             return Arrays.asList(addrFailToken(script, atAddr, target, size));
         }
         else  {
-            Namespace ns = symbol.getParentNamespace();
             List<EvtToken> ret = new ArrayList<>();
             // TODO: options - off/on/sync decompiler, and also force in C macro mode with spm::
-            while (!ns.isGlobal()) {
-                ret.add(new EvtToken(script, ns.getName(), decompileOptions.getGlobalColor(), atAddr, size));
-                ret.add(new EvtToken(script, "::", decompileOptions.getDefaultColor(), atAddr, size));
-                ns = ns.getParentNamespace();
+            if (decompileOptions.isEnableNamespaces()) {
+                Namespace ns = symbol.getParentNamespace();
+                if (decompileOptions.isCMacroMode())
+                    emitNamespace(ret, script, decompileOptions.getGameNamespace(), atAddr, size);
+    
+                while (!ns.isGlobal()) {
+                    emitNamespace(ret, script, ns.getName(), atAddr, size);
+                    ns = ns.getParentNamespace();
+                }
             }
             ret.add(new EvtAddrToken(script, symbol.getName(), color, atAddr, target, size));
             return ret;

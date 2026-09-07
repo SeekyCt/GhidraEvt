@@ -131,8 +131,16 @@ public class EvtOptions {
     private static final String TOPT_LOCAL_XREFS_DESC = "Enable global reference searching for script-local variables.";
     private boolean allowLocalVarXrefs;
 
+    private static final String TOPT_NAMESPACES = "Display Namespaces";
+    private static final String TOPT_NAMESPACES_DESC = "Display symbol namespaces in disassembly.";
+    private boolean enableNamespaces;
+
     public boolean isAllowLocalVarXrefs() {
         return allowLocalVarXrefs;
+    }
+
+    public boolean isEnableNamespaces() {
+        return enableNamespaces;
     }
 
     public void registerToolOptions(PluginTool tool) {
@@ -142,7 +150,8 @@ public class EvtOptions {
         toolOptions.registerOption(TOPT_LINE_NUMBERS, true,  null, TOPT_LINE_NUMBERS_DESC);
         toolOptions.registerOption(TOPT_SYM_SNAP,     true,  null, TOPT_SYM_SNAP_DESC);
         toolOptions.registerOption(TOPT_SYM_STOP,     true,  null, TOPT_SYM_STOP_DESC);
-        toolOptions.registerOption(TOPT_LOCAL_XREFS,  false,  null, TOPT_LOCAL_XREFS_DESC);
+        toolOptions.registerOption(TOPT_LOCAL_XREFS,  false, null, TOPT_LOCAL_XREFS_DESC);
+        toolOptions.registerOption(TOPT_NAMESPACES,   true,  null, TOPT_NAMESPACES_DESC);
     }
 
     public void grabFromTool(PluginTool tool) {
@@ -153,6 +162,7 @@ public class EvtOptions {
         this.snapToSymbol       = toolOptions.getBoolean(TOPT_SYM_SNAP,     true );
         this.stopOnNextSymbol   = toolOptions.getBoolean(TOPT_SYM_STOP,     true );
         this.allowLocalVarXrefs = toolOptions.getBoolean(TOPT_LOCAL_XREFS,  false);
+        this.enableNamespaces   = toolOptions.getBoolean(TOPT_NAMESPACES,   true );
     }
 
     /*******************
@@ -187,6 +197,14 @@ public class EvtOptions {
 
     public Game getGame() {
         return game;
+    }
+
+    public String getGameNamespace() {
+        return switch (game) {
+            case Game.SPM -> "spm";
+            case Game.TTYD -> "ttyd";
+            case null -> null;
+        };
     }
 
     private void registerProgramOptions(Program program) {
