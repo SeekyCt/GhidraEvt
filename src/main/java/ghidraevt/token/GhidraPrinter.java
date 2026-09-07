@@ -180,7 +180,7 @@ public abstract class GhidraPrinter {
         return (cu instanceof Instruction);
     }
 
-    protected List<EvtToken> addrToTokens(EvtScript script, Instr instr, Arg.ADDR arg, Address atAddr) {
+    protected List<EvtToken> addrToTokens(EvtScript script, Instr instr, Arg.ADDR arg) {
         List<EvtToken> ret = new ArrayList<>();
 
         Address target = program.getAddressFactory().getDefaultAddressSpace().getAddress(arg.value());
@@ -190,57 +190,57 @@ public abstract class GhidraPrinter {
         CodeUnit cu = program.getListing().getCodeUnitAt(target);
         if (cu == null) {
             Msg.warn(this, "No code unit for " + Long.toHexString(arg.value()));
-            ret.add(addrFailToken(script, atAddr, target, Arg.bytesSize()));
+            ret.add(addrFailToken(script, currentAddr, target, Arg.bytesSize()));
         }
         else if (cu instanceof Data data && isROString(data)) {
             String value = (String) data.getValue();
-            ret.add(new EvtAddrToken(script, "\"" + value + "\"", decompileOptions.getConstantColor(), atAddr, target, Arg.bytesSize()));
+            ret.add(new EvtAddrToken(script, "\"" + value + "\"", decompileOptions.getConstantColor(), currentAddr, target, Arg.bytesSize()));
         }
         else {
-            ret.addAll(symbolToTokens(script, atAddr, color, target, Arg.bytesSize()));
+            ret.addAll(symbolToTokens(script, currentAddr, color, target, Arg.bytesSize()));
         }
 
         return ret;
     }
 
-    protected List<EvtToken> floatToTokens(EvtScript script, Instr instr, float value, Address atAddr) {
+    protected List<EvtToken> floatToTokens(EvtScript script, Instr instr, float value) {
         return Arrays.asList(EvtToken.argScalar(
             script,
             Float.toString(value),
             decompileOptions.getConstantColor(),
-            atAddr,
+            currentAddr,
             Float.floatToRawIntBits(value),
             true
         ));
     }
 
-    protected List<EvtToken> intToTokens(EvtScript script, Instr instr, int value, Address atAddr) {
+    protected List<EvtToken> intToTokens(EvtScript script, Instr instr, int value) {
         return Arrays.asList(EvtToken.argScalar(
             script,
             Integer.toString(value),
             decompileOptions.getConstantColor(),
-            atAddr,
+            currentAddr,
             value,
             true
         ));
     }
 
-    protected List<EvtToken> variableToTokens(EvtScript script, Instr instr, Arg.Variable variable, Address atAddr) {
+    protected List<EvtToken> variableToTokens(EvtScript script, Instr instr, Arg.Variable variable) {
         return Arrays.asList(EvtToken.var(
             script,
             variable.getName(),
             variableToColor(variable),
-            atAddr,
+            currentAddr,
             variable
         ));
     }
 
-    protected List<EvtToken> noneToTokens(EvtScript script, Instr instr, Address atAddr) {
+    protected List<EvtToken> noneToTokens(EvtScript script, Instr instr) {
         return Arrays.asList(EvtToken.arg(
             script,
             "NONE",
             decompileOptions.getVariableColor(),
-            atAddr
+            currentAddr
         ));
     }
     
@@ -251,13 +251,13 @@ public abstract class GhidraPrinter {
     protected abstract void endInstr(Instr instr, List<EvtToken> tokens);
     protected abstract void buildFooter();
 
-    private List<EvtToken> argToTokens(EvtScript script, Instr instr, Arg arg, Address atAddr) {
+    private List<EvtToken> argToTokens(EvtScript script, Instr instr, Arg arg) {
         return switch (arg) {
-            case Arg.ADDR addr -> addrToTokens(script, instr, addr, atAddr);
-            case Arg.FLOAT(float value) -> floatToTokens(script, instr, value, atAddr);
-            case Arg.INT(int value) -> intToTokens(script, instr, value, atAddr);
-            case Arg.Variable variable -> variableToTokens(script, instr, variable, atAddr);
-            case Arg.NONE() -> noneToTokens(script, instr, atAddr);
+            case Arg.ADDR addr -> addrToTokens(script, instr, addr);
+            case Arg.FLOAT(float value) -> floatToTokens(script, instr, value);
+            case Arg.INT(int value) -> intToTokens(script, instr, value);
+            case Arg.Variable variable -> variableToTokens(script, instr, variable);
+            case Arg.NONE() -> noneToTokens(script, instr);
         };
     }
 
@@ -289,7 +289,7 @@ public abstract class GhidraPrinter {
             for (Arg arg : instr.args())
             {
                 buildArgSeparator(first, tokens);
-                tokens.addAll(argToTokens(script, instr, arg, currentAddr));
+                tokens.addAll(argToTokens(script, instr, arg));
                 first = false; 
                 currentAddr = currentAddr.add(Arg.bytesSize());
             }

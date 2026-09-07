@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import ghidra.app.util.SymbolInspector;
-import ghidra.program.model.address.Address;
 import ghidra.program.model.listing.Program;
 import ghidraevt.component.EvtOptions;
 import ghidraevt.component.EvtScript;
@@ -113,15 +112,15 @@ public class CMacroGhidraPrinter extends GhidraPrinter {
         Wrap addresses in the PTR macro
     */
     @Override
-    protected List<EvtToken> addrToTokens(EvtScript script, Instr instr, Arg.ADDR addr, Address atAddr) {
-        List<EvtToken> ret = new ArrayList<>(super.addrToTokens(script, instr, addr, atAddr));
+    protected List<EvtToken> addrToTokens(EvtScript script, Instr instr, Arg.ADDR addr) {
+        List<EvtToken> ret = new ArrayList<>(super.addrToTokens(script, instr, addr));
 
         // The USER_FUNC macro does not require PTR on its first argument
         if (instr.args().indexOf(addr) == 0)
             return ret;
 
         ret.add(0,
-            new EvtToken(script, "PTR", decompileOptions.getDefaultColor(), atAddr, displayLine)
+            new EvtToken(script, "PTR", decompileOptions.getDefaultColor(), currentAddr, displayLine)
         );
         ret.add(1, openBracket());
 
@@ -137,10 +136,10 @@ public class CMacroGhidraPrinter extends GhidraPrinter {
         Wrap floats in the FLOAT macro
     */
     @Override
-    protected List<EvtToken> floatToTokens(EvtScript script, Instr instr, float value, Address atAddr) {
-        List<EvtToken> ret = new ArrayList<>(super.floatToTokens(script, instr, value, atAddr));
+    protected List<EvtToken> floatToTokens(EvtScript script, Instr instr, float value) {
+        List<EvtToken> ret = new ArrayList<>(super.floatToTokens(script, instr, value));
         ret.add(0,
-            new EvtToken(script, "FLOAT", decompileOptions.getDefaultColor(), atAddr, displayLine)
+            new EvtToken(script, "FLOAT", decompileOptions.getDefaultColor(), currentAddr, displayLine)
         );
         ret.add(1, openBracket());
         ret.add(closeBracket());
@@ -151,12 +150,12 @@ public class CMacroGhidraPrinter extends GhidraPrinter {
         Represent none as the EVT_NULLPTR define
     */
     @Override
-    protected List<EvtToken> noneToTokens(EvtScript script, Instr instr, Address atAddr) {
+    protected List<EvtToken> noneToTokens(EvtScript script, Instr instr) {
         return Arrays.asList(EvtToken.arg(
             script,
             "EVT_NULLPTR",
             decompileOptions.getVariableColor(),
-            atAddr
+            currentAddr
         ));
     }
 }
