@@ -33,7 +33,6 @@ import ghidra.program.model.address.AddressSpace;
 import ghidra.program.model.data.DataType;
 import ghidra.program.model.listing.Data;
 import ghidra.program.model.listing.Program;
-import ghidra.program.model.symbol.Symbol;
 import ghidraevt.action.EvtActionContext;
 import ghidraevt.token.EvtAddrToken;
 import ghidraevt.token.EvtDocument;

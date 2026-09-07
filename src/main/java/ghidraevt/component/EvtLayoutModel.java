@@ -43,8 +43,6 @@ import ghidraevt.token.GhidraPrinter;
 import ghidraevt.token.EvtDocument;
 import ghidraevt.token.EvtLine;
 import ghidraevt.token.EvtToken;
-import ghidraevt.token.GhidraPrinter;
-import ghidraevt.token.PrettyGhidraPrinter;
 import jevt.Instr;
 
 public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
