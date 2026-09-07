@@ -22,7 +22,6 @@ import ghidra.app.util.SymbolInspector;
 import ghidra.program.model.listing.Program;
 import ghidraevt.component.EvtOptions;
 import ghidraevt.component.EvtScript;
-import jevt.Arg;
 import jevt.Instr;
 
 public class PrettyGhidraPrinter extends GhidraPrinter {
@@ -55,10 +54,9 @@ public class PrettyGhidraPrinter extends GhidraPrinter {
     }
 
     @Override
-    protected void buildArg(boolean first, Arg arg, List<EvtToken> tokens) {
+    protected void buildArgSeparator(boolean first, List<EvtToken> tokens) {
         String sep = first ? " " : ", ";
         tokens.add(EvtToken.syntax(script, sep, decompileOptions.getDefaultColor(), currentAddr));
-        tokens.addAll(argToTokens(script, arg, currentAddr));
     }
 
     @Override

@@ -16,9 +16,11 @@
 package ghidraevt.token;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import ghidra.app.util.SymbolInspector;
+import ghidra.program.model.address.Address;
 import ghidra.program.model.listing.Program;
 import ghidraevt.component.EvtOptions;
 import ghidraevt.component.EvtScript;
@@ -31,7 +33,9 @@ public class CMacroGhidraPrinter extends GhidraPrinter {
         super(program, symbolInspector, options, script, docroot);
     }
 
-
+    /*
+        Disassembly is wrapped in a macro, everything inside should be indented
+    */
     @Override
     protected int getMinIndent() {
         return 1;
@@ -49,6 +53,13 @@ public class CMacroGhidraPrinter extends GhidraPrinter {
         return EvtToken.syntax(script, "()", decompileOptions.getDefaultColor(), currentAddr);
     }
 
+    private EvtToken takePointer() {
+        return EvtToken.syntax(script, "&", decompileOptions.getDefaultColor(), currentAddr);
+    }
+
+    /*
+        Open with EVT_BEGIN macro
+    */
     @Override
     protected void buildHeader() {
         List<EvtToken> header = new ArrayList<>();
@@ -59,31 +70,93 @@ public class CMacroGhidraPrinter extends GhidraPrinter {
         doc.addLine(new EvtLine(header, currentAddr, 0, 0));
     }
 
+    /*
+        Print the instruction macro and open its bracket
+    */
     @Override
     protected void startInstr(Instr instr, List<EvtToken> tokens) {
         tokens.add(
-            EvtToken.instr(script, instr.opcode().prettyName(), COLOR_INSTR, currentAddr)
+            EvtToken.instr(script, instr.opcode().macroName(), COLOR_INSTR, currentAddr)
         );
         tokens.add(openBracket());
     }
 
+    /*
+        Separate arguments with commas
+    */
     @Override
-    protected void buildArg(boolean first, Arg arg, List<EvtToken> tokens) {
+    protected void buildArgSeparator(boolean first, List<EvtToken> tokens) {
         if (!first)
             tokens.add(EvtToken.syntax(script, ", ", decompileOptions.getDefaultColor(), currentAddr));
-        tokens.addAll(argToTokens(script, arg, currentAddr));
     }
 
+    /*
+        Close the bracket for the instruction macro
+    */
     @Override
     protected void endInstr(Instr instr, List<EvtToken> tokens) {
         tokens.add(closeBracket());
     }
 
+    /*
+        End with EVT_END macro
+    */
     @Override
     protected void buildFooter() {
         List<EvtToken> footer = new ArrayList<>();
         footer.add(EvtToken.syntax(script, "EVT_END", COLOR_INSTR, currentAddr));
         footer.add(emptyBrackets());
         doc.addLine(new EvtLine(footer, currentAddr, displayLine++, 0));
+    }
+
+    /*
+        Wrap addresses in the PTR macro
+    */
+    @Override
+    protected List<EvtToken> addrToTokens(EvtScript script, Instr instr, Arg.ADDR addr, Address atAddr) {
+        List<EvtToken> ret = new ArrayList<>(super.addrToTokens(script, instr, addr, atAddr));
+
+        // The USER_FUNC macro does not require PTR on its first argument
+        if (instr.args().indexOf(addr) == 0)
+            return ret;
+
+        ret.add(0,
+            new EvtToken(script, "PTR", decompileOptions.getDefaultColor(), atAddr, displayLine)
+        );
+        ret.add(1, openBracket());
+
+        // Functions and strings should not be prefixed with &
+        if (!isString(addr) && !isFunction(addr))
+            ret.add(2, takePointer());
+
+        ret.add(closeBracket());
+        return ret;
+    }
+
+    /*
+        Wrap floats in the FLOAT macro
+    */
+    @Override
+    protected List<EvtToken> floatToTokens(EvtScript script, Instr instr, float value, Address atAddr) {
+        List<EvtToken> ret = new ArrayList<>(super.floatToTokens(script, instr, value, atAddr));
+        ret.add(0,
+            new EvtToken(script, "FLOAT", decompileOptions.getDefaultColor(), atAddr, displayLine)
+        );
+        ret.add(1, openBracket());
+        ret.add(closeBracket());
+        return ret;
+    }
+
+    /*
+        Represent none as the EVT_NULLPTR define
+    */
+    @Override
+    protected List<EvtToken> noneToTokens(EvtScript script, Instr instr, Address atAddr) {
+        return Arrays.asList(EvtToken.arg(
+            script,
+            "EVT_NULLPTR",
+            decompileOptions.getVariableColor(),
+            atAddr
+        ));
     }
 }

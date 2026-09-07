@@ -206,6 +206,9 @@ public enum Opcode {
     }
 
     public String macroName() {
-        return this.name();
+        return switch (this) {
+            case END_EVT -> "RETURN";
+            default -> this.name();
+        };
     }
 }
