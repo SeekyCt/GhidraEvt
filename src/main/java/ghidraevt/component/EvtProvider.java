@@ -92,18 +92,18 @@ import utility.function.Callback;
 
 public class EvtProvider extends NavigatableComponentProviderAdapter
         implements OptionsChangeListener, EvtCallbackHandler {
-	private static final Icon REFRESH_ICON = Icons.REFRESH_ICON;
-    private static final Icon PROPERTIES_ICON = Icons.CONFIGURE_FILTER_ICON;
+	private static final Icon REFRESH_ICON = new GIcon("icon.ghidraevt.action.refresh");
+    private static final Icon PROPERTIES_ICON = new GIcon("icon.ghidraevt.action.properties");
 
-    private static final Icon SLASH_ICON = new GIcon("icon.decompiler.action.slash");
+    private static final Icon SLASH_ICON = new GIcon("icon.ghidraevt.action.slash");
 
-    private static final Icon TOGGLE_MACRO_ICON = new GIcon("icon.decompiler.action.provider");
+    private static final Icon TOGGLE_MACRO_ICON = new GIcon("icon.ghidraevt.action.c-macro-mode");
 	private static final Icon TOGGLE_MACRO_DISABLED_ICON =
 		new MultiIconBuilder(TOGGLE_MACRO_ICON).addCenteredIcon(SLASH_ICON).build();
 
 
 	private static final Icon TOGGLE_STRICT_MODE_ICON =
-		new GIcon("icon.decompiler.action.provider.unreachable");
+		new GIcon("icon.ghidraevt.action.strict-mode");
 
 	private static final Icon TOGGLE_STRICT_MODE_DISABLED_ICON =
 		new MultiIconBuilder(TOGGLE_STRICT_MODE_ICON).addCenteredIcon(SLASH_ICON).build();
