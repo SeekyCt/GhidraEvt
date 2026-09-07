@@ -300,21 +300,8 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
             return;
         }
 
-        // Current values of toggle buttons
-        boolean strictMode = options.isStrictMode();
-
         options.grabFromToolAndProgram(tool, program);
-
-        // If the tool options were not changed
-        if (!optionsChanged) {
-            // Keep these analysis options the same
-            options.setStrictMode(strictMode);
-        }
-        else {
-            // Otherwise, keep the new analysis options and update the state of the toggle buttons
-            refreshToggleButtons();
-        }
-
+        refreshToggleButtons();
         controller.setOptions(options);
 
         if (currentLocation != null) {

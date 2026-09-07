@@ -45,21 +45,19 @@ public class EvtOptions {
         GhidraOptions.CATEGORY_BROWSER_FIELDS
     );
 
+    private PluginTool tool;
+    private Program program;
+
     public EvtOptions(DecompileOptions decompileOptions) {
         this.decompileOptions = decompileOptions;
     }
 
     public void registerOptions(PluginTool tool, Program program) {
         registerToolOptions(tool);
-        grabFromTool(tool);
-
         registerProgramOptions(program);
-        grabFromProgram(program);
-
         // No need to re-register decompiler options
-        ToolOptions fieldOptions = tool.getOptions(GhidraOptions.CATEGORY_BROWSER_FIELDS);
-        ToolOptions decompilerOptions = tool.getOptions(DecompilePlugin.OPTIONS_TITLE);
-        decompileOptions.grabFromToolAndProgram(fieldOptions, decompilerOptions, program);
+
+        grabFromToolAndProgram(tool, program);
     }
 
     public void registerListener(PluginTool tool, OptionsChangeListener listener) {
@@ -74,7 +72,9 @@ public class EvtOptions {
 
     public void grabFromToolAndProgram(PluginTool tool, Program program) {
         grabFromTool(tool);
+        this.tool = tool;
         grabFromProgram(program);
+        this.program = program;
 
         // Update decompiler options
         ToolOptions fieldOptions = tool.getOptions(GhidraOptions.CATEGORY_BROWSER_FIELDS);
@@ -96,6 +96,8 @@ public class EvtOptions {
 
     public void setCMacroMode(boolean cMacroMode) {
         this.cMacroMode = cMacroMode;
+        ToolOptions toolOptions = tool.getOptions(GhidraEvtPlugin.OPTIONS_TITLE);
+        toolOptions.setBoolean(TOPT_C_MACRO, cMacroMode);
     }
 
     // TODO: another mode with type-based opt-in
@@ -109,6 +111,8 @@ public class EvtOptions {
 
     public void setStrictMode(boolean strictMode) {
         this.strictMode = strictMode;
+        ToolOptions toolOptions = tool.getOptions(GhidraEvtPlugin.OPTIONS_TITLE);
+        toolOptions.setBoolean(TOPT_STRICT, strictMode);
     }
 
     private static final String TOPT_LINE_NUMBERS = "Show Line Numbers";
