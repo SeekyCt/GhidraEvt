@@ -692,7 +692,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
                 boolean isSelected = this.isSelected();
 
                 // Set the option based on the button state
-                options.setStrictMode(!isSelected);
+                options.setStrictMode(isSelected);
 
                 updateOptionsAndRefresh();
             }
@@ -702,7 +702,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
                 super.setSelected(isSelected);
 
                 // Update the icon to have a slash or not
-                if (!isSelected) {
+                if (isSelected) {
                     setToolBarData(new ToolBarData(TOGGLE_STRICT_MODE_ICON, "A"));
                 }
                 else {
@@ -720,7 +720,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
                 boolean isSelected = this.isSelected();
 
                 // Set the option based on the button state
-                options.setCMacroMode(!isSelected);
+                options.setCMacroMode(isSelected);
 
                 updateOptionsAndRefresh();
             }
@@ -730,7 +730,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
                 super.setSelected(isSelected);
 
                 // Update the icon to have a slash or not
-                if (!isSelected) {
+                if (isSelected) {
                     setToolBarData(new ToolBarData(TOGGLE_MACRO_ICON, "A"));
                 }
                 else {
