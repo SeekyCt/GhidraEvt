@@ -48,5 +48,5 @@ The window is also fully customisable using Ghidra's built-in theming system (se
 
 ## Credits
 
-This is created from [Ghidra](https://github.com/NationalSecurityAgency/ghidra/)'s Extension Skeleton and is heavily based on its Decompiler UI code.
-
+- This extension is created from [Ghidra](https://github.com/NationalSecurityAgency/ghidra/)'s Extension Skeleton and is heavily based on its Decompiler UI code.
+- Thanks to [PistonMiner](https://github.com/PistonMiner/) for their [original documentation of the evt script format](https://github.com/PistonMiner/ttyd-tools)
