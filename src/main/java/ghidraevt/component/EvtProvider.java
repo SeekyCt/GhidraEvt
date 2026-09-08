@@ -99,33 +99,33 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 
     private static final Icon TOGGLE_STRICT_MODE_ICON =
         new GIcon("icon.ghidraevt.action.strict-mode");
-
     private static final Icon TOGGLE_STRICT_MODE_DISABLED_ICON =
         new MultiIconBuilder(TOGGLE_STRICT_MODE_ICON).addCenteredIcon(SLASH_ICON).build();
 
     private static final Icon TOGGLE_SHOW_LINE_NUMBERS_ICON =
         new GIcon("icon.ghidraevt.action.show-line-numbers");
-
     private static final Icon TOGGLE_SHOW_LINE_NUMBERS_DISABLED_ICON =
         new MultiIconBuilder(TOGGLE_SHOW_LINE_NUMBERS_ICON).addCenteredIcon(SLASH_ICON).build();
 
     private static final Icon TOGGLE_SNAP_TO_SYMBOL_ICON =
         new GIcon("icon.ghidraevt.action.snap-to-symbol");
-
     private static final Icon TOGGLE_SNAP_TO_SYMBOL_DISABLED_ICON =
         new MultiIconBuilder(TOGGLE_SNAP_TO_SYMBOL_ICON).addCenteredIcon(SLASH_ICON).build();
 
     private static final Icon TOGGLE_STOP_ON_NEXT_SYMBOL_ICON =
         new GIcon("icon.ghidraevt.action.stop-on-next-symbol");
-
     private static final Icon TOGGLE_STOP_ON_NEXT_SYMBOL_DISABLED_ICON =
         new MultiIconBuilder(TOGGLE_STOP_ON_NEXT_SYMBOL_ICON).addCenteredIcon(SLASH_ICON).build();
 
     private static final Icon TOGGLE_ENABLE_NAMESPACES_ICON =
         new GIcon("icon.ghidraevt.action.enable-namespaces");
-
     private static final Icon TOGGLE_ENABLE_NAMESPACES_DISABLED_ICON =
         new MultiIconBuilder(TOGGLE_ENABLE_NAMESPACES_ICON).addCenteredIcon(SLASH_ICON).build();
+
+    private static final Icon TOGGLE_STAY_ON_ERROR_ICON =
+        new GIcon("icon.ghidraevt.action.stay-on-error");
+    private static final Icon TOGGLE_STAY_ON_ERROR_DISABLED_ICON =
+        new MultiIconBuilder(TOGGLE_STAY_ON_ERROR_ICON).addCenteredIcon(SLASH_ICON).build();
 
     private final GhidraEvtPlugin plugin;
     private ClipboardService clipboardService;
@@ -161,6 +161,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
     private ToggleDockingAction snapToSymbolToggle;
     private ToggleDockingAction stopOnNextSymbolToggle;
     private ToggleDockingAction namespacesToggle;
+    private ToggleDockingAction stayOnErrorToggle;
 
     public EvtProvider(GhidraEvtPlugin plugin, boolean isConnected) {
         super(plugin.getTool(), "Evt Disassembler", plugin.getName(), EvtActionContext.class);
@@ -344,6 +345,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         snapToSymbolToggle.setSelected(options.isSnapToSymbol());
         stopOnNextSymbolToggle.setSelected(options.isStopOnNextSymbol());
         namespacesToggle.setSelected(options.isEnableNamespaces());
+        stayOnErrorToggle.setSelected(options.isStayOnError());
     }
 
     private void doFollowUpWork() {
@@ -867,6 +869,33 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         };
         namespacesToggle.setDescription("Toggle on to enable namespace display");
         addLocalAction(namespacesToggle);
+
+        stayOnErrorToggle = new ToggleDockingAction("Toggle Stay on Error", owner) {
+            @Override
+            public void actionPerformed(ActionContext context) {
+                boolean isSelected = this.isSelected();
+
+                // Set the option based on the button state
+                options.setStayOnError(isSelected);
+
+                updateOptionsAndRefresh();
+            }
+
+            @Override
+            public void setSelected(boolean isSelected) {
+                super.setSelected(isSelected);
+
+                // Update the icon to have a slash or not
+                if (isSelected) {
+                    setToolBarData(new ToolBarData(TOGGLE_STAY_ON_ERROR_ICON, "A"));
+                }
+                else {
+                    setToolBarData(new ToolBarData(TOGGLE_STAY_ON_ERROR_DISABLED_ICON, "A"));
+                }
+            }
+        };
+        stayOnErrorToggle.setDescription("Toggle on to keep previous output when the new location is not a valid script");
+        addLocalAction(stayOnErrorToggle);
 
         // Set the selected state and icon for the above toggle icons
         refreshToggleButtons();

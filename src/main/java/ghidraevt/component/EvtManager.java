@@ -86,6 +86,11 @@ public class EvtManager {
         DisassembleResults results = doDisassemble(
             program, location, viewerPosition, options.isSnapToSymbol()
         );
+
+        // Don't replace old disassembly if this one failed and setting is enabled
+        if (options.isStayOnError() && !results.isValid() && controller.hasDisassembleResults())
+            return;
+
         controller.setDisasssembleData(new DisassembleData(
             program, results.getScript(), location, results, null, viewerPosition
         ));

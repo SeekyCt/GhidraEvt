@@ -187,28 +187,44 @@ public class EvtOptions {
         return maxWidth;
     }
 
+    private static final String TOPT_STAY_ON_ERROR = "Display Namespaces";
+    private static final String TOPT_STAY_ON_ERROR_DESC = "Display symbol namespaces in disassembly.";
+    private boolean stayOnError;
+
+    public boolean isStayOnError() {
+        return stayOnError;
+    }
+
+    public void setStayOnError(boolean stayOnError) {
+        this.stayOnError = stayOnError;
+        ToolOptions toolOptions = tool.getOptions(GhidraEvtPlugin.OPTIONS_TITLE);
+        toolOptions.setBoolean(TOPT_STAY_ON_ERROR, stayOnError);
+    }
+
     public void registerToolOptions(PluginTool tool) {
         ToolOptions toolOptions = tool.getOptions(GhidraEvtPlugin.OPTIONS_TITLE);
-        toolOptions.registerOption(TOPT_C_MACRO,      false, null, TOPT_C_MACRO_DESC);
-        toolOptions.registerOption(TOPT_STRICT,       true,  null, TOPT_STRICT_DESC);
-        toolOptions.registerOption(TOPT_LINE_NUMBERS, true,  null, TOPT_LINE_NUMBERS_DESC);
-        toolOptions.registerOption(TOPT_SYM_SNAP,     true,  null, TOPT_SYM_SNAP_DESC);
-        toolOptions.registerOption(TOPT_SYM_STOP,     true,  null, TOPT_SYM_STOP_DESC);
-        toolOptions.registerOption(TOPT_LOCAL_XREFS,  false, null, TOPT_LOCAL_XREFS_DESC);
-        toolOptions.registerOption(TOPT_NAMESPACES,   true,  null, TOPT_NAMESPACES_DESC);
-        toolOptions.registerOption(TOPT_MAX_WIDTH,    100,   null, TOPT_MAX_WIDTH_DESC);
+        toolOptions.registerOption(TOPT_C_MACRO,       false, null, TOPT_C_MACRO_DESC);
+        toolOptions.registerOption(TOPT_STRICT,        true,  null, TOPT_STRICT_DESC);
+        toolOptions.registerOption(TOPT_LINE_NUMBERS,  true,  null, TOPT_LINE_NUMBERS_DESC);
+        toolOptions.registerOption(TOPT_SYM_SNAP,      true,  null, TOPT_SYM_SNAP_DESC);
+        toolOptions.registerOption(TOPT_SYM_STOP,      true,  null, TOPT_SYM_STOP_DESC);
+        toolOptions.registerOption(TOPT_LOCAL_XREFS,   false, null, TOPT_LOCAL_XREFS_DESC);
+        toolOptions.registerOption(TOPT_NAMESPACES,    true,  null, TOPT_NAMESPACES_DESC);
+        toolOptions.registerOption(TOPT_MAX_WIDTH,     100,   null, TOPT_MAX_WIDTH_DESC);
+        toolOptions.registerOption(TOPT_STAY_ON_ERROR, true,  null, TOPT_STAY_ON_ERROR_DESC);
     }
 
     public void grabFromTool(PluginTool tool) {
         ToolOptions toolOptions = tool.getOptions(GhidraEvtPlugin.OPTIONS_TITLE);
-        this.cMacroMode         = toolOptions.getBoolean(TOPT_C_MACRO,      false);
-        this.strictMode         = toolOptions.getBoolean(TOPT_STRICT,       true );
-        this.showLineNumbers    = toolOptions.getBoolean(TOPT_LINE_NUMBERS, true );
-        this.snapToSymbol       = toolOptions.getBoolean(TOPT_SYM_SNAP,     true );
-        this.stopOnNextSymbol   = toolOptions.getBoolean(TOPT_SYM_STOP,     true );
-        this.allowLocalVarXrefs = toolOptions.getBoolean(TOPT_LOCAL_XREFS,  false);
-        this.enableNamespaces   = toolOptions.getBoolean(TOPT_NAMESPACES,   true );
-        this.maxWidth           =     toolOptions.getInt(TOPT_MAX_WIDTH,    100  );
+        this.cMacroMode         = toolOptions.getBoolean(TOPT_C_MACRO,       false);
+        this.strictMode         = toolOptions.getBoolean(TOPT_STRICT,        true );
+        this.showLineNumbers    = toolOptions.getBoolean(TOPT_LINE_NUMBERS,  true );
+        this.snapToSymbol       = toolOptions.getBoolean(TOPT_SYM_SNAP,      true );
+        this.stopOnNextSymbol   = toolOptions.getBoolean(TOPT_SYM_STOP,      true );
+        this.allowLocalVarXrefs = toolOptions.getBoolean(TOPT_LOCAL_XREFS,   false);
+        this.enableNamespaces   = toolOptions.getBoolean(TOPT_NAMESPACES,    true );
+        this.maxWidth           =     toolOptions.getInt(TOPT_MAX_WIDTH,     100  );
+        this.stayOnError        = toolOptions.getBoolean(TOPT_STAY_ON_ERROR, true );
     }
 
     /*******************
