@@ -158,7 +158,7 @@ public class EvtOptions {
     }
 
     private static final String TOPT_LOCAL_XREFS = "Allow Local Variable Search";
-    private static final String TOPT_LOCAL_XREFS_DESC = "Enable global reference searching for script-local variables.";
+    private static final String TOPT_LOCAL_XREFS_DESC = "Enable global reference searching for script-local variables";
     private boolean allowLocalVarXrefs;
 
     public boolean isAllowLocalVarXrefs() {
@@ -166,7 +166,7 @@ public class EvtOptions {
     }
 
     private static final String TOPT_NAMESPACES = "Display Namespaces";
-    private static final String TOPT_NAMESPACES_DESC = "Display symbol namespaces in disassembly.";
+    private static final String TOPT_NAMESPACES_DESC = "Display symbol namespaces in disassembly";
     private boolean enableNamespaces;
 
     public boolean isEnableNamespaces() {
@@ -180,7 +180,7 @@ public class EvtOptions {
     }
 
     private static final String TOPT_MAX_WIDTH = "Maximum Line Width";
-    private static final String TOPT_MAX_WIDTH_DESC = "Maximum characters within a line before wrapping.";
+    private static final String TOPT_MAX_WIDTH_DESC = "Maximum characters within a line before wrapping";
     private int maxWidth;
 
     public int getMaxWidth() {
@@ -188,7 +188,7 @@ public class EvtOptions {
     }
 
     private static final String TOPT_STAY_ON_ERROR = "Stay on Error";
-    private static final String TOPT_STAY_ON_ERROR_DESC = "Keep previous output when the new location is not a valid script.";
+    private static final String TOPT_STAY_ON_ERROR_DESC = "Keep previous output when the new location is not a valid script";
     private boolean stayOnError;
 
     public boolean isStayOnError() {
@@ -202,7 +202,7 @@ public class EvtOptions {
     }
 
     private static final String TOPT_BLANK_AFTER_HEADER = "Blank Line After Header";
-    private static final String TOPT_BLANK_AFTER_HEADER_DESC = "Insert a blank line after the script header (does not apply to C macro mode).";
+    private static final String TOPT_BLANK_AFTER_HEADER_DESC = "Insert a blank line after the script header (does not apply to C macro mode)";
     private boolean blankAfterHeader;
 
     public boolean isBlankAfterHeader() {
