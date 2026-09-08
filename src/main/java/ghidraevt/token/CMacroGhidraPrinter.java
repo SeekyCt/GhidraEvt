@@ -114,7 +114,7 @@ public class CMacroGhidraPrinter extends GhidraPrinter {
         List<EvtToken> ret = new ArrayList<>(super.addrToTokens(script, instr, addr));
 
         // The USER_FUNC macro does not require PTR on its first argument
-        if (instr.args().indexOf(addr) == 0)
+        if (instr.opcode() == Opcode.USER_FUNC && instr.args().indexOf(addr) == 0)
             return ret;
 
         ret.add(0,
