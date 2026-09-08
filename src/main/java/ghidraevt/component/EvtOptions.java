@@ -179,6 +179,14 @@ public class EvtOptions {
         toolOptions.setBoolean(TOPT_NAMESPACES, enableNamespaces);
     }
 
+    private static final String TOPT_MAX_WIDTH = "Maximum Line Width";
+    private static final String TOPT_MAX_WIDTH_DESC = "Maximum characters within a line before wrapping.";
+    private int maxWidth;
+
+    public int getMaxWidth() {
+        return maxWidth;
+    }
+
     public void registerToolOptions(PluginTool tool) {
         ToolOptions toolOptions = tool.getOptions(GhidraEvtPlugin.OPTIONS_TITLE);
         toolOptions.registerOption(TOPT_C_MACRO,      false, null, TOPT_C_MACRO_DESC);
@@ -188,6 +196,7 @@ public class EvtOptions {
         toolOptions.registerOption(TOPT_SYM_STOP,     true,  null, TOPT_SYM_STOP_DESC);
         toolOptions.registerOption(TOPT_LOCAL_XREFS,  false, null, TOPT_LOCAL_XREFS_DESC);
         toolOptions.registerOption(TOPT_NAMESPACES,   true,  null, TOPT_NAMESPACES_DESC);
+        toolOptions.registerOption(TOPT_MAX_WIDTH,    100,   null, TOPT_MAX_WIDTH_DESC);
     }
 
     public void grabFromTool(PluginTool tool) {
@@ -199,6 +208,7 @@ public class EvtOptions {
         this.stopOnNextSymbol   = toolOptions.getBoolean(TOPT_SYM_STOP,     true );
         this.allowLocalVarXrefs = toolOptions.getBoolean(TOPT_LOCAL_XREFS,  false);
         this.enableNamespaces   = toolOptions.getBoolean(TOPT_NAMESPACES,   true );
+        this.maxWidth           =     toolOptions.getInt(TOPT_MAX_WIDTH,    100  );
     }
 
     /*******************
@@ -298,10 +308,6 @@ public class EvtOptions {
 
     public Font getDefaultFont() {
         return decompileOptions.getDefaultFont();
-    }
-
-    public int getMaxWidth() {
-        return decompileOptions.getMaxWidth();
     }
 
     public Color getGlobalColor() {
