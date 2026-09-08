@@ -688,6 +688,10 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
             new SelectAllAction(owner, controller.getEvtPanel());
         addLocalAction(selectAllAction);
 
+        //
+        // Refresh
+        //
+        String refreshGroup = "1 - Refresh Group";
         DockingAction refreshAction = new DockingAction("Refresh", owner) {
             @Override
             public void actionPerformed(ActionContext context) {
@@ -703,9 +707,14 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
                 return decompileData.hasDisassembleResults();
             }
         };
-        refreshAction.setToolBarData(new ToolBarData(REFRESH_ICON, "A" /* first on toolbar */));
+        refreshAction.setToolBarData(new ToolBarData(REFRESH_ICON, refreshGroup));
         refreshAction.setDescription("Push at any time to trigger a re-disassemble");
         addLocalAction(refreshAction);
+
+        //
+        // Navigation settings
+        //
+        String navigationGroup = "2 - Navigation Settings";
 
         strictModeToggle = new ToggleDockingAction("Toggle Strict Script Detection", owner) {
             @Override
@@ -724,11 +733,11 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 
                 // Update the icon to have a slash or not
                 if (isSelected) {
-                    setToolBarData(new ToolBarData(TOGGLE_STRICT_MODE_ICON, "A"));
+                    setToolBarData(new ToolBarData(TOGGLE_STRICT_MODE_ICON, navigationGroup));
                 }
                 else {
                     setToolBarData(
-                        new ToolBarData(TOGGLE_STRICT_MODE_DISABLED_ICON, "A"));
+                        new ToolBarData(TOGGLE_STRICT_MODE_DISABLED_ICON, navigationGroup));
                 }
             }
         };
@@ -752,10 +761,10 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 
                 // Update the icon to have a slash or not
                 if (isSelected) {
-                    setToolBarData(new ToolBarData(TOGGLE_SNAP_TO_SYMBOL_ICON, "A"));
+                    setToolBarData(new ToolBarData(TOGGLE_SNAP_TO_SYMBOL_ICON, navigationGroup));
                 }
                 else {
-                    setToolBarData(new ToolBarData(TOGGLE_SNAP_TO_SYMBOL_DISABLED_ICON, "A"));
+                    setToolBarData(new ToolBarData(TOGGLE_SNAP_TO_SYMBOL_DISABLED_ICON, navigationGroup));
                 }
             }
         };
@@ -779,10 +788,10 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 
                 // Update the icon to have a slash or not
                 if (isSelected) {
-                    setToolBarData(new ToolBarData(TOGGLE_STOP_ON_NEXT_SYMBOL_ICON, "A"));
+                    setToolBarData(new ToolBarData(TOGGLE_STOP_ON_NEXT_SYMBOL_ICON, navigationGroup));
                 }
                 else {
-                    setToolBarData(new ToolBarData(TOGGLE_STOP_ON_NEXT_SYMBOL_DISABLED_ICON, "A"));
+                    setToolBarData(new ToolBarData(TOGGLE_STOP_ON_NEXT_SYMBOL_DISABLED_ICON, navigationGroup));
                 }
             }
         };
@@ -806,15 +815,20 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 
                 // Update the icon to have a slash or not
                 if (isSelected) {
-                    setToolBarData(new ToolBarData(TOGGLE_STAY_ON_ERROR_ICON, "A"));
+                    setToolBarData(new ToolBarData(TOGGLE_STAY_ON_ERROR_ICON, navigationGroup));
                 }
                 else {
-                    setToolBarData(new ToolBarData(TOGGLE_STAY_ON_ERROR_DISABLED_ICON, "A"));
+                    setToolBarData(new ToolBarData(TOGGLE_STAY_ON_ERROR_DISABLED_ICON, navigationGroup));
                 }
             }
         };
         stayOnErrorToggle.setDescription("Toggle on to keep previous output when the new location is not a valid script");
         addLocalAction(stayOnErrorToggle);
+
+        //
+        // Rendering settings
+        //
+        String renderingGroup = "3 - Rendering Settings";
 
         cMacroModeToggle = new ToggleDockingAction("Toggle C Macro Mode", owner) {
             @Override
@@ -833,10 +847,10 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 
                 // Update the icon to have a slash or not
                 if (isSelected) {
-                    setToolBarData(new ToolBarData(TOGGLE_MACRO_ICON, "A"));
+                    setToolBarData(new ToolBarData(TOGGLE_MACRO_ICON, renderingGroup));
                 }
                 else {
-                    setToolBarData(new ToolBarData(TOGGLE_MACRO_DISABLED_ICON, "A"));
+                    setToolBarData(new ToolBarData(TOGGLE_MACRO_DISABLED_ICON, renderingGroup));
                 }
             }
         };
@@ -860,10 +874,10 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 
                 // Update the icon to have a slash or not
                 if (isSelected) {
-                    setToolBarData(new ToolBarData(TOGGLE_ENABLE_NAMESPACES_ICON, "A"));
+                    setToolBarData(new ToolBarData(TOGGLE_ENABLE_NAMESPACES_ICON, renderingGroup));
                 }
                 else {
-                    setToolBarData(new ToolBarData(TOGGLE_ENABLE_NAMESPACES_DISABLED_ICON, "A"));
+                    setToolBarData(new ToolBarData(TOGGLE_ENABLE_NAMESPACES_DISABLED_ICON, renderingGroup));
                 }
             }
         };
@@ -887,10 +901,10 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 
                 // Update the icon to have a slash or not
                 if (isSelected) {
-                    setToolBarData(new ToolBarData(TOGGLE_SHOW_LINE_NUMBERS_ICON, "A"));
+                    setToolBarData(new ToolBarData(TOGGLE_SHOW_LINE_NUMBERS_ICON, renderingGroup));
                 }
                 else {
-                    setToolBarData(new ToolBarData(TOGGLE_SHOW_LINE_NUMBERS_DISABLED_ICON, "A"));
+                    setToolBarData(new ToolBarData(TOGGLE_SHOW_LINE_NUMBERS_DISABLED_ICON, renderingGroup));
                 }
             }
         };
