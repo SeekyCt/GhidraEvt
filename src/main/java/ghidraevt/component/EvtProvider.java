@@ -707,33 +707,6 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         refreshAction.setDescription("Push at any time to trigger a re-disassemble");
         addLocalAction(refreshAction);
 
-        cMacroModeToggle = new ToggleDockingAction("Toggle C Macro Mode", owner) {
-            @Override
-            public void actionPerformed(ActionContext context) {
-                boolean isSelected = this.isSelected();
-
-                // Set the option based on the button state
-                options.setCMacroMode(isSelected);
-
-                updateOptionsAndRefresh();
-            }
-
-            @Override
-            public void setSelected(boolean isSelected) {
-                super.setSelected(isSelected);
-
-                // Update the icon to have a slash or not
-                if (isSelected) {
-                    setToolBarData(new ToolBarData(TOGGLE_MACRO_ICON, "A"));
-                }
-                else {
-                    setToolBarData(new ToolBarData(TOGGLE_MACRO_DISABLED_ICON, "A"));
-                }
-            }
-        };
-        cMacroModeToggle.setDescription("Toggle on to render scripts in the evt_cmd.h C Macro format");
-        addLocalAction(cMacroModeToggle);
-
         strictModeToggle = new ToggleDockingAction("Toggle Strict Script Detection", owner) {
             @Override
             public void actionPerformed(ActionContext context) {
@@ -761,33 +734,6 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         };
         strictModeToggle.setDescription("Toggle on to enable strict script detection (may risk false-negatives)");
         addLocalAction(strictModeToggle);
-
-        showLineNumbersToggle = new ToggleDockingAction("Toggle Line Numbers", owner) {
-            @Override
-            public void actionPerformed(ActionContext context) {
-                boolean isSelected = this.isSelected();
-
-                // Set the option based on the button state
-                options.setShowLineNumbers(isSelected);
-
-                updateOptionsAndRefresh();
-            }
-
-            @Override
-            public void setSelected(boolean isSelected) {
-                super.setSelected(isSelected);
-
-                // Update the icon to have a slash or not
-                if (isSelected) {
-                    setToolBarData(new ToolBarData(TOGGLE_SHOW_LINE_NUMBERS_ICON, "A"));
-                }
-                else {
-                    setToolBarData(new ToolBarData(TOGGLE_SHOW_LINE_NUMBERS_DISABLED_ICON, "A"));
-                }
-            }
-        };
-        showLineNumbersToggle.setDescription("Toggle on to display line numbers next to instructions");
-        addLocalAction(showLineNumbersToggle);
 
         snapToSymbolToggle = new ToggleDockingAction("Toggle Snap to Symbol", owner) {
             @Override
@@ -843,6 +789,60 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         stopOnNextSymbolToggle.setDescription("Toggle on to cancel disassembly if the next defined symbol is reached");
         addLocalAction(stopOnNextSymbolToggle);
 
+        stayOnErrorToggle = new ToggleDockingAction("Toggle Stay on Error", owner) {
+            @Override
+            public void actionPerformed(ActionContext context) {
+                boolean isSelected = this.isSelected();
+
+                // Set the option based on the button state
+                options.setStayOnError(isSelected);
+
+                updateOptionsAndRefresh();
+            }
+
+            @Override
+            public void setSelected(boolean isSelected) {
+                super.setSelected(isSelected);
+
+                // Update the icon to have a slash or not
+                if (isSelected) {
+                    setToolBarData(new ToolBarData(TOGGLE_STAY_ON_ERROR_ICON, "A"));
+                }
+                else {
+                    setToolBarData(new ToolBarData(TOGGLE_STAY_ON_ERROR_DISABLED_ICON, "A"));
+                }
+            }
+        };
+        stayOnErrorToggle.setDescription("Toggle on to keep previous output when the new location is not a valid script");
+        addLocalAction(stayOnErrorToggle);
+
+        cMacroModeToggle = new ToggleDockingAction("Toggle C Macro Mode", owner) {
+            @Override
+            public void actionPerformed(ActionContext context) {
+                boolean isSelected = this.isSelected();
+
+                // Set the option based on the button state
+                options.setCMacroMode(isSelected);
+
+                updateOptionsAndRefresh();
+            }
+
+            @Override
+            public void setSelected(boolean isSelected) {
+                super.setSelected(isSelected);
+
+                // Update the icon to have a slash or not
+                if (isSelected) {
+                    setToolBarData(new ToolBarData(TOGGLE_MACRO_ICON, "A"));
+                }
+                else {
+                    setToolBarData(new ToolBarData(TOGGLE_MACRO_DISABLED_ICON, "A"));
+                }
+            }
+        };
+        cMacroModeToggle.setDescription("Toggle on to render scripts in the evt_cmd.h C Macro format");
+        addLocalAction(cMacroModeToggle);
+
         namespacesToggle = new ToggleDockingAction("Toggle Namespace Display", owner) {
             @Override
             public void actionPerformed(ActionContext context) {
@@ -870,13 +870,13 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         namespacesToggle.setDescription("Toggle on to enable namespace display");
         addLocalAction(namespacesToggle);
 
-        stayOnErrorToggle = new ToggleDockingAction("Toggle Stay on Error", owner) {
+        showLineNumbersToggle = new ToggleDockingAction("Toggle Line Numbers", owner) {
             @Override
             public void actionPerformed(ActionContext context) {
                 boolean isSelected = this.isSelected();
 
                 // Set the option based on the button state
-                options.setStayOnError(isSelected);
+                options.setShowLineNumbers(isSelected);
 
                 updateOptionsAndRefresh();
             }
@@ -887,15 +887,15 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 
                 // Update the icon to have a slash or not
                 if (isSelected) {
-                    setToolBarData(new ToolBarData(TOGGLE_STAY_ON_ERROR_ICON, "A"));
+                    setToolBarData(new ToolBarData(TOGGLE_SHOW_LINE_NUMBERS_ICON, "A"));
                 }
                 else {
-                    setToolBarData(new ToolBarData(TOGGLE_STAY_ON_ERROR_DISABLED_ICON, "A"));
+                    setToolBarData(new ToolBarData(TOGGLE_SHOW_LINE_NUMBERS_DISABLED_ICON, "A"));
                 }
             }
         };
-        stayOnErrorToggle.setDescription("Toggle on to keep previous output when the new location is not a valid script");
-        addLocalAction(stayOnErrorToggle);
+        showLineNumbersToggle.setDescription("Toggle on to display line numbers next to instructions");
+        addLocalAction(showLineNumbersToggle);
 
         // Set the selected state and icon for the above toggle icons
         refreshToggleButtons();
