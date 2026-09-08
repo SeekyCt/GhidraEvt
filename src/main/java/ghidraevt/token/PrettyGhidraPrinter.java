@@ -16,6 +16,7 @@
 package ghidraevt.token;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import ghidra.app.util.SymbolInspector;
@@ -27,8 +28,8 @@ import jevt.Opcode;
 
 public class PrettyGhidraPrinter extends GhidraPrinter {
     protected PrettyGhidraPrinter(Program program, SymbolInspector symbolInspector,
-            EvtOptions decompileOptions, EvtScript script, List<Instr> docroot) {
-        super(program, symbolInspector, decompileOptions, script, docroot);
+            EvtOptions options, EvtScript script, List<Instr> docroot) {
+        super(program, symbolInspector, options, script, docroot);
     }
 
     @Override
@@ -41,10 +42,15 @@ public class PrettyGhidraPrinter extends GhidraPrinter {
     @Override
     protected void buildHeader() {
         List<EvtToken> header = new ArrayList<>();
-        header.add(EvtToken.syntax(script, HEADER_DECORATION + " ", decompileOptions.getDefaultColor(), currentAddr));
+        header.add(EvtToken.syntax(script, HEADER_DECORATION + " ", options.getDefaultColor(), currentAddr));
         header.addAll(symbolToTokens(script, currentAddr, COLOR_HEADER, currentAddr, 0));
-        header.add(EvtToken.syntax(script, " " + HEADER_DECORATION, decompileOptions.getDefaultColor(), currentAddr));
+        header.add(EvtToken.syntax(script, " " + HEADER_DECORATION, options.getDefaultColor(), currentAddr));
         doc.addLine(new EvtLine(header, currentAddr, 0, 0));
+
+        if (options.isBlankAfterHeader()) {
+            List<EvtToken> blank = Arrays.asList(new EvtToken(script, "", options.getDefaultColor(), currentAddr, 0));
+            doc.addLine(new EvtLine(blank, currentAddr, 0, 0));
+        }
     }
 
     @Override
@@ -57,7 +63,7 @@ public class PrettyGhidraPrinter extends GhidraPrinter {
     @Override
     protected void buildArgSeparator(boolean first, List<EvtToken> tokens) {
         String sep = first ? " " : ", ";
-        tokens.add(EvtToken.syntax(script, sep, decompileOptions.getDefaultColor(), currentAddr));
+        tokens.add(EvtToken.syntax(script, sep, options.getDefaultColor(), currentAddr));
     }
 
     @Override

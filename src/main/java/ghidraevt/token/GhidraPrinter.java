@@ -59,7 +59,7 @@ public abstract class GhidraPrinter {
 
     protected Program program;
     protected SymbolInspector symbolInspector;
-    protected EvtOptions decompileOptions;
+    protected EvtOptions options;
 
     protected EvtScript script;
     protected List<Instr> docroot;
@@ -70,10 +70,10 @@ public abstract class GhidraPrinter {
     protected Address currentAddr;
 
     protected GhidraPrinter(Program program, SymbolInspector symbolInspector,
-        EvtOptions decompileOptions, EvtScript script, List<Instr> docroot) {
+        EvtOptions options, EvtScript script, List<Instr> docroot) {
         this.program = program;
         this.symbolInspector = symbolInspector;
-        this.decompileOptions = decompileOptions;
+        this.options = options;
         this.script = script;
         this.docroot = docroot;
 
@@ -126,7 +126,7 @@ public abstract class GhidraPrinter {
 
         // TODO: undefined data? struct fields?
 
-        return decompileOptions.getGlobalColor();
+        return options.getGlobalColor();
     }
 
     private boolean isROString(Data data) {
@@ -137,8 +137,8 @@ public abstract class GhidraPrinter {
     }
 
     private void emitNamespace(List<EvtToken> ret, EvtScript script, String name, Address atAddr, long size) {
-        ret.add(new EvtToken(script, name, decompileOptions.getGlobalColor(), atAddr, size));
-        ret.add(new EvtToken(script, "::", decompileOptions.getDefaultColor(), atAddr, size));
+        ret.add(new EvtToken(script, name, options.getGlobalColor(), atAddr, size));
+        ret.add(new EvtToken(script, "::", options.getDefaultColor(), atAddr, size));
     }
 
     protected List<EvtToken> symbolToTokens(EvtScript script, Address atAddr, Color color, Address target, long size) {
@@ -149,10 +149,10 @@ public abstract class GhidraPrinter {
         }
         else  {
             List<EvtToken> ret = new ArrayList<>();
-            if (decompileOptions.isEnableNamespaces()) {
+            if (options.isEnableNamespaces()) {
                 Namespace ns = symbol.getParentNamespace();
-                if (decompileOptions.isCMacroMode())
-                    emitNamespace(ret, script, decompileOptions.getGameNamespace(), atAddr, size);
+                if (options.isCMacroMode())
+                    emitNamespace(ret, script, options.getGameNamespace(), atAddr, size);
     
                 while (!ns.isGlobal()) {
                     emitNamespace(ret, script, ns.getName(), atAddr, size);
@@ -194,7 +194,7 @@ public abstract class GhidraPrinter {
         }
         else if (cu instanceof Data data && isROString(data)) {
             String value = (String) data.getValue();
-            ret.add(new EvtAddrToken(script, "\"" + value + "\"", decompileOptions.getConstantColor(), currentAddr, target, Arg.bytesSize()));
+            ret.add(new EvtAddrToken(script, "\"" + value + "\"", options.getConstantColor(), currentAddr, target, Arg.bytesSize()));
         }
         else {
             ret.addAll(symbolToTokens(script, currentAddr, color, target, Arg.bytesSize()));
@@ -207,7 +207,7 @@ public abstract class GhidraPrinter {
         return Arrays.asList(EvtToken.argScalar(
             script,
             Float.toString(value),
-            decompileOptions.getConstantColor(),
+            options.getConstantColor(),
             currentAddr,
             Float.floatToRawIntBits(value),
             true
@@ -218,7 +218,7 @@ public abstract class GhidraPrinter {
         return Arrays.asList(EvtToken.argScalar(
             script,
             Integer.toString(value),
-            decompileOptions.getConstantColor(),
+            options.getConstantColor(),
             currentAddr,
             value,
             true
@@ -239,7 +239,7 @@ public abstract class GhidraPrinter {
         return Arrays.asList(EvtToken.arg(
             script,
             "NONE",
-            decompileOptions.getVariableColor(),
+            options.getVariableColor(),
             currentAddr
         ));
     }
@@ -304,7 +304,7 @@ public abstract class GhidraPrinter {
 
         buildFooter();
 
-        List<EvtToken> blank = Arrays.asList(new EvtToken(script, "", decompileOptions.getDefaultColor(), lineAddr, 0));
+        List<EvtToken> blank = Arrays.asList(new EvtToken(script, "", options.getDefaultColor(), lineAddr, 0));
         doc.addLine(new EvtLine(blank, currentAddr, displayLine++, 0));
     }
 

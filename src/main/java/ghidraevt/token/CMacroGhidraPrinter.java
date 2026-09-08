@@ -42,15 +42,15 @@ public class CMacroGhidraPrinter extends GhidraPrinter {
     }
 
     private EvtToken openParen() {
-        return EvtToken.paren(script, "(", decompileOptions.getDefaultColor(), currentAddr, true);
+        return EvtToken.paren(script, "(", options.getDefaultColor(), currentAddr, true);
     }
 
     private EvtToken closeParen() {
-        return EvtToken.paren(script, ")", decompileOptions.getDefaultColor(), currentAddr, false);
+        return EvtToken.paren(script, ")", options.getDefaultColor(), currentAddr, false);
     }
 
     private EvtToken takePointer() {
-        return EvtToken.syntax(script, "&", decompileOptions.getDefaultColor(), currentAddr);
+        return EvtToken.syntax(script, "&", options.getDefaultColor(), currentAddr);
     }
 
     /*
@@ -83,7 +83,7 @@ public class CMacroGhidraPrinter extends GhidraPrinter {
     @Override
     protected void buildArgSeparator(boolean first, List<EvtToken> tokens) {
         if (!first)
-            tokens.add(EvtToken.syntax(script, ", ", decompileOptions.getDefaultColor(), currentAddr));
+            tokens.add(EvtToken.syntax(script, ", ", options.getDefaultColor(), currentAddr));
     }
 
     /*
@@ -118,7 +118,7 @@ public class CMacroGhidraPrinter extends GhidraPrinter {
             return ret;
 
         ret.add(0,
-            new EvtToken(script, "PTR", decompileOptions.getDefaultColor(), currentAddr, displayLine)
+            new EvtToken(script, "PTR", options.getDefaultColor(), currentAddr, displayLine)
         );
         ret.add(1, openParen());
 
@@ -137,7 +137,7 @@ public class CMacroGhidraPrinter extends GhidraPrinter {
     protected List<EvtToken> floatToTokens(EvtScript script, Instr instr, float value) {
         List<EvtToken> ret = new ArrayList<>(super.floatToTokens(script, instr, value));
         ret.add(0,
-            new EvtToken(script, "FLOAT", decompileOptions.getDefaultColor(), currentAddr, displayLine)
+            new EvtToken(script, "FLOAT", options.getDefaultColor(), currentAddr, displayLine)
         );
         ret.add(1, openParen());
         ret.add(closeParen());
@@ -152,7 +152,7 @@ public class CMacroGhidraPrinter extends GhidraPrinter {
         return Arrays.asList(EvtToken.arg(
             script,
             "EVT_NULLPTR",
-            decompileOptions.getVariableColor(),
+            options.getVariableColor(),
             currentAddr
         ));
     }

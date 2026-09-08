@@ -201,30 +201,40 @@ public class EvtOptions {
         toolOptions.setBoolean(TOPT_STAY_ON_ERROR, stayOnError);
     }
 
+    private static final String TOPT_BLANK_AFTER_HEADER = "Blank Line After Header";
+    private static final String TOPT_BLANK_AFTER_HEADER_DESC = "Insert a blank line after the script header (does not apply to C macro mode).";
+    private boolean blankAfterHeader;
+
+    public boolean isBlankAfterHeader() {
+        return blankAfterHeader;
+    }
+
     public void registerToolOptions(PluginTool tool) {
         ToolOptions toolOptions = tool.getOptions(GhidraEvtPlugin.OPTIONS_TITLE);
-        toolOptions.registerOption(TOPT_C_MACRO,       false, null, TOPT_C_MACRO_DESC);
-        toolOptions.registerOption(TOPT_STRICT,        true,  null, TOPT_STRICT_DESC);
-        toolOptions.registerOption(TOPT_LINE_NUMBERS,  true,  null, TOPT_LINE_NUMBERS_DESC);
-        toolOptions.registerOption(TOPT_SYM_SNAP,      true,  null, TOPT_SYM_SNAP_DESC);
-        toolOptions.registerOption(TOPT_SYM_STOP,      true,  null, TOPT_SYM_STOP_DESC);
-        toolOptions.registerOption(TOPT_LOCAL_XREFS,   false, null, TOPT_LOCAL_XREFS_DESC);
-        toolOptions.registerOption(TOPT_NAMESPACES,    true,  null, TOPT_NAMESPACES_DESC);
-        toolOptions.registerOption(TOPT_MAX_WIDTH,     100,   null, TOPT_MAX_WIDTH_DESC);
-        toolOptions.registerOption(TOPT_STAY_ON_ERROR, true,  null, TOPT_STAY_ON_ERROR_DESC);
+        toolOptions.registerOption(TOPT_C_MACRO,            false, null, TOPT_C_MACRO_DESC);
+        toolOptions.registerOption(TOPT_STRICT,             true,  null, TOPT_STRICT_DESC);
+        toolOptions.registerOption(TOPT_LINE_NUMBERS,       true,  null, TOPT_LINE_NUMBERS_DESC);
+        toolOptions.registerOption(TOPT_SYM_SNAP,           true,  null, TOPT_SYM_SNAP_DESC);
+        toolOptions.registerOption(TOPT_SYM_STOP,           true,  null, TOPT_SYM_STOP_DESC);
+        toolOptions.registerOption(TOPT_LOCAL_XREFS,        false, null, TOPT_LOCAL_XREFS_DESC);
+        toolOptions.registerOption(TOPT_NAMESPACES,         true,  null, TOPT_NAMESPACES_DESC);
+        toolOptions.registerOption(TOPT_MAX_WIDTH,          100,   null, TOPT_MAX_WIDTH_DESC);
+        toolOptions.registerOption(TOPT_STAY_ON_ERROR,      true,  null, TOPT_STAY_ON_ERROR_DESC);
+        toolOptions.registerOption(TOPT_BLANK_AFTER_HEADER, false, null, TOPT_BLANK_AFTER_HEADER_DESC);
     }
 
     public void grabFromTool(PluginTool tool) {
         ToolOptions toolOptions = tool.getOptions(GhidraEvtPlugin.OPTIONS_TITLE);
-        this.cMacroMode         = toolOptions.getBoolean(TOPT_C_MACRO,       false);
-        this.strictMode         = toolOptions.getBoolean(TOPT_STRICT,        true );
-        this.showLineNumbers    = toolOptions.getBoolean(TOPT_LINE_NUMBERS,  true );
-        this.snapToSymbol       = toolOptions.getBoolean(TOPT_SYM_SNAP,      true );
-        this.stopOnNextSymbol   = toolOptions.getBoolean(TOPT_SYM_STOP,      true );
-        this.allowLocalVarXrefs = toolOptions.getBoolean(TOPT_LOCAL_XREFS,   false);
-        this.enableNamespaces   = toolOptions.getBoolean(TOPT_NAMESPACES,    true );
-        this.maxWidth           =     toolOptions.getInt(TOPT_MAX_WIDTH,     100  );
-        this.stayOnError        = toolOptions.getBoolean(TOPT_STAY_ON_ERROR, true );
+        this.cMacroMode         = toolOptions.getBoolean(TOPT_C_MACRO,            false);
+        this.strictMode         = toolOptions.getBoolean(TOPT_STRICT,             true );
+        this.showLineNumbers    = toolOptions.getBoolean(TOPT_LINE_NUMBERS,       true );
+        this.snapToSymbol       = toolOptions.getBoolean(TOPT_SYM_SNAP,           true );
+        this.stopOnNextSymbol   = toolOptions.getBoolean(TOPT_SYM_STOP,           true );
+        this.allowLocalVarXrefs = toolOptions.getBoolean(TOPT_LOCAL_XREFS,        false);
+        this.enableNamespaces   = toolOptions.getBoolean(TOPT_NAMESPACES,         true );
+        this.maxWidth           =     toolOptions.getInt(TOPT_MAX_WIDTH,          100  );
+        this.stayOnError        = toolOptions.getBoolean(TOPT_STAY_ON_ERROR,      true );
+        this.blankAfterHeader   = toolOptions.getBoolean(TOPT_BLANK_AFTER_HEADER, false);
     }
 
     /*******************
