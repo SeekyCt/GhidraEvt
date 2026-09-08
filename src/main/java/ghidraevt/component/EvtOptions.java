@@ -123,12 +123,24 @@ public class EvtOptions {
         return showLineNumbers;
     }
 
+    public void setShowLineNumbers(boolean showLineNumbers) {
+        this.showLineNumbers = showLineNumbers;
+        ToolOptions toolOptions = tool.getOptions(GhidraEvtPlugin.OPTIONS_TITLE);
+        toolOptions.setBoolean(TOPT_LINE_NUMBERS, showLineNumbers);
+    }
+
     private static final String TOPT_SYM_SNAP = "Snap to Last Symbol";
     private static final String TOPT_SYM_SNAP_DESC = "Start disassembly from the address of the last defined symbol";
     private boolean snapToSymbol;
 
     public boolean isSnapToSymbol() {
         return snapToSymbol;
+    }
+
+    public void setSnapToSymbol(boolean snapToSymbol) {
+        this.snapToSymbol = snapToSymbol;
+        ToolOptions toolOptions = tool.getOptions(GhidraEvtPlugin.OPTIONS_TITLE);
+        toolOptions.setBoolean(TOPT_SYM_SNAP, snapToSymbol);
     }
 
     private static final String TOPT_SYM_STOP = "Stop on Next Symbol";
@@ -139,20 +151,32 @@ public class EvtOptions {
         return stopOnNextSymbol;
     }
 
+    public void setStopOnNextSymbol(boolean stopOnNextSymbol) {
+        this.stopOnNextSymbol = stopOnNextSymbol;
+        ToolOptions toolOptions = tool.getOptions(GhidraEvtPlugin.OPTIONS_TITLE);
+        toolOptions.setBoolean(TOPT_SYM_STOP, stopOnNextSymbol);
+    }
+
     private static final String TOPT_LOCAL_XREFS = "Allow Local Variable Search";
     private static final String TOPT_LOCAL_XREFS_DESC = "Enable global reference searching for script-local variables.";
     private boolean allowLocalVarXrefs;
-
-    private static final String TOPT_NAMESPACES = "Display Namespaces";
-    private static final String TOPT_NAMESPACES_DESC = "Display symbol namespaces in disassembly.";
-    private boolean enableNamespaces;
 
     public boolean isAllowLocalVarXrefs() {
         return allowLocalVarXrefs;
     }
 
+    private static final String TOPT_NAMESPACES = "Display Namespaces";
+    private static final String TOPT_NAMESPACES_DESC = "Display symbol namespaces in disassembly.";
+    private boolean enableNamespaces;
+
     public boolean isEnableNamespaces() {
         return enableNamespaces;
+    }
+
+    public void setEnableNamespaces(boolean enableNamespaces) {
+        this.enableNamespaces = enableNamespaces;
+        ToolOptions toolOptions = tool.getOptions(GhidraEvtPlugin.OPTIONS_TITLE);
+        toolOptions.setBoolean(TOPT_NAMESPACES, enableNamespaces);
     }
 
     public void registerToolOptions(PluginTool tool) {

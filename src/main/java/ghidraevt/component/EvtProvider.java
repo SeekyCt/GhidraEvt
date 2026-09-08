@@ -24,7 +24,8 @@ import java.math.BigInteger;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import javax.swing.*;
+import javax.swing.Icon;
+import javax.swing.JComponent;
 
 import docking.ActionContext;
 import docking.WindowPosition;
@@ -58,12 +59,13 @@ import ghidra.util.bean.field.AnnotatedTextFieldElement;
 import ghidra.util.task.SwingUpdateManager;
 import ghidraevt.GhidraEvtPlugin;
 import ghidraevt.action.CloneEvtAction;
+import ghidraevt.action.EvtActionContext;
 import ghidraevt.action.EvtEditDataTypeAction;
 import ghidraevt.action.EvtEditPropertiesAction;
 import ghidraevt.action.EvtFindReferencesToAddressAction;
-import ghidraevt.action.EvtActionContext;
 import ghidraevt.action.EvtFindReferencesToDataTypeAction;
-import ghidraevt.action.EvtHighlightDefinedUseAction;
+import ghidraevt.action.EvtFindReferencesToSymbolAction;
+import ghidraevt.action.EvtFindReferencesToVariableAction;
 import ghidraevt.action.EvtNextHighlightedTokenAction;
 import ghidraevt.action.EvtPreviousHighlightedTokenAction;
 import ghidraevt.action.EvtRemoveAllSecondaryHighlightsAction;
@@ -71,8 +73,6 @@ import ghidraevt.action.EvtRemoveSecondaryHighlightAction;
 import ghidraevt.action.EvtSetSecondaryHighlightAction;
 import ghidraevt.action.EvtSetSecondaryHighlightColorChooserAction;
 import ghidraevt.action.FindAction;
-import ghidraevt.action.EvtFindReferencesToSymbolAction;
-import ghidraevt.action.EvtFindReferencesToVariableAction;
 import ghidraevt.action.RenameSymbolAction;
 import ghidraevt.action.RetypeGlobalAction;
 import ghidraevt.action.SelectAllAction;
@@ -103,6 +103,30 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
     private static final Icon TOGGLE_STRICT_MODE_DISABLED_ICON =
         new MultiIconBuilder(TOGGLE_STRICT_MODE_ICON).addCenteredIcon(SLASH_ICON).build();
 
+    private static final Icon TOGGLE_SHOW_LINE_NUMBERS_ICON =
+        new GIcon("icon.ghidraevt.action.show-line-numbers");
+
+    private static final Icon TOGGLE_SHOW_LINE_NUMBERS_DISABLED_ICON =
+        new MultiIconBuilder(TOGGLE_SHOW_LINE_NUMBERS_ICON).addCenteredIcon(SLASH_ICON).build();
+
+    private static final Icon TOGGLE_SNAP_TO_SYMBOL_ICON =
+        new GIcon("icon.ghidraevt.action.snap-to-symbol");
+
+    private static final Icon TOGGLE_SNAP_TO_SYMBOL_DISABLED_ICON =
+        new MultiIconBuilder(TOGGLE_SNAP_TO_SYMBOL_ICON).addCenteredIcon(SLASH_ICON).build();
+
+    private static final Icon TOGGLE_STOP_ON_NEXT_SYMBOL_ICON =
+        new GIcon("icon.ghidraevt.action.stop-on-next-symbol");
+
+    private static final Icon TOGGLE_STOP_ON_NEXT_SYMBOL_DISABLED_ICON =
+        new MultiIconBuilder(TOGGLE_STOP_ON_NEXT_SYMBOL_ICON).addCenteredIcon(SLASH_ICON).build();
+
+    private static final Icon TOGGLE_ENABLE_NAMESPACES_ICON =
+        new GIcon("icon.ghidraevt.action.enable-namespaces");
+
+    private static final Icon TOGGLE_ENABLE_NAMESPACES_DISABLED_ICON =
+        new MultiIconBuilder(TOGGLE_ENABLE_NAMESPACES_ICON).addCenteredIcon(SLASH_ICON).build();
+
     private final GhidraEvtPlugin plugin;
     private ClipboardService clipboardService;
     private EvtClipboardProvider clipboardProvider;
@@ -131,8 +155,12 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
     // only used by disconnected providers
     private boolean allowOutgoingEvents = false;
 
-    private ToggleDockingAction strictModeToggle;
     private ToggleDockingAction cMacroModeToggle;
+    private ToggleDockingAction strictModeToggle;
+    private ToggleDockingAction showLineNumbersToggle;
+    private ToggleDockingAction snapToSymbolToggle;
+    private ToggleDockingAction stopOnNextSymbolToggle;
+    private ToggleDockingAction namespacesToggle;
 
     public EvtProvider(GhidraEvtPlugin plugin, boolean isConnected) {
         super(plugin.getTool(), "Evt Disassembler", plugin.getName(), EvtActionContext.class);
@@ -310,8 +338,12 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
     }
 
     private void refreshToggleButtons() {
-        strictModeToggle.setSelected(options.isStrictMode());
         cMacroModeToggle.setSelected(options.isCMacroMode());
+        strictModeToggle.setSelected(options.isStrictMode());
+        showLineNumbersToggle.setSelected(options.isShowLineNumbers());
+        snapToSymbolToggle.setSelected(options.isSnapToSymbol());
+        stopOnNextSymbolToggle.setSelected(options.isStopOnNextSymbol());
+        namespacesToggle.setSelected(options.isEnableNamespaces());
     }
 
     private void doFollowUpWork() {
@@ -673,6 +705,33 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         refreshAction.setDescription("Push at any time to trigger a re-disassemble");
         addLocalAction(refreshAction);
 
+        cMacroModeToggle = new ToggleDockingAction("Toggle C Macro Mode", owner) {
+            @Override
+            public void actionPerformed(ActionContext context) {
+                boolean isSelected = this.isSelected();
+
+                // Set the option based on the button state
+                options.setCMacroMode(isSelected);
+
+                updateOptionsAndRefresh();
+            }
+
+            @Override
+            public void setSelected(boolean isSelected) {
+                super.setSelected(isSelected);
+
+                // Update the icon to have a slash or not
+                if (isSelected) {
+                    setToolBarData(new ToolBarData(TOGGLE_MACRO_ICON, "A"));
+                }
+                else {
+                    setToolBarData(new ToolBarData(TOGGLE_MACRO_DISABLED_ICON, "A"));
+                }
+            }
+        };
+        cMacroModeToggle.setDescription("Toggle on to render scripts in the evt_cmd.h C Macro format");
+        addLocalAction(cMacroModeToggle);
+
         strictModeToggle = new ToggleDockingAction("Toggle Strict Script Detection", owner) {
             @Override
             public void actionPerformed(ActionContext context) {
@@ -701,13 +760,13 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         strictModeToggle.setDescription("Toggle on to enable strict script detection (may risk false-negatives)");
         addLocalAction(strictModeToggle);
 
-        cMacroModeToggle = new ToggleDockingAction("Toggle C Macro Mode", owner) {
+        showLineNumbersToggle = new ToggleDockingAction("Toggle Line Numbers", owner) {
             @Override
             public void actionPerformed(ActionContext context) {
                 boolean isSelected = this.isSelected();
 
                 // Set the option based on the button state
-                options.setCMacroMode(isSelected);
+                options.setShowLineNumbers(isSelected);
 
                 updateOptionsAndRefresh();
             }
@@ -718,15 +777,96 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
 
                 // Update the icon to have a slash or not
                 if (isSelected) {
-                    setToolBarData(new ToolBarData(TOGGLE_MACRO_ICON, "A"));
+                    setToolBarData(new ToolBarData(TOGGLE_SHOW_LINE_NUMBERS_ICON, "A"));
                 }
                 else {
-                    setToolBarData(new ToolBarData(TOGGLE_MACRO_DISABLED_ICON, "A"));
+                    setToolBarData(new ToolBarData(TOGGLE_SHOW_LINE_NUMBERS_DISABLED_ICON, "A"));
                 }
             }
         };
-        cMacroModeToggle.setDescription("Toggle on to render scripts in the evt_cmd.h C Macro format");
-        addLocalAction(cMacroModeToggle);
+        showLineNumbersToggle.setDescription("Toggle on to display line numbers next to instructions");
+        addLocalAction(showLineNumbersToggle);
+
+        snapToSymbolToggle = new ToggleDockingAction("Toggle Snap to Symbol", owner) {
+            @Override
+            public void actionPerformed(ActionContext context) {
+                boolean isSelected = this.isSelected();
+
+                // Set the option based on the button state
+                options.setSnapToSymbol(isSelected);
+
+                updateOptionsAndRefresh();
+            }
+
+            @Override
+            public void setSelected(boolean isSelected) {
+                super.setSelected(isSelected);
+
+                // Update the icon to have a slash or not
+                if (isSelected) {
+                    setToolBarData(new ToolBarData(TOGGLE_SNAP_TO_SYMBOL_ICON, "A"));
+                }
+                else {
+                    setToolBarData(new ToolBarData(TOGGLE_SNAP_TO_SYMBOL_DISABLED_ICON, "A"));
+                }
+            }
+        };
+        snapToSymbolToggle.setDescription("Toggle on to start disassembly from the address of the last defined symbol");
+        addLocalAction(snapToSymbolToggle);
+
+        stopOnNextSymbolToggle = new ToggleDockingAction("Toggle Stop on Next Symbol", owner) {
+            @Override
+            public void actionPerformed(ActionContext context) {
+                boolean isSelected = this.isSelected();
+
+                // Set the option based on the button state
+                options.setStopOnNextSymbol(isSelected);
+
+                updateOptionsAndRefresh();
+            }
+
+            @Override
+            public void setSelected(boolean isSelected) {
+                super.setSelected(isSelected);
+
+                // Update the icon to have a slash or not
+                if (isSelected) {
+                    setToolBarData(new ToolBarData(TOGGLE_STOP_ON_NEXT_SYMBOL_ICON, "A"));
+                }
+                else {
+                    setToolBarData(new ToolBarData(TOGGLE_STOP_ON_NEXT_SYMBOL_DISABLED_ICON, "A"));
+                }
+            }
+        };
+        stopOnNextSymbolToggle.setDescription("Toggle on to cancel disassembly if the next defined symbol is reached");
+        addLocalAction(stopOnNextSymbolToggle);
+
+        namespacesToggle = new ToggleDockingAction("Toggle Namespace Display", owner) {
+            @Override
+            public void actionPerformed(ActionContext context) {
+                boolean isSelected = this.isSelected();
+
+                // Set the option based on the button state
+                options.setEnableNamespaces(isSelected);
+
+                updateOptionsAndRefresh();
+            }
+
+            @Override
+            public void setSelected(boolean isSelected) {
+                super.setSelected(isSelected);
+
+                // Update the icon to have a slash or not
+                if (isSelected) {
+                    setToolBarData(new ToolBarData(TOGGLE_ENABLE_NAMESPACES_ICON, "A"));
+                }
+                else {
+                    setToolBarData(new ToolBarData(TOGGLE_ENABLE_NAMESPACES_DISABLED_ICON, "A"));
+                }
+            }
+        };
+        namespacesToggle.setDescription("Toggle on to enable namespace display");
+        addLocalAction(namespacesToggle);
 
         // Set the selected state and icon for the above toggle icons
         refreshToggleButtons();
