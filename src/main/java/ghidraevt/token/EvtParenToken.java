@@ -30,7 +30,6 @@ public final class EvtParenToken extends EvtToken {
     protected EvtParenToken(EvtScript script, String txt, Color color, Address minAddress,
             long size, boolean opening) {
         super(script, txt, color, minAddress, size);
-        //TODO Auto-generated constructor stub
 
         this.opening = opening;
     }
