@@ -187,8 +187,8 @@ public class EvtOptions {
         return maxWidth;
     }
 
-    private static final String TOPT_STAY_ON_ERROR = "Display Namespaces";
-    private static final String TOPT_STAY_ON_ERROR_DESC = "Display symbol namespaces in disassembly.";
+    private static final String TOPT_STAY_ON_ERROR = "Stay on Error";
+    private static final String TOPT_STAY_ON_ERROR_DESC = "Keep previous output when the new location is not a valid script.";
     private boolean stayOnError;
 
     public boolean isStayOnError() {
