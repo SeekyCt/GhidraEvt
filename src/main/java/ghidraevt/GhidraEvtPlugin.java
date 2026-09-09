@@ -64,11 +64,11 @@ import ghidraevt.token.EvtToken;
  */
 //@formatter:off
 @PluginInfo(
-    status = PluginStatus.STABLE,
+    status = PluginStatus.RELEASED,
     packageName = GhidraEvtPluginPackage.NAME,
     category = PluginCategoryNames.COMMON,
     shortDescription = "Script disassembler window.",
-    description = "Super Paper Mario evt script disassembly integration.",
+    description = "Disassembly of evt scripts used by Paper Mario: The Thousand-Year Door and Super Paper Mario",
     servicesRequired = {
         GoToService.class, NavigationHistoryService.class, ClipboardService.class,
         DataTypeManagerService.class /*, ProgramManager.class */
