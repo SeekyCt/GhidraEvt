@@ -16,6 +16,8 @@
  * limitations under the License.
  * 
  * Modified from ghidra/app/decompiler/component/DecompilerUtils.java to work on evt scripts
+ * 
+ * Additionally uses methods from ghidra/app/plugin/core/navigation/NextPreviousLabelAction.java
  */
 package ghidraevt.component;
 
@@ -28,12 +30,16 @@ import docking.widgets.fieldpanel.support.FieldLocation;
 import docking.widgets.fieldpanel.support.FieldRange;
 import docking.widgets.fieldpanel.support.FieldSelection;
 import ghidra.program.model.address.Address;
+import ghidra.program.model.address.AddressIterator;
 import ghidra.program.model.address.AddressSet;
 import ghidra.program.model.address.AddressSetView;
 import ghidra.program.model.address.AddressSpace;
 import ghidra.program.model.data.DataType;
 import ghidra.program.model.listing.Data;
 import ghidra.program.model.listing.Program;
+import ghidra.program.model.symbol.ReferenceManager;
+import ghidra.program.model.symbol.SymbolIterator;
+import ghidra.program.model.symbol.SymbolTable;
 import ghidra.util.Msg;
 import ghidraevt.action.EvtActionContext;
 import ghidraevt.token.EvtAddrToken;
@@ -395,4 +401,44 @@ public class EvtUtils {
         }
         return results;
     }
+
+	public static Address getAddressOfNextPreviousLabel(Program program, Address address, boolean forward) {
+		if (address == null) {
+			return null;
+		}
+
+		Address nextDefinedLableAddress = getNextDefinedLableAddress(program, address, forward);
+		Address nextReferenceToAddress = getNextReferenceToAddress(program, address, forward);
+		if (nextDefinedLableAddress == null) {
+			return nextReferenceToAddress;
+		}
+		if (nextReferenceToAddress == null) {
+			return nextDefinedLableAddress;
+		}
+
+		int compare = nextDefinedLableAddress.compareTo(nextReferenceToAddress);
+		if (forward) {
+			return compare <= 0 ? nextDefinedLableAddress : nextReferenceToAddress;
+		}
+		return compare >= 0 ? nextDefinedLableAddress : nextReferenceToAddress;
+
+	}
+
+	private static Address getNextReferenceToAddress(Program program, Address address, boolean forward) {
+		ReferenceManager referenceManager = program.getReferenceManager();
+		AddressIterator it = referenceManager.getReferenceDestinationIterator(address, forward);
+		if (it.hasNext()) {
+			return it.next();
+		}
+		return null;
+	}
+
+	private static Address getNextDefinedLableAddress(Program program, Address address, boolean forward) {
+		SymbolTable symbolTable = program.getSymbolTable();
+		SymbolIterator it = symbolTable.getSymbolIterator(address, forward);
+		if (it.hasNext()) {
+			return it.next().getAddress();
+		}
+		return null;
+	}
 }

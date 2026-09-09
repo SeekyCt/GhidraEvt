@@ -26,12 +26,15 @@ import java.util.List;
 
 import docking.widgets.fieldpanel.support.ViewerPosition;
 import ghidra.program.model.address.Address;
+import ghidra.program.model.address.AddressIterator;
 import ghidra.program.model.listing.Data;
 import ghidra.program.model.listing.Program;
 import ghidra.program.model.mem.MemBuffer;
 import ghidra.program.model.mem.MemoryBufferImpl;
+import ghidra.program.model.symbol.ReferenceManager;
 import ghidra.program.model.symbol.Symbol;
 import ghidra.program.model.symbol.SymbolIterator;
+import ghidra.program.model.symbol.SymbolTable;
 import ghidra.program.util.ProgramLocation;
 import ghidra.util.Msg;
 import jevt.BadEvtException;
@@ -62,15 +65,7 @@ public class EvtManager {
             return data.getAddress();
 
         // Try last symbol if not found
-        SymbolIterator iter = program.getSymbolTable().getSymbolIterator(address, false);
-        while (iter.hasNext()) {
-            Symbol next = iter.next();
-            if ((next.getAddress().getOffset() & 3) == 0) 
-                return next.getAddress();
-        }
-
-        // Nothing to snap to
-        return address;
+        return EvtUtils.getAddressOfNextPreviousLabel(program, address, false);
     }
 
     private Symbol nextSymbol(Program program, Address address) {
