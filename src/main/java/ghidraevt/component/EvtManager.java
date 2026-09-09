@@ -83,12 +83,14 @@ public class EvtManager {
         );
 
         // Don't replace old disassembly if this one failed and setting is enabled
-        if (options.isStayOnError() && !results.isValid() && controller.hasDisassembleResults())
-            return;
-
-        controller.setDisasssembleData(new DisassembleData(
-            program, results.getScript(), location, results, null, viewerPosition
-        ));
+        if (options.isStayOnError() && !results.isValid() && controller.hasDisassembleResults()) {
+            controller.restoreSavedLocation();
+        }
+        else {
+            controller.setDisasssembleData(new DisassembleData(
+                program, results.getScript(), location, results, null, viewerPosition
+            ));
+        }
     }
 
     private DisassembleResults doDisassemble(Program program, ProgramLocation location,

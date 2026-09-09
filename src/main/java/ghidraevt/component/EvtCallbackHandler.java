@@ -42,4 +42,6 @@ public interface EvtCallbackHandler {
     void exportLocation();
 
     void doWhenNotBusy(Callback c);
+
+    void restoreSavedLocation();
 }

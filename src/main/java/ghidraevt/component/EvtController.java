@@ -210,4 +210,8 @@ public class EvtController {
     public void exportLocation() {
         callbackHandler.exportLocation();
     }
+
+    public void restoreSavedLocation() {
+        callbackHandler.restoreSavedLocation();
+    }
 }

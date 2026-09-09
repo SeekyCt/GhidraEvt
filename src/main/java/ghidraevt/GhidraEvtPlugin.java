@@ -95,6 +95,7 @@ public class GhidraEvtPlugin extends Plugin {
 
     private Program currentProgram;
     private ProgramLocation currentLocation;
+    private ProgramLocation savedLocation;
     private ProgramSelection currentSelection;
 
     // Merged from separate hover plugins
@@ -305,7 +306,15 @@ public class GhidraEvtPlugin extends Plugin {
             currentSelection = ((ProgramSelectionPluginEvent) event).getSelection();
             connectedProvider.setSelection(currentSelection);
         }
+    }
 
+    public void restoreSavedLocation() {
+        this.currentLocation = this.savedLocation;
+        delayedLocationUpdateMgr.update();
+    }
+
+    public void setSavedLocation(ProgramLocation savedLocation) {
+        this.savedLocation = savedLocation;
     }
 
     private void programClosed(Program closedProgram) {

@@ -547,6 +547,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         updateTitle();
         contextChanged();
         controller.setSelection(currentSelection);
+        plugin.setSavedLocation(disassembleData.getLocation());
     }
 
     @Override
@@ -558,6 +559,12 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         contextChanged();
         plugin.locationChanged(this, programLocation);
     }
+
+    @Override
+    public void restoreSavedLocation() {
+        plugin.restoreSavedLocation();
+    }
+
 
     @Override
     public void selectionChanged(ProgramSelection programSelection) {
