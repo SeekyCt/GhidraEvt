@@ -217,6 +217,20 @@ public class EvtOptions {
         return indentSize;
     }
 
+    private static final String TOPT_SHOW_ADDRESSES = "Show Instruction Addresses";
+    private static final String TOPT_SHOW_ADDRESSES_DESC = "Display instruction start addresses in disassembly";
+    private boolean showAddresses;
+
+    public boolean isShowAddresses() {
+        return showAddresses;
+    }
+
+    public void setShowAddresses(boolean showAddresses) {
+        this.showAddresses = showAddresses;
+        ToolOptions toolOptions = tool.getOptions(GhidraEvtPlugin.OPTIONS_TITLE);
+        toolOptions.setBoolean(TOPT_SHOW_ADDRESSES, showAddresses);
+    }
+
     public void registerToolOptions(PluginTool tool) {
         ToolOptions toolOptions = tool.getOptions(GhidraEvtPlugin.OPTIONS_TITLE);
         toolOptions.registerOption(TOPT_C_MACRO,            false, null, TOPT_C_MACRO_DESC);
@@ -230,6 +244,7 @@ public class EvtOptions {
         toolOptions.registerOption(TOPT_STAY_ON_ERROR,      true,  null, TOPT_STAY_ON_ERROR_DESC);
         toolOptions.registerOption(TOPT_BLANK_AFTER_HEADER, false, null, TOPT_BLANK_AFTER_HEADER_DESC);
         toolOptions.registerOption(TOPT_INDENT_SIZE,        4,     null, TOPT_INDENT_SIZE_DESC);
+        toolOptions.registerOption(TOPT_SHOW_ADDRESSES,     false, null, TOPT_SHOW_ADDRESSES_DESC);
     }
 
     public void grabFromTool(PluginTool tool) {
@@ -245,6 +260,7 @@ public class EvtOptions {
         this.stayOnError        = toolOptions.getBoolean(TOPT_STAY_ON_ERROR,      true );
         this.blankAfterHeader   = toolOptions.getBoolean(TOPT_BLANK_AFTER_HEADER, false);
         this.indentSize         =     toolOptions.getInt(TOPT_INDENT_SIZE,        4);
+        this.showAddresses      = toolOptions.getBoolean(TOPT_SHOW_ADDRESSES,     false);
     }
 
     /*******************

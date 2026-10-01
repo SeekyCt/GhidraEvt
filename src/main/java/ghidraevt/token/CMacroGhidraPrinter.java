@@ -38,7 +38,7 @@ public class CMacroGhidraPrinter extends GhidraPrinter {
     */
     @Override
     protected int getMinIndent() {
-        return 1;
+        return options.isShowAddresses() ? 0 : 1;
     }
 
     private EvtToken openParen() {
@@ -51,6 +51,14 @@ public class CMacroGhidraPrinter extends GhidraPrinter {
 
     private EvtToken takePointer() {
         return EvtToken.syntax(script, "&", options.getDefaultColor(), currentAddr);
+    }
+
+    @Override
+    protected List<EvtToken> addressDisplay() {
+        String addressString = "/* " + currentAddr.toString() + " */" + INDENT_CHAR;
+        return Arrays.asList(
+            EvtToken.syntax(script, addressString, COLOR_ADDRESS, currentAddr)
+        );
     }
 
     /*

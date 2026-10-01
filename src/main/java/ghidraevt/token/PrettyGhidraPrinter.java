@@ -39,16 +39,35 @@ public class PrettyGhidraPrinter extends GhidraPrinter {
 
     private static final String HEADER_DECORATION = "==========";
 
+    protected EvtToken spaceForAddressDisplay()
+    {
+        String addressString = "--------: ";
+        return EvtToken.syntax(script, addressString, COLOR_ADDRESS, currentAddr);
+    }
+
+    @Override
+    protected List<EvtToken> addressDisplay() {
+        String addressString = currentAddr.toString() + ":" + INDENT_CHAR;
+        return Arrays.asList(
+            EvtToken.syntax(script, addressString, COLOR_ADDRESS, currentAddr)
+        );
+    }
+
     @Override
     protected void buildHeader() {
         List<EvtToken> header = new ArrayList<>();
+        if (options.isShowAddresses())
+            header.add(spaceForAddressDisplay());
         header.add(EvtToken.syntax(script, HEADER_DECORATION + " ", options.getDefaultColor(), currentAddr));
         header.addAll(symbolToTokens(script, currentAddr, COLOR_HEADER, currentAddr, 0));
         header.add(EvtToken.syntax(script, " " + HEADER_DECORATION, options.getDefaultColor(), currentAddr));
         doc.addLine(new EvtLine(header, currentAddr, 0));
 
         if (options.isBlankAfterHeader()) {
-            List<EvtToken> blank = Arrays.asList(new EvtToken(script, "", options.getDefaultColor(), currentAddr, 0));
+            List<EvtToken> blank = Arrays.asList(
+                spaceForAddressDisplay(),
+                new EvtToken(script, "", options.getDefaultColor(), currentAddr, 0)
+            );
             doc.addLine(new EvtLine(blank, currentAddr, 0));
         }
     }

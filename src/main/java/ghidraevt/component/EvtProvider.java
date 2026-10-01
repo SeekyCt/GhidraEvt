@@ -107,6 +107,11 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
     private static final Icon TOGGLE_SHOW_LINE_NUMBERS_DISABLED_ICON =
         new MultiIconBuilder(TOGGLE_SHOW_LINE_NUMBERS_ICON).addCenteredIcon(SLASH_ICON).build();
 
+    private static final Icon TOGGLE_SHOW_ADDRESSES_ICON =
+        new GIcon("icon.ghidraevt.action.show-addresses");
+    private static final Icon TOGGLE_SHOW_ADDRESSES_DISABLED_ICON =
+        new MultiIconBuilder(TOGGLE_SHOW_ADDRESSES_ICON).addCenteredIcon(SLASH_ICON).build();
+
     private static final Icon TOGGLE_SNAP_TO_SYMBOL_ICON =
         new GIcon("icon.ghidraevt.action.snap-to-symbol");
     private static final Icon TOGGLE_SNAP_TO_SYMBOL_DISABLED_ICON =
@@ -158,6 +163,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
     private ToggleDockingAction cMacroModeToggle;
     private ToggleDockingAction strictModeToggle;
     private ToggleDockingAction showLineNumbersToggle;
+    private ToggleDockingAction showAddressesToggle;
     private ToggleDockingAction snapToSymbolToggle;
     private ToggleDockingAction stopOnNextSymbolToggle;
     private ToggleDockingAction namespacesToggle;
@@ -342,6 +348,7 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         cMacroModeToggle.setSelected(options.isCMacroMode());
         strictModeToggle.setSelected(options.isStrictMode());
         showLineNumbersToggle.setSelected(options.isShowLineNumbers());
+        showAddressesToggle.setSelected(options.isShowAddresses());
         snapToSymbolToggle.setSelected(options.isSnapToSymbol());
         stopOnNextSymbolToggle.setSelected(options.isStopOnNextSymbol());
         namespacesToggle.setSelected(options.isEnableNamespaces());
@@ -917,6 +924,33 @@ public class EvtProvider extends NavigatableComponentProviderAdapter
         };
         showLineNumbersToggle.setDescription("Toggle on to display line numbers next to instructions");
         addLocalAction(showLineNumbersToggle);
+
+        showAddressesToggle = new ToggleDockingAction("Toggle Addresses", owner) {
+            @Override
+            public void actionPerformed(ActionContext context) {
+                boolean isSelected = this.isSelected();
+
+                // Set the option based on the button state
+                options.setShowAddresses(isSelected);
+
+                updateOptionsAndRefresh();
+            }
+
+            @Override
+            public void setSelected(boolean isSelected) {
+                super.setSelected(isSelected);
+
+                // Update the icon to have a slash or not
+                if (isSelected) {
+                    setToolBarData(new ToolBarData(TOGGLE_SHOW_ADDRESSES_ICON, renderingGroup));
+                }
+                else {
+                    setToolBarData(new ToolBarData(TOGGLE_SHOW_ADDRESSES_DISABLED_ICON, renderingGroup));
+                }
+            }
+        };
+        showAddressesToggle.setDescription("Toggle on to display starting addresses next to instructions");
+        addLocalAction(showAddressesToggle);
 
         // Set the selected state and icon for the above toggle icons
         refreshToggleButtons();

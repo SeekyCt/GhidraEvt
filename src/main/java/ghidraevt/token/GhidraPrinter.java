@@ -51,6 +51,7 @@ public abstract class GhidraPrinter {
     public static Color COLOR_INSTR   = new GColor("color.fg.ghidraevt.instr");
     public static Color COLOR_COMMENT = new GColor("color.fg.ghidraevt.comment");
     public static Color COLOR_HEADER  = new GColor("color.fg.ghidraevt.header");
+    public static Color COLOR_ADDRESS = new GColor("color.fg.ghidraevt.address");
 
     public static Color COLOR_EXTERNAL_FUNCTION = new GColor("color.fg.decompiler.external.function");
 
@@ -250,6 +251,7 @@ public abstract class GhidraPrinter {
     protected abstract void buildArgSeparator(boolean first, List<EvtToken> tokens);
     protected abstract void endInstr(List<EvtToken> tokens);
     protected abstract void buildFooter();
+    protected abstract List<EvtToken> addressDisplay();
 
     private List<EvtToken> argToTokens(EvtScript script, Instr instr, Arg arg) {
         return switch (arg) {
@@ -281,6 +283,9 @@ public abstract class GhidraPrinter {
             indent = Math.max(indent, getMinIndent());
 
             List<EvtToken> tokens = new ArrayList<>();
+
+            if (options.isShowAddresses())
+                tokens.addAll(addressDisplay());
 
             String indentStr = "";
             for (int i = 0; i < indent * options.getIndentSize(); i++)
