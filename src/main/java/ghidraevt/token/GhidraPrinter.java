@@ -151,12 +151,14 @@ public abstract class GhidraPrinter {
             List<EvtToken> ret = new ArrayList<>();
             if (options.isEnableNamespaces()) {
                 Namespace ns = symbol.getParentNamespace();
-                if (options.isCMacroMode())
+                if (options.isCMacroMode() && options.isShowOuterCNamespace())
                     emitNamespace(ret, script, options.getGameNamespace(), atAddr, size);
     
-                while (!ns.isGlobal()) {
-                    emitNamespace(ret, script, ns.getName(), atAddr, size);
-                    ns = ns.getParentNamespace();
+                if (!options.isCMacroMode() || options.isShowInnerCNamespace()) {
+                    while (!ns.isGlobal()) {
+                        emitNamespace(ret, script, ns.getName(), atAddr, size);
+                        ns = ns.getParentNamespace();
+                    }
                 }
             }
             ret.add(new EvtAddrToken(script, symbol.getName(), color, atAddr, target, size));

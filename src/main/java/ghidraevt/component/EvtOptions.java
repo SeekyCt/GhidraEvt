@@ -179,6 +179,50 @@ public class EvtOptions {
         toolOptions.setBoolean(TOPT_NAMESPACES, enableNamespaces);
     }
 
+    private static final String TOPT_NAMESPACES_STYLE = "C Macro Namespace Style";
+    private static final String TOPT_NAMESPACES_STYLE_DESC = "C macro mode namespace display style";
+    public static enum CNamespaceStyle {
+        FULL("Full", "Display the game and file name namespaces"),
+        GAME_ONLY("Game Only", "Display only the game namespace"),
+        FILENAME_ONLY("Filename Only", "Display only the filename namespace");
+
+        private String label;
+        private String optionString;
+
+        private CNamespaceStyle(String optString, String label) {
+            this.label = label;
+            this.optionString = optString;
+        }
+
+        public String getOptionString() {
+            return optionString;
+        }
+
+        @Override
+        public String toString() {
+            return label;
+        }
+
+
+    }
+    private CNamespaceStyle namespaceStyle;
+
+    public boolean isShowOuterCNamespace() {
+        return switch (namespaceStyle) {
+            case FULL -> true;
+            case GAME_ONLY -> true;
+            case FILENAME_ONLY -> false;
+        };
+    }
+
+    public boolean isShowInnerCNamespace() {
+        return switch (namespaceStyle) {
+            case FULL -> true;
+            case GAME_ONLY -> false;
+            case FILENAME_ONLY -> true;
+        };
+    }
+
     private static final String TOPT_MAX_WIDTH = "Maximum Line Width";
     private static final String TOPT_MAX_WIDTH_DESC = "Maximum characters within a line before wrapping";
     private int maxWidth;
@@ -240,6 +284,8 @@ public class EvtOptions {
         toolOptions.registerOption(TOPT_SYM_STOP,           true,  null, TOPT_SYM_STOP_DESC);
         toolOptions.registerOption(TOPT_LOCAL_XREFS,        false, null, TOPT_LOCAL_XREFS_DESC);
         toolOptions.registerOption(TOPT_NAMESPACES,         true,  null, TOPT_NAMESPACES_DESC);
+        toolOptions.registerOption(TOPT_NAMESPACES_STYLE, CNamespaceStyle.FULL, null,
+                                   TOPT_NAMESPACES_STYLE_DESC);
         toolOptions.registerOption(TOPT_MAX_WIDTH,          100,   null, TOPT_MAX_WIDTH_DESC);
         toolOptions.registerOption(TOPT_STAY_ON_ERROR,      true,  null, TOPT_STAY_ON_ERROR_DESC);
         toolOptions.registerOption(TOPT_BLANK_AFTER_HEADER, false, null, TOPT_BLANK_AFTER_HEADER_DESC);
@@ -249,18 +295,19 @@ public class EvtOptions {
 
     public void grabFromTool(PluginTool tool) {
         ToolOptions toolOptions = tool.getOptions(GhidraEvtPlugin.OPTIONS_TITLE);
-        this.cMacroMode         = toolOptions.getBoolean(TOPT_C_MACRO,            false);
-        this.strictMode         = toolOptions.getBoolean(TOPT_STRICT,             true );
-        this.showLineNumbers    = toolOptions.getBoolean(TOPT_LINE_NUMBERS,       true );
-        this.snapToSymbol       = toolOptions.getBoolean(TOPT_SYM_SNAP,           true );
-        this.stopOnNextSymbol   = toolOptions.getBoolean(TOPT_SYM_STOP,           true );
-        this.allowLocalVarXrefs = toolOptions.getBoolean(TOPT_LOCAL_XREFS,        false);
-        this.enableNamespaces   = toolOptions.getBoolean(TOPT_NAMESPACES,         true );
-        this.maxWidth           =     toolOptions.getInt(TOPT_MAX_WIDTH,          100  );
-        this.stayOnError        = toolOptions.getBoolean(TOPT_STAY_ON_ERROR,      true );
+        this.cMacroMode         = toolOptions.getBoolean(TOPT_C_MACRO, false);
+        this.strictMode         = toolOptions.getBoolean(TOPT_STRICT, true);
+        this.showLineNumbers    = toolOptions.getBoolean(TOPT_LINE_NUMBERS, true);
+        this.snapToSymbol       = toolOptions.getBoolean(TOPT_SYM_SNAP, true);
+        this.stopOnNextSymbol   = toolOptions.getBoolean(TOPT_SYM_STOP, true);
+        this.allowLocalVarXrefs = toolOptions.getBoolean(TOPT_LOCAL_XREFS, false);
+        this.enableNamespaces   = toolOptions.getBoolean(TOPT_NAMESPACES, true);
+        this.namespaceStyle     =    toolOptions.getEnum(TOPT_NAMESPACES_STYLE, CNamespaceStyle.FULL);
+        this.maxWidth           =     toolOptions.getInt(TOPT_MAX_WIDTH, 100);
+        this.stayOnError        = toolOptions.getBoolean(TOPT_STAY_ON_ERROR, true);
         this.blankAfterHeader   = toolOptions.getBoolean(TOPT_BLANK_AFTER_HEADER, false);
-        this.indentSize         =     toolOptions.getInt(TOPT_INDENT_SIZE,        4);
-        this.showAddresses      = toolOptions.getBoolean(TOPT_SHOW_ADDRESSES,     false);
+        this.indentSize         =     toolOptions.getInt(TOPT_INDENT_SIZE, 4);
+        this.showAddresses      = toolOptions.getBoolean(TOPT_SHOW_ADDRESSES, false);
     }
 
     /*******************
