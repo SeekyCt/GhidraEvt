@@ -30,7 +30,6 @@ import ghidra.program.model.listing.Instruction;
 import ghidra.program.model.listing.Program;
 import ghidra.program.model.symbol.Namespace;
 import ghidra.program.model.symbol.Symbol;
-import ghidra.util.Msg;
 import ghidraevt.component.EvtOptions;
 import ghidraevt.component.EvtScript;
 import jevt.Arg;
@@ -53,6 +52,7 @@ public abstract class GhidraPrinter {
     public static Color COLOR_HEADER  = new GColor("color.fg.ghidraevt.header");
     public static Color COLOR_ADDRESS = new GColor("color.fg.ghidraevt.address");
 
+    public static Color COLOR_UNDEFINED = new GColor("color.palette.error");
     public static Color COLOR_EXTERNAL_FUNCTION = new GColor("color.fg.decompiler.external.function");
 
     // A single character of indentation
@@ -145,8 +145,7 @@ public abstract class GhidraPrinter {
     protected List<EvtToken> symbolToTokens(EvtScript script, Address atAddr, Color color, Address target, long size) {
         Symbol symbol = program.getSymbolTable().getPrimarySymbol(target);
         if (symbol == null) {
-            Msg.warn(this, "No symbol for " + target);
-            return Arrays.asList(addrFailToken(script, atAddr, target, size));
+            return Arrays.asList(addrUndefinedToken(script, atAddr, target, size));
         }
         else  {
             List<EvtToken> ret = new ArrayList<>();
@@ -165,8 +164,8 @@ public abstract class GhidraPrinter {
         }
     }
 
-    private EvtToken addrFailToken(EvtScript script, Address atAddr, Address target, long size) {
-        return new EvtAddrToken(script, "ERR_" + target, COLOR_EXTERNAL_FUNCTION, atAddr, target, size);
+    private EvtToken addrUndefinedToken(EvtScript script, Address atAddr, Address target, long size) {
+        return new EvtAddrToken(script, "UNDEF_" + target, COLOR_UNDEFINED, atAddr, target, size);
     }
 
     protected boolean isString(Arg.ADDR arg) {
@@ -190,8 +189,7 @@ public abstract class GhidraPrinter {
 
         CodeUnit cu = program.getListing().getCodeUnitAt(target);
         if (cu == null) {
-            Msg.warn(this, "No code unit for " + Long.toHexString(arg.value()));
-            ret.add(addrFailToken(script, currentAddr, target, Arg.bytesSize()));
+            ret.add(addrUndefinedToken(script, currentAddr, target, Arg.bytesSize()));
         }
         else if (cu instanceof Data data && isROString(data)) {
             String value = (String) data.getValue();
