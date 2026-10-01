@@ -63,7 +63,6 @@ public class EvtClipboardProvider extends ByteCopier
 
     private boolean copyFromSelectionEnabled;
     private Set<ChangeListener> listeners = new CopyOnWriteArraySet<>();
-    private int spaceCharWidthInPixels = 7;
 
     void setLocation(ProgramLocation location) {
         currentLocation = location;
@@ -230,16 +229,9 @@ public class EvtClipboardProvider extends ByteCopier
         LayoutModel model = provider.getEvtPanel().getLayoutController();
         Layout layout = model.getLayout(BigInteger.valueOf(lineNumber));
         EvtTextField field = (EvtTextField) layout.getField(0);
-        int numSpaces = field.getStartX() / spaceCharWidthInPixels;
-        for (int i = 0; i < numSpaces; i++) {
-            buffer.append(' ');
-        }
 
         int startPos = field.screenLocationToTextOffset(startRow, startColumn);
         int endPos = field.screenLocationToTextOffset(endRow, endColumn);
-        for (int i = 0; i < startPos; i++) {
-            buffer.append(' ');
-        }
         if (startPos >= 0 && endPos >= startPos) {
             buffer.append(field.getText().substring(startPos, endPos));
         }
@@ -297,6 +289,5 @@ public class EvtClipboardProvider extends ByteCopier
     }
 
     public void setFontMetrics(FontMetrics metrics) {
-        spaceCharWidthInPixels = metrics.charWidth(' ');
     }
 }

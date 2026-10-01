@@ -163,8 +163,7 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
 
         FieldElement[] elements = createFieldElementsForLine(tokens);
 
-        int indent = line.getIndent() * indentSize * indentCharWidth;
-        return new EvtTextField(tokens, elements, indent, line.getLineNumber(), maxWidth, maxLines,
+        return new EvtTextField(tokens, elements, 0, line.getLineNumber(), maxWidth, maxLines,
             hlFactory);
     }
 
@@ -260,8 +259,8 @@ public class EvtLayoutModel implements LayoutModel, LayoutModelListener {
             document.addLine(i++, new EvtLine(
                 Arrays.asList(EvtToken.err(script, errline, GhidraPrinter.COLOR_COMMENT)),
                 Address.NO_ADDRESS,
-                0,
-                0));
+                0
+            ));
         }
     }
 

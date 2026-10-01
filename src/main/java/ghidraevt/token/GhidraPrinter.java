@@ -282,6 +282,11 @@ public abstract class GhidraPrinter {
 
             List<EvtToken> tokens = new ArrayList<>();
 
+            String indentStr = "";
+            for (int i = 0; i < indent * options.getIndentSize(); i++)
+                indentStr += INDENT_CHAR;
+            tokens.add(EvtToken.syntax(script, indentStr, options.getDefaultColor(), currentAddr));
+
             startInstr(opcode, tokens);
             currentAddr = currentAddr.add(Instr.HEADER_SIZE);
 
@@ -296,7 +301,7 @@ public abstract class GhidraPrinter {
 
             endInstr(tokens);
 
-            doc.addLine(new EvtLine(tokens, lineAddr, displayLine++, indent));
+            doc.addLine(new EvtLine(tokens, lineAddr, displayLine++));
 
             // Indent for next line
             indent += opcode.indent();
@@ -305,7 +310,7 @@ public abstract class GhidraPrinter {
         buildFooter();
 
         List<EvtToken> blank = Arrays.asList(new EvtToken(script, "", options.getDefaultColor(), lineAddr, 0));
-        doc.addLine(new EvtLine(blank, currentAddr, displayLine++, 0));
+        doc.addLine(new EvtLine(blank, currentAddr, displayLine++));
     }
 
     public EvtDocument getLines() {

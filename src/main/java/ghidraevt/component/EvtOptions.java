@@ -209,6 +209,14 @@ public class EvtOptions {
         return blankAfterHeader;
     }
 
+    private static final String TOPT_INDENT_SIZE = "Indentation Size";
+    private static final String TOPT_INDENT_SIZE_DESC = "Number of spaces to use per indentation level";
+    private int indentSize;
+
+    public int getIndentSize() {
+        return indentSize;
+    }
+
     public void registerToolOptions(PluginTool tool) {
         ToolOptions toolOptions = tool.getOptions(GhidraEvtPlugin.OPTIONS_TITLE);
         toolOptions.registerOption(TOPT_C_MACRO,            false, null, TOPT_C_MACRO_DESC);
@@ -221,6 +229,7 @@ public class EvtOptions {
         toolOptions.registerOption(TOPT_MAX_WIDTH,          100,   null, TOPT_MAX_WIDTH_DESC);
         toolOptions.registerOption(TOPT_STAY_ON_ERROR,      true,  null, TOPT_STAY_ON_ERROR_DESC);
         toolOptions.registerOption(TOPT_BLANK_AFTER_HEADER, false, null, TOPT_BLANK_AFTER_HEADER_DESC);
+        toolOptions.registerOption(TOPT_INDENT_SIZE,        4,     null, TOPT_INDENT_SIZE_DESC);
     }
 
     public void grabFromTool(PluginTool tool) {
@@ -235,6 +244,7 @@ public class EvtOptions {
         this.maxWidth           =     toolOptions.getInt(TOPT_MAX_WIDTH,          100  );
         this.stayOnError        = toolOptions.getBoolean(TOPT_STAY_ON_ERROR,      true );
         this.blankAfterHeader   = toolOptions.getBoolean(TOPT_BLANK_AFTER_HEADER, false);
+        this.indentSize         =     toolOptions.getInt(TOPT_INDENT_SIZE,        4);
     }
 
     /*******************

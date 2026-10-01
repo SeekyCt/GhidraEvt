@@ -63,7 +63,7 @@ public class CMacroGhidraPrinter extends GhidraPrinter {
         header.add(openParen());
         header.addAll(symbolToTokens(script, currentAddr, COLOR_HEADER, currentAddr, 0));
         header.add(closeParen());
-        doc.addLine(new EvtLine(header, currentAddr, 0, 0));
+        doc.addLine(new EvtLine(header, currentAddr, 0));
     }
 
     /*
@@ -103,7 +103,7 @@ public class CMacroGhidraPrinter extends GhidraPrinter {
         footer.add(EvtToken.syntax(script, "EVT_END", COLOR_INSTR, currentAddr));
         footer.add(openParen());
         footer.add(closeParen());
-        doc.addLine(new EvtLine(footer, currentAddr, displayLine++, 0));
+        doc.addLine(new EvtLine(footer, currentAddr, displayLine++));
     }
 
     /*

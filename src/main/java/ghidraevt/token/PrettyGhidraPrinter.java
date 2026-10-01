@@ -45,11 +45,11 @@ public class PrettyGhidraPrinter extends GhidraPrinter {
         header.add(EvtToken.syntax(script, HEADER_DECORATION + " ", options.getDefaultColor(), currentAddr));
         header.addAll(symbolToTokens(script, currentAddr, COLOR_HEADER, currentAddr, 0));
         header.add(EvtToken.syntax(script, " " + HEADER_DECORATION, options.getDefaultColor(), currentAddr));
-        doc.addLine(new EvtLine(header, currentAddr, 0, 0));
+        doc.addLine(new EvtLine(header, currentAddr, 0));
 
         if (options.isBlankAfterHeader()) {
             List<EvtToken> blank = Arrays.asList(new EvtToken(script, "", options.getDefaultColor(), currentAddr, 0));
-            doc.addLine(new EvtLine(blank, currentAddr, 0, 0));
+            doc.addLine(new EvtLine(blank, currentAddr, 0));
         }
     }
 
